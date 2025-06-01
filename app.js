@@ -415,28 +415,20 @@ resultImage.addEventListener('error', () => {
   alert('이미지를 불러오는데 실패했습니다.');
 });
 
-// 구글 렌즈 연동 - 생성된 이미지를 자동으로 구글 렌즈에 전달
+// 구글 렌즈 연동 - 생성된 이미지를 구글 이미지 검색에 전달 (파일 다운로드 없이)
 function setupGoogleLensSearch() {
   const googleLensBtn = document.getElementById('googleLensBtn');
   if (!googleLensBtn) return;
   
-  googleLensBtn.addEventListener('click', async () => {
+  googleLensBtn.addEventListener('click', () => {
     if (!resultImage.src) {
       alert('결과 이미지가 없습니다.');
       return;
     }
     
     try {
-      // 이미지를 base64로 변환
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = resultImage.naturalWidth || resultImage.width;
-      canvas.height = resultImage.naturalHeight || resultImage.height;
-      ctx.drawImage(resultImage, 0, 0);
-      const imageData = canvas.toDataURL('image/jpeg', 0.8);
-      
-      // 구글 이미지 검색으로 이미지 전달 (구글 렌즈 대안)
-      const searchUrl = `https://www.google.com/searchbyimage?image_url=${encodeURIComponent(resultImage.src)}&encoded_image=${encodeURIComponent(imageData)}`;
+      // 구글 이미지 검색에 이미지 URL 직접 전달
+      const searchUrl = `https://www.google.com/searchbyimage?image_url=${encodeURIComponent(resultImage.src)}`;
       window.open(searchUrl, '_blank');
       
       // 추가로 구글 렌즈도 열어주기
@@ -448,6 +440,7 @@ function setupGoogleLensSearch() {
       console.error('구글 렌즈 연동 오류:', error);
       // 에러 시 기본 구글 렌즈만 열기
       window.open('https://lens.google.com/', '_blank');
+      alert('구글 렌즈 페이지가 열렸습니다. 생성된 이미지를 수동으로 업로드해주세요.');
     }
   });
 }
