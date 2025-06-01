@@ -415,65 +415,22 @@ resultImage.addEventListener('error', () => {
   alert('이미지를 불러오는데 실패했습니다.');
 });
 
-// 구글 렌즈 검색 기능 (생성된 이미지 바로 업로드)
+// 구글 렌즈 검색 기능 (간단하게 구글 렌즈 페이지만 열기)
 function setupGoogleLensSearch() {
   const googleLensBtn = document.getElementById('googleLensBtn');
   if (!googleLensBtn) return;
   
-  googleLensBtn.addEventListener('click', async () => {
+  googleLensBtn.addEventListener('click', () => {
     if (!resultImage.src) {
       alert('결과 이미지가 없습니다.');
       return;
     }
     
-    try {
-      // 이미지를 Blob으로 변환
-      const response = await fetch(resultImage.src);
-      const blob = await response.blob();
-      
-      // 임시 파일명 생성
-      const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
-      const filename = `ai-fitting-result-${timestamp}.png`;
-      
-      // 방법 1: 클립보드에 이미지 복사 (가장 편리함)
-      try {
-        await navigator.clipboard.write([
-          new ClipboardItem({ 'image/png': blob })
-        ]);
-        
-        // 구글 렌즈 페이지 열기
-        const lensUrl = 'https://lens.google.com/';
-        window.open(lensUrl, '_blank');
-        
-        alert('✅ 이미지가 클립보드에 복사되었습니다!\n\n구글 렌즈 페이지에서 Ctrl+V(또는 Cmd+V)로 붙여넣기하여 바로 검색하세요! 📸');
-        
-      } catch (clipboardError) {
-        console.log('클립보드 복사 실패, 파일 다운로드로 대체:', clipboardError);
-        
-        // 방법 2: 파일 다운로드 (클립보드 실패 시)
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
-        
-        // 구글 렌즈 페이지 열기
-        const lensUrl = 'https://lens.google.com/';
-        window.open(lensUrl, '_blank');
-        
-        alert(`📸 구글 렌즈가 열렸습니다!\n\n다운로드된 이미지(${filename})를 구글 렌즈 페이지에 드래그&드롭하거나 업로드 버튼으로 업로드하여 비슷한 제품을 검색하세요!`);
-      }
-      
-    } catch (error) {
-      console.error('구글 렌즈 연동 오류:', error);
-      
-      // 에러 발생 시 기본 구글 렌즈 페이지 열기
-      window.open('https://lens.google.com/', '_blank');
-      alert('구글 렌즈 페이지가 열렸습니다.\n화면 캡처나 이미지 저장 후 직접 업로드해서 검색해보세요!');
-    }
+    // 구글 렌즈 페이지 열기
+    window.open('https://lens.google.com/', '_blank');
+    
+    // 간단한 안내 메시지
+    alert('🔍 구글 렌즈가 열렸습니다!\n\n생성된 이미지를 스크린샷하거나 저장해서 구글 렌즈에 업로드하여 비슷한 제품을 찾아보세요!');
   });
 }
 
