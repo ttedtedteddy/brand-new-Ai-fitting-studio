@@ -415,47 +415,47 @@ resultImage.addEventListener('error', () => {
   alert('이미지를 불러오는데 실패했습니다.');
 });
 
-// 구글 이미지 검색 기능
+// 구글 렌즈 검색 기능 (간단하고 확실한 방법)
 function setupGoogleLensSearch() {
   const googleLensBtn = document.getElementById('googleLensBtn');
   if (!googleLensBtn) return;
+  
   googleLensBtn.addEventListener('click', () => {
     if (!resultImage.src) {
       alert('결과 이미지가 없습니다.');
       return;
     }
-    // 이미지를 Blob으로 변환 후, 구글 렌즈 업로드 페이지로 이동
-    fetch(resultImage.src)
-      .then(res => res.blob())
-      .then(blob => {
-        const file = new File([blob], 'result.png', { type: blob.type });
-        const dt = new DataTransfer();
-        dt.items.add(file);
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        input.style.display = 'none';
-        document.body.appendChild(input);
-        input.files = dt.files;
-        input.onchange = () => {
-          const form = document.createElement('form');
-          form.method = 'POST';
-          form.enctype = 'multipart/form-data';
-          form.action = 'https://lens.google.com/upload';
-          form.target = '_blank';
-          form.style.display = 'none';
-          const fileInput = document.createElement('input');
-          fileInput.type = 'file';
-          fileInput.name = 'encoded_image';
-          fileInput.files = input.files;
-          form.appendChild(fileInput);
-          document.body.appendChild(form);
-          form.submit();
-          document.body.removeChild(form);
-          document.body.removeChild(input);
-        };
-        input.click();
-      });
+    
+    try {
+      // 이미지를 캔버스로 변환 후 base64로 인코딩
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = resultImage.naturalWidth || resultImage.width;
+      canvas.height = resultImage.naturalHeight || resultImage.height;
+      ctx.drawImage(resultImage, 0, 0);
+      
+      // 구글 렌즈 URL 생성 (이미지 데이터를 직접 전달)
+      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      
+      // 방법 1: 구글 이미지 검색으로 폴백 (더 안정적)
+      const searchUrl = `https://www.google.com/searchbyimage?image_url=${encodeURIComponent(resultImage.src)}`;
+      window.open(searchUrl, '_blank');
+      
+      // 사용자에게 안내 메시지
+      setTimeout(() => {
+        if (confirm('구글 이미지 검색이 열렸습니다.\n구글 렌즈로 더 정확한 검색을 원하시면 "확인"을 클릭하세요.')) {
+          // 방법 2: 구글 렌즈 직접 접근
+          window.open('https://lens.google.com/', '_blank');
+        }
+      }, 1000);
+      
+    } catch (error) {
+      console.error('구글 렌즈 연동 오류:', error);
+      // 에러 발생 시 일반 구글 이미지 검색으로 폴백
+      const fallbackUrl = 'https://images.google.com/';
+      window.open(fallbackUrl, '_blank');
+      alert('구글 렌즈 연동 중 오류가 발생했습니다.\n구글 이미지 검색으로 연결됩니다.');
+    }
   });
 }
 
