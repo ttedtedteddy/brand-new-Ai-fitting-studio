@@ -540,22 +540,24 @@ async function callReplicateAPI(imageData, maskData, prompt) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      // FLUX Fill Pro - 최신 inpainting 모델
-      version: "black-forest-labs/flux-fill-pro",
+      // FLUX Fill Pro - 최신 2024년 3월 버전
+      version: "10b45d01bb46cffc8d7893b36d720e369d732bb2e48ca3db469a18929eff359d",
       input: {
         prompt: prompt,
         image: imageUploadData.url,
         mask: maskUploadData.url,
-        num_outputs: 1,
-        guidance_scale: 30,
-        num_inference_steps: 28,
+        steps: 50,
+        guidance: 60,
+        output_format: "jpg",
+        safety_tolerance: 2,
+        prompt_upsampling: false,
         seed: Math.floor(Math.random() * 1000000)
       }
     })
   });
   
   if (!response.ok) {
-    // 폴백: FLUX Fill Dev 모델
+    // 폴백: FLUX Fill Dev 모델 (더 안정적인 버전)
     console.log('FLUX Fill Pro 실패, FLUX Fill Dev로 폴백...');
     const fallbackResponse = await fetch(`${baseUrl}/replicate`, {
       method: 'POST',
@@ -563,14 +565,15 @@ async function callReplicateAPI(imageData, maskData, prompt) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        version: "black-forest-labs/flux-fill-dev",
+        // FLUX Fill Dev - 안정적인 대안 모델
+        version: "8beff3369e81422112d93b89ca01426147de542cd4684c244b673b105188fe5f",
         input: {
           prompt: prompt,
           image: imageUploadData.url,
           mask: maskUploadData.url,
-          num_outputs: 1,
-          guidance_scale: 30,
-          num_inference_steps: 28,
+          steps: 28,
+          guidance: 30,
+          output_format: "jpg",
           seed: Math.floor(Math.random() * 1000000)
         }
       })
