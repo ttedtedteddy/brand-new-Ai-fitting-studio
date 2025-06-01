@@ -479,16 +479,32 @@ div {
     margin: 1rem 0;
   }
   
+  .result-image-wrapper {
+    width: 100vw;
+    max-width: 400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  #resultImage {
+    width: 100%;
+    height: auto;
+    max-width: 100vw;
+    object-fit: contain;
+    display: block;
+  }
   #canvasContainer {
     width: 90vw;
     max-width: 400px;
     height: auto;
     aspect-ratio: 2/3;
   }
-  
   #photoCanvas, #maskCanvas {
     width: 100%;
-    height: 100%;
+    height: auto;
+    object-fit: contain;
+    display: block;
   }
   
   #uploadSection, #maskSection {
@@ -696,4 +712,14 @@ div {
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
   background: linear-gradient(135deg, #3367d6 0%, #2d7d32 100%);
+}
+
+/* flowingText 애니메이션 */
+@keyframes flowingText {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
 } 

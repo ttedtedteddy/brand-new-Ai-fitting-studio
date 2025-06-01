@@ -130,7 +130,7 @@ function handleImageFile(file) {
 // 페이지 로드 시 드래그 앤 드롭 설정
 document.addEventListener('DOMContentLoaded', () => {
   setupDragAndDrop();
-  setupGoogleImageSearch();
+  setupGoogleLensSearch();
   initKakaoSDK();
   registerServiceWorker();
   setupPWAInstall();
@@ -151,15 +151,15 @@ function showResultImage(src) {
     const maxHeight = 768;
     const imgWidth = this.naturalWidth;
     const imgHeight = this.naturalHeight;
-    
-    const scale = Math.min(maxWidth / imgWidth, maxHeight / imgHeight);
+    const scale = Math.min(maxWidth / imgWidth, maxHeight / imgHeight, 1);
     const displayWidth = imgWidth * scale;
     const displayHeight = imgHeight * scale;
-    
     this.style.width = displayWidth + 'px';
     this.style.height = displayHeight + 'px';
+    this.style.maxWidth = '100%';
+    this.style.height = 'auto';
+    this.style.objectFit = 'contain';
     this.style.display = 'block';
-    
     if (resultPlaceholder) {
       resultPlaceholder.style.display = 'none';
     }
@@ -186,8 +186,8 @@ function showLoadingState() {
   if (resultPlaceholder) {
     resultPlaceholder.innerHTML = `
       <div style="text-align: center;">
-        <div class="loading" style="margin: 0 auto 1rem auto;"></div>
-        <div>AI가 이미지를 생성하고 있습니다...</div>
+        <div class="loading" style="margin: 0 auto 1rem auto; width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%); animation: pulse 1s infinite alternate;"></div>
+        <div style="font-weight: bold; font-size: 1.1rem; background: linear-gradient(90deg, #2563eb, #60a5fa, #2563eb); background-size: 200% auto; color: transparent; background-clip: text; -webkit-background-clip: text; animation: flowingText 2s linear infinite;">결과를 생성하는 중입니다...</div>
         <div style="font-size: 0.9rem; color: var(--gray-500); margin-top: 0.5rem;">잠시만 기다려주세요</div>
       </div>
     `;
@@ -416,24 +416,46 @@ resultImage.addEventListener('error', () => {
 });
 
 // 구글 이미지 검색 기능
-function setupGoogleImageSearch() {
-  googleSearchBtn.addEventListener('click', () => {
-    const searchQuery = googleSearchInput.value.trim();
-    if (!searchQuery) {
-      alert('검색할 키워드를 입력해주세요.');
+function setupGoogleLensSearch() {
+  const googleLensBtn = document.getElementById('googleLensBtn');
+  if (!googleLensBtn) return;
+  googleLensBtn.addEventListener('click', () => {
+    if (!resultImage.src) {
+      alert('결과 이미지가 없습니다.');
       return;
     }
-    
-    // 구글 이미지 검색 URL로 이동
-    const googleImageSearchUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(searchQuery)}`;
-    window.open(googleImageSearchUrl, '_blank');
-  });
-  
-  // 엔터키로도 검색 가능
-  googleSearchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      googleSearchBtn.click();
-    }
+    // 이미지를 Blob으로 변환 후, 구글 렌즈 업로드 페이지로 이동
+    fetch(resultImage.src)
+      .then(res => res.blob())
+      .then(blob => {
+        const file = new File([blob], 'result.png', { type: blob.type });
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.style.display = 'none';
+        document.body.appendChild(input);
+        input.files = dt.files;
+        input.onchange = () => {
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.enctype = 'multipart/form-data';
+          form.action = 'https://lens.google.com/upload';
+          form.target = '_blank';
+          form.style.display = 'none';
+          const fileInput = document.createElement('input');
+          fileInput.type = 'file';
+          fileInput.name = 'encoded_image';
+          fileInput.files = input.files;
+          form.appendChild(fileInput);
+          document.body.appendChild(form);
+          form.submit();
+          document.body.removeChild(form);
+          document.body.removeChild(input);
+        };
+        input.click();
+      });
   });
 }
 
@@ -653,60 +675,44 @@ function shareToKakao() {
     return;
   }
   
-  // 카카오톡 공유 기능
   if (window.Kakao && window.Kakao.isInitialized()) {
-    // Kakao SDK를 사용한 공유
-    try {
-      window.Kakao.Share.sendDefault({
-        objectType: 'feed',
-        content: {
-          title: 'AI Fitting Studio',
-          description: 'AI 기술로 생성한 스타일링 이미지입니다! ✨',
-          imageUrl: resultImage.src,
+    window.Kakao.Share.sendDefault({
+      objectType: 'feed',
+      content: {
+        title: 'AI Fitting Studio',
+        description: 'AI 기술로 생성한 스타일링 이미지입니다! ✨',
+        imageUrl: resultImage.src,
+        link: {
+          mobileWebUrl: window.location.origin,
+          webUrl: window.location.origin
+        }
+      },
+      buttons: [
+        {
+          title: 'AI Fitting Studio 체험하기',
           link: {
             mobileWebUrl: window.location.origin,
             webUrl: window.location.origin
           }
-        },
-        buttons: [
-          {
-            title: 'AI Fitting Studio 체험하기',
-            link: {
-              mobileWebUrl: window.location.origin,
-              webUrl: window.location.origin
-            }
-          }
-        ]
-      });
-    } catch (error) {
-      console.error('카카오톡 공유 오류:', error);
-      fallbackKakaoShare();
-    }
-  } else {
-    fallbackKakaoShare();
-  }
-}
-
-function fallbackKakaoShare() {
-  // 폴백: 기본 공유 방식
-  const shareText = `AI Fitting Studio에서 생성한 스타일링 이미지입니다! ✨\n${window.location.origin}`;
-  
-  if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-    // 모바일: 카카오톡 앱으로 공유
-    const kakaoUrl = `kakaotalk://send?text=${encodeURIComponent(shareText)}`;
-    window.open(kakaoUrl, '_blank');
-  } else {
-    // 데스크톱: 클립보드에 복사
-    navigator.clipboard.writeText(shareText).then(() => {
-      alert('공유 텍스트가 클립보드에 복사되었습니다! 💬');
-    }).catch(() => {
-      alert('공유 텍스트: ' + shareText);
+        }
+      ]
     });
+  } else {
+    alert('카카오톡 공유를 위해 카카오 SDK가 초기화되어야 합니다.');
   }
 }
 
 function saveImage() {
-  saveImageImproved();
+  if (!resultImage.src) {
+    alert('저장할 이미지가 없습니다.');
+    return;
+  }
+  const link = document.createElement('a');
+  link.href = resultImage.src;
+  link.download = 'ai_fitting_result.png';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 // Service Worker 등록
