@@ -415,22 +415,40 @@ resultImage.addEventListener('error', () => {
   alert('이미지를 불러오는데 실패했습니다.');
 });
 
-// 구글 렌즈 검색 기능 (간단하게 구글 렌즈 페이지만 열기)
+// 구글 렌즈 연동 - 생성된 이미지를 자동으로 구글 렌즈에 전달
 function setupGoogleLensSearch() {
   const googleLensBtn = document.getElementById('googleLensBtn');
   if (!googleLensBtn) return;
   
-  googleLensBtn.addEventListener('click', () => {
+  googleLensBtn.addEventListener('click', async () => {
     if (!resultImage.src) {
       alert('결과 이미지가 없습니다.');
       return;
     }
     
-    // 구글 렌즈 페이지 열기
-    window.open('https://lens.google.com/', '_blank');
-    
-    // 간단한 안내 메시지
-    alert('🔍 구글 렌즈가 열렸습니다!\n\n생성된 이미지를 스크린샷하거나 저장해서 구글 렌즈에 업로드하여 비슷한 제품을 찾아보세요!');
+    try {
+      // 이미지를 base64로 변환
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = resultImage.naturalWidth || resultImage.width;
+      canvas.height = resultImage.naturalHeight || resultImage.height;
+      ctx.drawImage(resultImage, 0, 0);
+      const imageData = canvas.toDataURL('image/jpeg', 0.8);
+      
+      // 구글 이미지 검색으로 이미지 전달 (구글 렌즈 대안)
+      const searchUrl = `https://www.google.com/searchbyimage?image_url=${encodeURIComponent(resultImage.src)}&encoded_image=${encodeURIComponent(imageData)}`;
+      window.open(searchUrl, '_blank');
+      
+      // 추가로 구글 렌즈도 열어주기
+      setTimeout(() => {
+        window.open('https://lens.google.com/', '_blank');
+      }, 1000);
+      
+    } catch (error) {
+      console.error('구글 렌즈 연동 오류:', error);
+      // 에러 시 기본 구글 렌즈만 열기
+      window.open('https://lens.google.com/', '_blank');
+    }
   });
 }
 
@@ -460,47 +478,83 @@ function imageToBase64(img) {
   return canvas.toDataURL('image/png');
 }
 
-// 개선된 이미지 저장 기능
-function saveImageImproved() {
+// 개선된 이미지 저장 기능 (웹/모바일 구분)
+function saveImage() {
   if (!resultImage.src) {
     alert('저장할 이미지가 없습니다.');
     return;
   }
   
   try {
-    // 이미지를 캔버스에 그려서 고화질로 다운로드
+    // 모바일 기기 감지
+    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // 이미지를 캔버스로 변환
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    
-    // 원본 크기로 캔버스 설정
     canvas.width = resultImage.naturalWidth || resultImage.width;
     canvas.height = resultImage.naturalHeight || resultImage.height;
-    
-    // 이미지 그리기
     ctx.drawImage(resultImage, 0, 0);
     
-    // 다운로드 링크 생성
-    canvas.toBlob((blob) => {
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `ai-fitting-studio-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.png`;
+    // 파일명 생성
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+    const filename = `ai-fitting-result-${timestamp}.png`;
+    
+    if (isMobile) {
+      // 모바일: 파일 앱에 저장
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        // 모바일 안내 메시지
+        alert('📱 이미지가 다운로드 폴더에 저장되었습니다!\n파일 앱에서 확인하세요.');
+      }, 'image/png', 1.0);
       
-      // 임시로 DOM에 추가하고 클릭
-      document.body.appendChild(link);
-      link.click();
-      
-      // 정리
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
-      // 성공 메시지
-      alert('이미지가 성공적으로 저장되었습니다! 📁');
-    }, 'image/png', 1.0); // 최고 품질로 저장
+    } else {
+      // 웹: 브라우저 다운로드 폴더에 저장
+      canvas.toBlob((blob) => {
+        // 브라우저 다운로드 방식
+        if (navigator.msSaveBlob) {
+          // IE/Edge
+          navigator.msSaveBlob(blob, filename);
+        } else {
+          // 모던 브라우저
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = filename;
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }
+        
+        // 웹 안내 메시지
+        alert('💾 이미지가 다운로드 폴더에 저장되었습니다!');
+      }, 'image/png', 1.0);
+    }
     
   } catch (error) {
     console.error('이미지 저장 오류:', error);
-    alert('이미지 저장 중 오류가 발생했습니다.');
+    
+    // 에러 시 기본 방법으로 폴백
+    const link = document.createElement('a');
+    link.href = resultImage.src;
+    link.download = `ai-fitting-result-${Date.now()}.png`;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    alert('이미지가 저장되었습니다!');
   }
 }
 
@@ -633,7 +687,7 @@ function shareToInstagram() {
   // 모바일에서는 인스타그램 앱으로, 데스크톱에서는 웹으로
   if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
     // 모바일: 이미지를 다운로드하고 인스타그램 앱 열기
-    saveImageImproved();
+    saveImage();
     setTimeout(() => {
       window.open('instagram://camera', '_blank');
     }, 1000);
@@ -675,19 +729,6 @@ function shareToKakao() {
   } else {
     alert('카카오톡 공유를 위해 카카오 SDK가 초기화되어야 합니다.');
   }
-}
-
-function saveImage() {
-  if (!resultImage.src) {
-    alert('저장할 이미지가 없습니다.');
-    return;
-  }
-  const link = document.createElement('a');
-  link.href = resultImage.src;
-  link.download = 'ai_fitting_result.png';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
 }
 
 // Service Worker 등록
