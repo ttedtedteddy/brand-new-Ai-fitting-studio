@@ -171,6 +171,11 @@ function showResultImage(src) {
     if (actionButtons) {
       actionButtons.style.display = 'flex';
     }
+    // 구글 렌즈 섹션 표시
+    const googleLensSection = document.getElementById('googleLensSection');
+    if (googleLensSection) {
+      googleLensSection.style.display = 'block';
+    }
   };
   resultImage.src = src;
 }
@@ -183,6 +188,11 @@ function hideResultImage() {
   }
   if (actionButtons) {
     actionButtons.style.display = 'none';
+  }
+  // 구글 렌즈 섹션 숨기기
+  const googleLensSection = document.getElementById('googleLensSection');
+  if (googleLensSection) {
+    googleLensSection.style.display = 'none';
   }
 }
 
@@ -213,6 +223,11 @@ function resetResultState() {
   resultImage.style.display = 'none';
   if (actionButtons) {
     actionButtons.style.display = 'none';
+  }
+  // 구글 렌즈 섹션 숨기기
+  const googleLensSection = document.getElementById('googleLensSection');
+  if (googleLensSection) {
+    googleLensSection.style.display = 'none';
   }
 }
 
@@ -476,17 +491,14 @@ function imageToBase64(img) {
   return canvas.toDataURL('image/png');
 }
 
-// 개선된 이미지 저장 기능 (웹/모바일 구분)
-function saveImage() {
+// 개선된 이미지 저장 기능 (저장 다이얼로그 방식)
+async function saveImage() {
   if (!resultImage.src) {
     alert('저장할 이미지가 없습니다.');
     return;
   }
   
   try {
-    // 모바일 기기 감지
-    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
     // 이미지를 캔버스로 변환
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -498,9 +510,63 @@ function saveImage() {
     const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
     const filename = `ai-fitting-result-${timestamp}.png`;
     
-    if (isMobile) {
-      // 모바일: 파일 앱에 저장
-      canvas.toBlob((blob) => {
+    // File System Access API 지원 확인 (Chrome 86+, Edge 86+)
+    if ('showSaveFilePicker' in window) {
+      try {
+        // 저장 다이얼로그 표시
+        const fileHandle = await window.showSaveFilePicker({
+          suggestedName: filename,
+          types: [
+            {
+              description: 'PNG 이미지',
+              accept: {
+                'image/png': ['.png'],
+              },
+            },
+            {
+              description: 'JPEG 이미지', 
+              accept: {
+                'image/jpeg': ['.jpg', '.jpeg'],
+              },
+            },
+          ],
+        });
+        
+        // 선택한 파일 형식에 따라 변환
+        const fileExtension = fileHandle.name.split('.').pop().toLowerCase();
+        const mimeType = fileExtension === 'jpg' || fileExtension === 'jpeg' ? 'image/jpeg' : 'image/png';
+        const quality = mimeType === 'image/jpeg' ? 0.95 : 1.0;
+        
+        // 파일 데이터 생성
+        const blob = await new Promise(resolve => {
+          canvas.toBlob(resolve, mimeType, quality);
+        });
+        
+        // 파일 쓰기
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        
+        alert('✅ 이미지가 성공적으로 저장되었습니다!');
+        return;
+        
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          // 사용자가 취소한 경우
+          return;
+        }
+        console.error('File System Access API 오류:', error);
+        // 에러 시 폴백 방식 사용
+      }
+    }
+    
+    // 폴백: 기본 다운로드 방식 (구형 브라우저 또는 API 실패 시)
+    canvas.toBlob((blob) => {
+      if (navigator.msSaveBlob) {
+        // IE/Edge 레거시
+        navigator.msSaveBlob(blob, filename);
+      } else {
+        // 모던 브라우저 기본 다운로드
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -510,49 +576,14 @@ function saveImage() {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-        
-        // 모바일 안내 메시지
-        alert('📱 이미지가 다운로드 폴더에 저장되었습니다!\n파일 앱에서 확인하세요.');
-      }, 'image/png', 1.0);
+      }
       
-    } else {
-      // 웹: 브라우저 다운로드 폴더에 저장
-      canvas.toBlob((blob) => {
-        // 브라우저 다운로드 방식
-        if (navigator.msSaveBlob) {
-          // IE/Edge
-          navigator.msSaveBlob(blob, filename);
-        } else {
-          // 모던 브라우저
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = filename;
-          link.style.display = 'none';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-        }
-        
-        // 웹 안내 메시지
-        alert('💾 이미지가 다운로드 폴더에 저장되었습니다!');
-      }, 'image/png', 1.0);
-    }
+      alert('💾 이미지가 다운로드 폴더에 저장되었습니다!');
+    }, 'image/png', 1.0);
     
   } catch (error) {
     console.error('이미지 저장 오류:', error);
-    
-    // 에러 시 기본 방법으로 폴백
-    const link = document.createElement('a');
-    link.href = resultImage.src;
-    link.download = `ai-fitting-result-${Date.now()}.png`;
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    alert('이미지가 저장되었습니다!');
+    alert('이미지 저장 중 오류가 발생했습니다.');
   }
 }
 
