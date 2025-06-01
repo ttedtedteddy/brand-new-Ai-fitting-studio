@@ -533,7 +533,7 @@ async function callReplicateAPI(imageData, maskData, prompt) {
   const maskUploadData = await maskUploadRes.json();
   if (!maskUploadData.url) throw new Error('마스크 이미지 업로드 실패');
 
-  // 2. Replicate API 호출 (FLUX Fill Pro 모델 사용)
+  // 2. Replicate API 호출 (FLUX Fill Pro 최신 모델)
   const response = await fetch(`${baseUrl}/replicate`, {
     method: 'POST',
     headers: {
@@ -555,15 +555,14 @@ async function callReplicateAPI(imageData, maskData, prompt) {
   });
   
   if (!response.ok) {
-    // FLUX Fill Pro가 실패하면 FLUX Fill Dev로 폴백
-    console.log('FLUX Fill Pro 실패, FLUX Fill Dev로 시도...');
+    // 폴백: FLUX Fill Dev 모델
+    console.log('FLUX Fill Pro 실패, FLUX Fill Dev로 폴백...');
     const fallbackResponse = await fetch(`${baseUrl}/replicate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        // FLUX Fill Dev - 오픈소스 버전
         version: "black-forest-labs/flux-fill-dev",
         input: {
           prompt: prompt,
@@ -578,26 +577,9 @@ async function callReplicateAPI(imageData, maskData, prompt) {
     });
     
     if (!fallbackResponse.ok) {
-      // 최종 폴백: 기존 Stable Diffusion 모델
-      console.log('FLUX 모델들 실패, Stable Diffusion으로 폴백...');
-      const sdResponse = await fetch(`${baseUrl}/replicate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          version: "95b7223104132402a9ae91cc677285bc5eb997834bd2349fa486f53910fd68b3",
-          input: {
-            prompt: prompt,
-            image: imageUploadData.url,
-            mask: maskUploadData.url
-          }
-        })
-      });
-      
-      if (!sdResponse.ok) throw new Error('모든 API 요청 실패');
-      const prediction = await sdResponse.json();
-      return await pollForResult(baseUrl, prediction.id);
+      const errorText = await fallbackResponse.text();
+      console.error('API 응답 오류:', errorText);
+      throw new Error('AI 이미지 생성 API 호출 실패');
     }
     
     const prediction = await fallbackResponse.json();
