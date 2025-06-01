@@ -1,0 +1,24 @@
+{
+  "functions": {
+    "api/upload.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/replicate.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/upload",
+      "destination": "/api/upload"
+    },
+    {
+      "source": "/replicate",
+      "destination": "/api/replicate"
+    },
+    {
+      "source": "/replicate/(.*)",
+      "destination": "/api/replicate?id=$1"
+    }
+  ]
+} 
