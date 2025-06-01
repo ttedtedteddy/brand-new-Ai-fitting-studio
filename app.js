@@ -1,3 +1,8 @@
+// AI Fitting Studio v2.0.1-final
+// UI/UX 대폭 개선 버전: 갤러리 제거, 업로드-마스킹 통합, 구글렌즈 연동, 모바일 반응형
+console.log('🚀 AI Fitting Studio v2.0.1-final 로드됨');
+console.log('✅ 개선사항: 갤러리 제거, 업로드-마스킹 통합, 구글렌즈 연동, 모바일 반응형');
+
 const photoCanvas = document.getElementById('photoCanvas');
 const maskCanvas = document.getElementById('maskCanvas');
 const photoCtx = photoCanvas.getContext('2d');
