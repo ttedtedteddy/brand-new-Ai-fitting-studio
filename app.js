@@ -415,46 +415,64 @@ resultImage.addEventListener('error', () => {
   alert('이미지를 불러오는데 실패했습니다.');
 });
 
-// 구글 렌즈 검색 기능 (간단하고 확실한 방법)
+// 구글 렌즈 검색 기능 (생성된 이미지 바로 업로드)
 function setupGoogleLensSearch() {
   const googleLensBtn = document.getElementById('googleLensBtn');
   if (!googleLensBtn) return;
   
-  googleLensBtn.addEventListener('click', () => {
+  googleLensBtn.addEventListener('click', async () => {
     if (!resultImage.src) {
       alert('결과 이미지가 없습니다.');
       return;
     }
     
     try {
-      // 이미지를 캔버스로 변환 후 base64로 인코딩
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = resultImage.naturalWidth || resultImage.width;
-      canvas.height = resultImage.naturalHeight || resultImage.height;
-      ctx.drawImage(resultImage, 0, 0);
+      // 이미지를 Blob으로 변환
+      const response = await fetch(resultImage.src);
+      const blob = await response.blob();
       
-      // 구글 렌즈 URL 생성 (이미지 데이터를 직접 전달)
-      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      // 임시 파일명 생성
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+      const filename = `ai-fitting-result-${timestamp}.png`;
       
-      // 방법 1: 구글 이미지 검색으로 폴백 (더 안정적)
-      const searchUrl = `https://www.google.com/searchbyimage?image_url=${encodeURIComponent(resultImage.src)}`;
-      window.open(searchUrl, '_blank');
-      
-      // 사용자에게 안내 메시지
-      setTimeout(() => {
-        if (confirm('구글 이미지 검색이 열렸습니다.\n구글 렌즈로 더 정확한 검색을 원하시면 "확인"을 클릭하세요.')) {
-          // 방법 2: 구글 렌즈 직접 접근
-          window.open('https://lens.google.com/', '_blank');
-        }
-      }, 1000);
+      // 방법 1: 클립보드에 이미지 복사 (가장 편리함)
+      try {
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blob })
+        ]);
+        
+        // 구글 렌즈 페이지 열기
+        const lensUrl = 'https://lens.google.com/';
+        window.open(lensUrl, '_blank');
+        
+        alert('✅ 이미지가 클립보드에 복사되었습니다!\n\n구글 렌즈 페이지에서 Ctrl+V(또는 Cmd+V)로 붙여넣기하여 바로 검색하세요! 📸');
+        
+      } catch (clipboardError) {
+        console.log('클립보드 복사 실패, 파일 다운로드로 대체:', clipboardError);
+        
+        // 방법 2: 파일 다운로드 (클립보드 실패 시)
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+        
+        // 구글 렌즈 페이지 열기
+        const lensUrl = 'https://lens.google.com/';
+        window.open(lensUrl, '_blank');
+        
+        alert(`📸 구글 렌즈가 열렸습니다!\n\n다운로드된 이미지(${filename})를 구글 렌즈 페이지에 드래그&드롭하거나 업로드 버튼으로 업로드하여 비슷한 제품을 검색하세요!`);
+      }
       
     } catch (error) {
       console.error('구글 렌즈 연동 오류:', error);
-      // 에러 발생 시 일반 구글 이미지 검색으로 폴백
-      const fallbackUrl = 'https://images.google.com/';
-      window.open(fallbackUrl, '_blank');
-      alert('구글 렌즈 연동 중 오류가 발생했습니다.\n구글 이미지 검색으로 연결됩니다.');
+      
+      // 에러 발생 시 기본 구글 렌즈 페이지 열기
+      window.open('https://lens.google.com/', '_blank');
+      alert('구글 렌즈 페이지가 열렸습니다.\n화면 캡처나 이미지 저장 후 직접 업로드해서 검색해보세요!');
     }
   });
 }
