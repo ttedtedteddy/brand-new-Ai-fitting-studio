@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Fitting Studio</title>
+  
+  <!-- PWA 설정 -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="AI Fitting Studio">
+  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiMyNTYzZWIiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CjxwYXRoIGQ9Im0xNSAxOC0zLTMtMy0zIi8+CjxwYXRoIGQ9Im0xNSA2LTMgMy0zIDMiLz4KPHN2ZyB4PSI0IiB5PSI0IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPgo8cGF0aCBkPSJNMTQgMmE4IDggMCAwIDEgMCAxNmwtNS01LTUtNWE4IDggMCAwIDEgMTAtNloiLz4KPGNpcmNsZSBjeD0iMTQiIGN5PSI4IiByPSIyIi8+Cjwvc3ZnPgo8L3N2Zz4KPC9zdmc+">
+  
+  <!-- 기존 스타일 -->
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <h1>✨ AI Fitting Studio</h1>
+    <p class="subtitle">
+      AI 기술로 당신만의 스타일을 완성하세요
+    </p>
+  </header>
+
+  <main>
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <a href="/gallery" class="gallery-link">
+        🎨 갤러리 보기
+      </a>
+    </div>
+    
+    <div id="uploadSection">
+      <h2>📸 사진 업로드</h2>
+      <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
+        스타일링을 적용할 사진을 선택해주세요
+      </p>
+      <div class="drag-drop-area" id="dragDropArea">
+        <div class="drag-drop-icon">📷</div>
+        <div class="drag-drop-text">여기에 사진을 드래그하여 업로드해주세요</div>
+        <div class="drag-drop-subtext">또는 클릭하여 파일을 선택하세요</div>
+      </div>
+      <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+    </div>
+
+    <div id="maskSection" style="display:none;">
+      <h2>🎨 마스킹 브러시로 색칠</h2>
+      <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
+        변경하고 싶은 부분을 브러시로 칠해주세요 (주황색으로 표시됩니다)
+      </p>
+      <div id="brushToolbar">
+        <label>브러시 크기: 
+          <input type="range" id="brushSize" min="5" max="80" value="30">
+        </label>
+        <button id="clearMaskBtn">마스크 지우기</button>
+      </div>
+      <div id="canvasContainer">
+        <canvas id="photoCanvas" width="512" height="768"></canvas>
+        <canvas id="maskCanvas" width="512" height="768"></canvas>
+      </div>
+    </div>
+
+    <div style="max-width: 600px; margin: 2rem auto; background: var(--white); border-radius: 1.5rem; box-shadow: var(--shadow-lg); padding: 2.5rem 2rem; border: 1px solid var(--gray-200); position: relative; overflow: hidden;">
+      <div style="content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--cobalt-blue) 0%, var(--cobalt-blue-light) 100%);"></div>
+      <h2>🚀 AI 스타일링 생성</h2>
+      <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
+        원하는 스타일을 설명해주세요
+      </p>
+      <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem;">
+        <label>프롬프트: 
+          <input type="text" id="promptInput" placeholder="예: red dress, elegant, fashion"/>
+        </label>
+        <button id="generateBtn">AI 스타일링 생성</button>
+      </div>
+    </div>
+
+    <div class="result-container">
+      <h2>✨ 결과 이미지</h2>
+      <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
+        AI가 생성한 스타일링 결과를 확인하세요
+      </p>
+      <div class="result-image-wrapper">
+        <img id="resultImage" src="" alt="결과 이미지" style="display: none;">
+        <div id="resultPlaceholder" style="width: 100%; max-width: 512px; height: 300px; margin: 0 auto; border: 2px dashed var(--gray-300); border-radius: 1rem; display: flex; align-items: center; justify-content: center; color: var(--gray-400); font-size: 1rem;">
+          생성된 이미지가 여기에 표시됩니다
+        </div>
+      </div>
+      
+      <div id="actionButtons" class="action-buttons" style="display: none;">
+        <button class="share-button instagram" onclick="shareToInstagram()">
+          📷 인스타그램 공유
+        </button>
+        <button class="share-button kakao" onclick="shareToKakao()">
+          💬 카카오톡 공유
+        </button>
+        <button class="save-button" onclick="saveImage()">
+          💾 이미지 저장
+        </button>
+      </div>
+    </div>
+
+    <!-- 구글 이미지 검색 섹션 -->
+    <div class="google-search-container">
+      <h2>🔍 구글 이미지 검색</h2>
+      <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
+        참고할 이미지를 구글에서 검색해보세요
+      </p>
+      <input type="text" id="googleSearchInput" class="google-search-input" placeholder="검색할 키워드를 입력하세요 (예: 빨간 드레스, 캐주얼 패션)">
+      <button id="googleSearchBtn" class="google-search-btn">
+        🔍 구글 이미지 검색
+      </button>
+    </div>
+  </main>
+
+  <!-- 마스킹 브러쉬 작업 모달 -->
+  <div id="maskModal" class="modal">
+    <div class="modal-content">
+      <h2 style="color: var(--cobalt-blue); margin-bottom: 1.5rem;">🎨 마스킹 브러시 작업</h2>
+      <canvas id="modalPhotoCanvas" width="512" height="768"></canvas>
+      <canvas id="modalMaskCanvas" width="512" height="768"></canvas>
+      <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center;">
+        <button id="applyMaskBtn">적용</button>
+        <button id="closeMaskBtn">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html> 

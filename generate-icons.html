@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Fitting Studio - 아이콘 생성기</title>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      color: #1e293b;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 1.5rem;
+      padding: 2rem;
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #2563eb;
+      margin-bottom: 2rem;
+    }
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .icon-item {
+      text-align: center;
+      padding: 1rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 0.75rem;
+      background: #f8fafc;
+    }
+    .icon-item canvas {
+      border-radius: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .download-btn {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+    }
+    .download-btn:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+    .instructions {
+      background: #f0f9ff;
+      border: 1px solid #0ea5e9;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .instructions h3 {
+      color: #0369a1;
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 AI Fitting Studio 아이콘 생성기</h1>
+    
+    <div class="instructions">
+      <h3>📱 PWA 아이콘 생성</h3>
+      <p>아래 버튼을 클릭하여 다양한 크기의 PWA 아이콘을 생성하고 다운로드할 수 있습니다.</p>
+      <p><strong>사용법:</strong> 각 아이콘을 다운로드한 후, 프로젝트 루트 폴더에 저장하고 manifest.json에서 해당 파일명으로 수정하세요.</p>
+    </div>
+
+    <div class="icon-grid" id="iconGrid">
+      <!-- 아이콘들이 여기에 동적으로 생성됩니다 -->
+    </div>
+
+    <button onclick="generateAllIcons()" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 0.75rem; font-size: 1.1rem; font-weight: 600; cursor: pointer;">
+      🚀 모든 아이콘 생성
+    </button>
+  </div>
+
+  <script>
+    const iconSizes = [72, 96, 128, 144, 152, 192, 384, 512];
+    
+    function createIcon(size) {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = size;
+      canvas.height = size;
+      
+      // 배경 (코발트 블루)
+      ctx.fillStyle = '#2563eb';
+      ctx.fillRect(0, 0, size, size);
+      
+      // 둥근 모서리 효과
+      const radius = size * 0.125; // 12.5% 반지름
+      ctx.globalCompositeOperation = 'destination-in';
+      ctx.beginPath();
+      ctx.roundRect(0, 0, size, size, radius);
+      ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+      
+      // 아이콘 그리기 (스타일링 브러시 아이콘)
+      const iconSize = size * 0.5;
+      const centerX = size / 2;
+      const centerY = size / 2;
+      
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = size * 0.02;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      
+      // 브러시 모양
+      const scale = iconSize / 24;
+      
+      // 브러시 손잡이
+      ctx.beginPath();
+      ctx.moveTo(centerX - 6 * scale, centerY + 6 * scale);
+      ctx.lineTo(centerX - 3 * scale, centerY + 3 * scale);
+      ctx.lineTo(centerX - 3 * scale, centerY + 3 * scale);
+      ctx.lineTo(centerX - 3 * scale, centerY + 3 * scale);
+      ctx.stroke();
+      
+      // 브러시 털
+      ctx.beginPath();
+      ctx.arc(centerX + 2 * scale, centerY - 2 * scale, 4 * scale, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      // 스파클 효과
+      const sparkles = [
+        {x: centerX - 8 * scale, y: centerY - 8 * scale},
+        {x: centerX + 8 * scale, y: centerY - 6 * scale},
+        {x: centerX + 6 * scale, y: centerY + 8 * scale}
+      ];
+      
+      sparkles.forEach(sparkle => {
+        ctx.beginPath();
+        ctx.moveTo(sparkle.x - 2 * scale, sparkle.y);
+        ctx.lineTo(sparkle.x + 2 * scale, sparkle.y);
+        ctx.moveTo(sparkle.x, sparkle.y - 2 * scale);
+        ctx.lineTo(sparkle.x, sparkle.y + 2 * scale);
+        ctx.stroke();
+      });
+      
+      return canvas;
+    }
+    
+    function downloadCanvas(canvas, filename) {
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+    
+    function generateAllIcons() {
+      const iconGrid = document.getElementById('iconGrid');
+      iconGrid.innerHTML = '';
+      
+      iconSizes.forEach(size => {
+        const canvas = createIcon(size);
+        
+        const iconItem = document.createElement('div');
+        iconItem.className = 'icon-item';
+        
+        const displayCanvas = canvas.cloneNode();
+        const displayCtx = displayCanvas.getContext('2d');
+        displayCtx.drawImage(canvas, 0, 0);
+        
+        // 표시용 크기 조정
+        displayCanvas.style.width = '80px';
+        displayCanvas.style.height = '80px';
+        
+        const downloadBtn = document.createElement('button');
+        downloadBtn.className = 'download-btn';
+        downloadBtn.textContent = `${size}x${size} 다운로드`;
+        downloadBtn.onclick = () => downloadCanvas(canvas, `icon-${size}.png`);
+        
+        const label = document.createElement('div');
+        label.textContent = `${size}x${size}px`;
+        label.style.fontWeight = '600';
+        label.style.color = '#475569';
+        label.style.marginBottom = '0.5rem';
+        
+        iconItem.appendChild(label);
+        iconItem.appendChild(displayCanvas);
+        iconItem.appendChild(downloadBtn);
+        
+        iconGrid.appendChild(iconItem);
+      });
+    }
+    
+    // 페이지 로드 시 아이콘 생성
+    window.addEventListener('load', generateAllIcons);
+  </script>
+</body>
+</html> 
