@@ -1,7 +1,7 @@
-// AI Fitting Studio v2.0.1-final
-// UI/UX 대폭 개선 버전: 갤러리 제거, 업로드-마스킹 통합, 구글렌즈 연동, 모바일 반응형
-console.log('🚀 AI Fitting Studio v2.0.1-final 로드됨');
-console.log('✅ 개선사항: 갤러리 제거, 업로드-마스킹 통합, 구글렌즈 연동, 모바일 반응형');
+// AI Fitting Studio v2.0.1-final + 옷 이미지 자동 입히기 기능
+// UI/UX 대폭 개선 버전: 갤러리 제거, 업로드-마스킹 통합, 구글렌즈 연동, 모바일 반응형, 옷 이미지 모드
+console.log('🚀 AI Fitting Studio v2.0.1-final + 옷 이미지 모드 로드됨');
+console.log('✅ 개선사항: 갤러리 제거, 업로드-마스킹 통합, 구글렌즈 연동, 모바일 반응형, 옷 이미지 자동 입히기');
 
 const photoCanvas = document.getElementById('photoCanvas');
 const maskCanvas = document.getElementById('maskCanvas');
@@ -21,6 +21,18 @@ const dropNotice = document.getElementById('dropNotice');
 const googleSearchInput = document.getElementById('googleSearchInput');
 const googleSearchBtn = document.getElementById('googleSearchBtn');
 
+// 새로운 옷 이미지 모드 관련 요소들
+const textModeBtn = document.getElementById('textModeBtn');
+const imageModeBtn = document.getElementById('imageModeBtn');
+const textMode = document.getElementById('textMode');
+const imageMode = document.getElementById('imageMode');
+const clothingDropArea = document.getElementById('clothingDropArea');
+const clothingUpload = document.getElementById('clothingUpload');
+const clothingPreview = document.getElementById('clothingPreview');
+const clothingImage = document.getElementById('clothingImage');
+const removeClothingBtn = document.getElementById('removeClothingBtn');
+const additionalPrompt = document.getElementById('additionalPrompt');
+
 // 마스킹 모달 관련
 const maskModal = document.getElementById('maskModal');
 const modalPhotoCanvas = document.getElementById('modalPhotoCanvas');
@@ -38,7 +50,9 @@ let modalLastX, modalLastY;
 let brushSize = 30;
 let originalImageData = null; // 원본 이미지 데이터 저장
 
-const IMGUR_CLIENT_ID = '5113b55e73871a6';
+// 새로운 변수들
+let currentMode = 'text'; // 'text' 또는 'image'
+let clothingImageData = null; // 업로드된 옷 이미지 데이터
 
 // 드래그 앤 드롭 기능 구현
 function setupDragAndDrop() {
@@ -133,12 +147,19 @@ function handleImageFile(file) {
 }
 
 // 페이지 로드 시 드래그 앤 드롭 설정
-document.addEventListener('DOMContentLoaded', () => {
-  setupDragAndDrop();
-  setupGoogleLensSearch();
+document.addEventListener('DOMContentLoaded', function() {
   initKakaoSDK();
+  setupDragAndDrop();
+  setupBrushEvents(maskCanvas, maskCtx, isDrawing, lastX, lastY);
+  setupGoogleLensSearch();
   registerServiceWorker();
   setupPWAInstall();
+  
+  // 성능 테스트 버튼 이벤트 추가
+  const performanceTestBtn = document.getElementById('performanceTestBtn');
+  if (performanceTestBtn) {
+    performanceTestBtn.addEventListener('click', testCloudinaryPerformance);
+  }
 });
 
 // 이미지 업로드 시 마스킹 섹션 보이기 및 캔버스에 이미지 표시
@@ -596,22 +617,70 @@ async function callReplicateAPI(imageData, maskData, prompt) {
   // 현재 페이지의 호스트를 기반으로 API URL 생성
   const baseUrl = window.location.protocol + '//' + window.location.host;
   
-  // 1. 이미지 업로드 (base64 → URL)
+  console.log('📊 Cloudinary 업로드 성능 측정 시작...');
+  
+  // 1. 원본 이미지 업로드 (base64 → URL)
+  const imageUploadStart = Date.now();
   const imageUploadRes = await fetch(`${baseUrl}/upload`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ image: imageBase64 })
   });
   const imageUploadData = await imageUploadRes.json();
+  const imageUploadTime = Date.now() - imageUploadStart;
+  
   if (!imageUploadData.url) throw new Error('원본 이미지 업로드 실패');
 
+  // 첫 번째 업로드 결과 출력
+  if (imageUploadData.performance) {
+    console.log(`⚡ 원본 이미지 업로드 완료:`);
+    console.log(`   - 클라이언트 측정: ${imageUploadTime}ms`);
+    console.log(`   - 서버 측정: ${imageUploadData.performance.uploadTime}ms`);
+    console.log(`   - 이미지 크기: ${imageUploadData.performance.imageSizeKB}KB`);
+    console.log(`   - 업로드 속도: ${imageUploadData.performance.uploadSpeedKBps} KB/s`);
+  }
+
+  // 2. 마스크 이미지 업로드 (base64 → URL)  
+  const maskUploadStart = Date.now();
   const maskUploadRes = await fetch(`${baseUrl}/upload`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ image: maskBase64 })
   });
   const maskUploadData = await maskUploadRes.json();
+  const maskUploadTime = Date.now() - maskUploadStart;
+  
   if (!maskUploadData.url) throw new Error('마스크 이미지 업로드 실패');
+  
+  // 두 번째 업로드 결과 출력
+  if (maskUploadData.performance) {
+    console.log(`⚡ 마스크 이미지 업로드 완료:`);
+    console.log(`   - 클라이언트 측정: ${maskUploadTime}ms`);
+    console.log(`   - 서버 측정: ${maskUploadData.performance.uploadTime}ms`);
+    console.log(`   - 이미지 크기: ${maskUploadData.performance.imageSizeKB}KB`);
+    console.log(`   - 업로드 속도: ${maskUploadData.performance.uploadSpeedKBps} KB/s`);
+  }
+  
+  // 전체 업로드 성능 요약
+  const totalUploadTime = imageUploadTime + maskUploadTime;
+  const totalSizeKB = (imageUploadData.performance?.imageSizeKB || 0) + (maskUploadData.performance?.imageSizeKB || 0);
+  const avgSpeedKBps = totalSizeKB / (totalUploadTime / 1000);
+  
+  console.log(`📈 Cloudinary 업로드 성능 요약:`);
+  console.log(`   - 총 업로드 시간: ${totalUploadTime}ms`);
+  console.log(`   - 총 이미지 크기: ${totalSizeKB}KB`);
+  console.log(`   - 평균 업로드 속도: ${avgSpeedKBps.toFixed(2)} KB/s`);
+  
+  // 업로드 속도가 느린 경우 경고
+  if (avgSpeedKBps < 100) {
+    console.warn('⚠️  Cloudinary 업로드 속도가 느립니다. 네트워크 상태를 확인해주세요.');
+  } else if (avgSpeedKBps > 500) {
+    console.log('✅ Cloudinary 업로드 속도가 양호합니다.');
+  }
+
+  // 3. Replicate API 호출 시작 시간 측정
+  const replicateStart = Date.now();
+  console.log('🚀 Replicate API 호출 시작...');
 
   // 2. Replicate API 호출 (FLUX Fill Pro 최신 모델)
   const response = await fetch(`${baseUrl}/replicate`, {
@@ -666,16 +735,16 @@ async function callReplicateAPI(imageData, maskData, prompt) {
     }
     
     const prediction = await fallbackResponse.json();
-    return await pollForResult(baseUrl, prediction.id);
+    return await pollForResult(baseUrl, prediction.id, replicateStart, totalUploadTime);
   }
   
   const prediction = await response.json();
   console.log('FLUX Fill Pro prediction:', JSON.stringify(prediction, null, 2));
-  return await pollForResult(baseUrl, prediction.id);
+  return await pollForResult(baseUrl, prediction.id, replicateStart, totalUploadTime);
 }
 
 // 결과 폴링 함수 분리
-async function pollForResult(baseUrl, predictionId) {
+async function pollForResult(baseUrl, predictionId, replicateStart, totalUploadTime) {
   let outputUrl = null;
   let attempts = 0;
   const maxAttempts = 60; // 최대 2분 대기
@@ -701,6 +770,24 @@ async function pollForResult(baseUrl, predictionId) {
   
   if (!outputUrl) {
     throw new Error('이미지 생성 시간 초과');
+  }
+  
+  const replicateTime = Date.now() - replicateStart;
+  const totalProcessingTime = replicateTime;
+  
+  console.log(`🎯 전체 처리 성능 요약:`);
+  console.log(`   - 📤 업로드 시간: ${totalUploadTime}ms`);
+  console.log(`   - ⚡ AI 생성 시간: ${replicateTime}ms`);
+  console.log(`   - 🎨 총 처리 시간: ${totalProcessingTime}ms`);
+  console.log(`   - 📊 업로드 비율: ${((totalUploadTime / totalProcessingTime) * 100).toFixed(1)}%`);
+  
+  // 성능 경고 및 조언
+  if (totalUploadTime > replicateTime) {
+    console.warn('⚠️  업로드 시간이 AI 생성 시간보다 깁니다. 네트워크 상태를 확인해주세요.');
+  }
+  
+  if (replicateTime > 60000) { // 1분 이상
+    console.warn('⚠️  AI 생성 시간이 비정상적으로 깁니다. Replicate 서버 상태를 확인해주세요.');
   }
   
   return outputUrl;
@@ -847,5 +934,114 @@ function hideInstallButton() {
   const installBtn = document.getElementById('installBtn');
   if (installBtn) {
     installBtn.remove();
+  }
+}
+
+// Cloudinary 업로드 성능 테스트 함수
+async function testCloudinaryPerformance() {
+  const performanceBtn = document.getElementById('performanceTestBtn');
+  const performanceResult = document.getElementById('performanceResult');
+  
+  try {
+    // 버튼 비활성화 및 로딩 상태
+    performanceBtn.disabled = true;
+    performanceBtn.innerHTML = '🔄 테스트 중...';
+    performanceResult.innerHTML = '업로드 속도를 측정하고 있습니다...';
+    
+    // 더미 이미지 생성 (작은 PNG 이미지)
+    const canvas = document.createElement('canvas');
+    canvas.width = 200;
+    canvas.height = 200;
+    const ctx = canvas.getContext('2d');
+    
+    // 그라데이션으로 테스트 이미지 생성
+    const gradient = ctx.createLinearGradient(0, 0, 200, 200);
+    gradient.addColorStop(0, '#ff6b6b');
+    gradient.addColorStop(1, '#4ecdc4');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 200, 200);
+    
+    // 테스트 텍스트 추가
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('업로드 테스트', 100, 100);
+    ctx.fillText(new Date().toLocaleTimeString(), 100, 120);
+    
+    // 캔버스를 base64로 변환
+    const testImageData = canvas.toDataURL('image/png');
+    const imageBase64 = testImageData.replace(/^data:image\/png;base64,/, '');
+    
+    // 현재 페이지의 호스트를 기반으로 API URL 생성
+    const baseUrl = window.location.protocol + '//' + window.location.host;
+    
+    console.log('🔍 Cloudinary 성능 테스트 시작...');
+    
+    // 3번 테스트하여 평균 속도 계산
+    const testResults = [];
+    
+    for (let i = 0; i < 3; i++) {
+      const testStart = Date.now();
+      
+      const uploadRes = await fetch(`${baseUrl}/upload`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageBase64 })
+      });
+      
+      const uploadData = await uploadRes.json();
+      const testTime = Date.now() - testStart;
+      
+      if (uploadRes.ok && uploadData.performance) {
+        testResults.push({
+          clientTime: testTime,
+          serverTime: uploadData.performance.uploadTime,
+          imageSize: uploadData.performance.imageSizeKB,
+          speed: uploadData.performance.uploadSpeedKBps
+        });
+        
+        console.log(`테스트 ${i + 1}/3 완료: ${testTime}ms (서버: ${uploadData.performance.uploadTime}ms)`);
+      } else {
+        throw new Error(`테스트 ${i + 1} 실패: ${uploadData.error || '알 수 없는 오류'}`);
+      }
+      
+      // 테스트 간 1초 대기
+      if (i < 2) await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    
+    // 평균 계산
+    const avgClientTime = testResults.reduce((sum, r) => sum + r.clientTime, 0) / testResults.length;
+    const avgServerTime = testResults.reduce((sum, r) => sum + r.serverTime, 0) / testResults.length;
+    const avgSpeed = testResults.reduce((sum, r) => sum + r.speed, 0) / testResults.length;
+    const avgSize = testResults[0].imageSize; // 같은 이미지이므로 크기는 동일
+    
+    console.log('📊 성능 테스트 완료');
+    console.log(`평균 클라이언트 시간: ${avgClientTime.toFixed(0)}ms`);  
+    console.log(`평균 서버 시간: ${avgServerTime.toFixed(0)}ms`);
+    console.log(`평균 업로드 속도: ${avgSpeed.toFixed(0)} KB/s`);
+    
+    // 결과 표시
+    let resultText = `✅ 테스트 완료: 평균 ${avgClientTime.toFixed(0)}ms (${avgSpeed.toFixed(0)} KB/s)`;
+    let resultColor = '#059669'; // 녹색
+    
+    if (avgSpeed < 100) {
+      resultText = `⚠️ 느림: 평균 ${avgClientTime.toFixed(0)}ms (${avgSpeed.toFixed(0)} KB/s)`;
+      resultColor = '#dc2626'; // 빨간색
+    } else if (avgSpeed < 300) {
+      resultText = `⚡ 보통: 평균 ${avgClientTime.toFixed(0)}ms (${avgSpeed.toFixed(0)} KB/s)`;
+      resultColor = '#d97706'; // 주황색
+    }
+    
+    performanceResult.innerHTML = resultText;
+    performanceResult.style.color = resultColor;
+    
+  } catch (error) {
+    console.error('성능 테스트 오류:', error);
+    performanceResult.innerHTML = `❌ 테스트 실패: ${error.message}`;
+    performanceResult.style.color = '#dc2626';
+  } finally {
+    // 버튼 복원
+    performanceBtn.disabled = false;
+    performanceBtn.innerHTML = '�� 업로드 속도 테스트';
   }
 } 
