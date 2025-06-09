@@ -1131,6 +1131,26 @@ function showClothesLoadingState() {
   }
 }
 
+// 옷 카테고리 자동 감지 함수
+function detectClothingCategory(prompt = '') {
+  const lowerPrompt = prompt.toLowerCase();
+  
+  // 하의 키워드
+  if (lowerPrompt.includes('바지') || lowerPrompt.includes('팬츠') || lowerPrompt.includes('청바지') || 
+      lowerPrompt.includes('스커트') || lowerPrompt.includes('반바지') || lowerPrompt.includes('shorts') ||
+      lowerPrompt.includes('pants') || lowerPrompt.includes('jeans') || lowerPrompt.includes('skirt')) {
+    return 1; // lower_body
+  }
+  
+  // 드레스 키워드  
+  if (lowerPrompt.includes('드레스') || lowerPrompt.includes('원피스') || lowerPrompt.includes('dress')) {
+    return 2; // dress
+  }
+  
+  // 기본값: 상의 (티셔츠, 셔츠, 블라우스 등)
+  return 0; // upper_body
+}
+
 // OOTDiffusion API 호출 함수 (IDM-VTON 대체)
 async function callOOTDiffusionAPI(bodyImageData, clothingImageData, prompt) {
   // DataURL → base64 (헤더 제거)
@@ -1172,9 +1192,9 @@ async function callOOTDiffusionAPI(bodyImageData, clothingImageData, prompt) {
         input: {
           model_image: bodyImageUploadData.url,
           cloth_image: clothingImageUploadData.url,
-          category: 0, // 0: upper_body, 1: lower_body, 2: dress
-          num_inference_steps: 20,
-          guidance_scale: 2.0,
+          category: detectClothingCategory(prompt),
+          num_inference_steps: 50, // 20 → 50 (품질 향상)
+          guidance_scale: 7.5, // 2.0 → 7.5 (옷 반영도 증가)
           seed: Math.floor(Math.random() * 1000000)
         }
       })
