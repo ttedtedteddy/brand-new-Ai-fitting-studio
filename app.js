@@ -994,23 +994,25 @@ function setupClothesMode() {
       return;
     }
     
-    const additionalPrompt = clothesPromptInput.value || 'natural fitting, realistic';
+    const additionalPrompt = clothesPromptInput.value || 'best quality, realistic, detailed';
     
     // 로딩 상태 표시
     showClothesLoadingState();
     generateClothesBtn.disabled = true;
-    generateClothesBtn.textContent = '✨ 생성 중...';
+    generateClothesBtn.textContent = '✨ 가상 피팅 생성 중...';
     
     try {
-      // 가상 피팅 API 호출 (향후 구현)
-      await new Promise(resolve => setTimeout(resolve, 3000)); // 임시 로딩
-      
-      // 임시 결과 표시
-      alert('🚧 가상 피팅 기능은 개발 중입니다! 곧 만나보실 수 있어요.');
-      resetClothesResultState();
-      
+      // IDM-VTON API 호출
+      const outputUrl = await callIDMVTONAPI(bodyImageData, clothingImageData, additionalPrompt);
+      if (outputUrl) {
+        showClothesResultImage(outputUrl);
+      } else {
+        resetClothesResultState();
+        alert('가상 피팅 생성 실패: 결과 이미지가 없습니다.');
+      }
     } catch (err) {
       resetClothesResultState();
+      console.error('가상 피팅 생성 오류:', err);
       alert('가상 피팅 생성 실패: ' + err.message);
     }
     
@@ -1110,7 +1112,7 @@ function showClothesLoadingState() {
       <div style="text-align: center;">
         <div class="loading" style="margin: 0 auto 1rem auto; width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%); animation: pulse 1s infinite alternate;"></div>
         <div style="font-weight: bold; font-size: 1.1rem; background: linear-gradient(90deg, #2563eb, #60a5fa, #2563eb); background-size: 200% auto; color: transparent; background-clip: text; -webkit-background-clip: text; animation: flowingText 2s linear infinite;">가상 피팅을 생성하는 중입니다...</div>
-        <div style="font-size: 0.9rem; color: var(--gray-500); margin-top: 0.5rem;">잠시만 기다려주세요</div>
+        <div style="font-size: 0.9rem; color: var(--gray-500); margin-top: 0.5rem;">AI가 옷을 입혀드리고 있어요</div>
       </div>
     `;
     clothesResultPlaceholder.style.display = 'flex';
@@ -1125,6 +1127,138 @@ function showClothesLoadingState() {
   if (clothesActionButtons) {
     clothesActionButtons.style.display = 'none';
   }
+}
+
+// IDM-VTON API 호출 함수
+async function callIDMVTONAPI(bodyImageData, clothingImageData, prompt) {
+  // DataURL → base64 (헤더 제거)
+  const bodyImageBase64 = bodyImageData.replace(/^data:image\/[a-z]+;base64,/, '');
+  const clothingImageBase64 = clothingImageData.replace(/^data:image\/[a-z]+;base64,/, '');
+
+  // 현재 페이지의 호스트를 기반으로 API URL 생성
+  const baseUrl = window.location.protocol + '//' + window.location.host;
+  
+  try {
+    // 1. 이미지 업로드 (base64 → URL)
+    const bodyImageUploadRes = await fetch(`${baseUrl}/upload`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: bodyImageBase64 })
+    });
+    const bodyImageUploadData = await bodyImageUploadRes.json();
+    if (!bodyImageUploadData.url) throw new Error('전신사진 업로드 실패');
+
+    const clothingImageUploadRes = await fetch(`${baseUrl}/upload`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: clothingImageBase64 })
+    });
+    const clothingImageUploadData = await clothingImageUploadRes.json();
+    if (!clothingImageUploadData.url) throw new Error('옷 이미지 업로드 실패');
+
+    // 2. IDM-VTON API 호출
+    const response = await fetch(`${baseUrl}/replicate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        // IDM-VTON 모델 (cuuupid/idm-vton)
+        version: "c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2a15372670e2f21",
+        input: {
+          human_img: bodyImageUploadData.url,
+          garm_img: clothingImageUploadData.url,
+          garment_des: prompt || "high quality, realistic, detailed fitting",
+          is_checked: true,
+          is_checked_crop: false,
+          denoise_steps: 30,
+          seed: Math.floor(Math.random() * 1000000)
+        }
+      })
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('IDM-VTON API 응답 오류:', errorText);
+      throw new Error('가상 피팅 API 호출 실패');
+    }
+    
+    const prediction = await response.json();
+    console.log('IDM-VTON prediction:', JSON.stringify(prediction, null, 2));
+    return await pollForVTONResult(baseUrl, prediction.id);
+    
+  } catch (error) {
+    console.error('IDM-VTON API 오류:', error);
+    throw error;
+  }
+}
+
+// IDM-VTON 결과 폴링 함수
+async function pollForVTONResult(baseUrl, predictionId) {
+  let outputUrl = null;
+  let attempts = 0;
+  const maxAttempts = 60; // 최대 2분 대기
+  
+  while (!outputUrl && attempts < maxAttempts) {
+    await new Promise(res => setTimeout(res, 2000));
+    const pollRes = await fetch(`${baseUrl}/replicate/${predictionId}`);
+    const pollData = await pollRes.json();
+    console.log('IDM-VTON pollData:', JSON.stringify(pollData, null, 2));
+    
+    if (pollData.status === 'succeeded') {
+      if (Array.isArray(pollData.output)) {
+        outputUrl = pollData.output[0];
+      } else {
+        outputUrl = pollData.output;
+      }
+    } else if (pollData.status === 'failed') {
+      throw new Error('가상 피팅 생성 실패: ' + (pollData.error || '알 수 없는 오류'));
+    }
+    
+    attempts++;
+  }
+  
+  if (!outputUrl) {
+    throw new Error('가상 피팅 생성 시간 초과');
+  }
+  
+  return outputUrl;
+}
+
+// 옷 이미지 모드 결과 이미지 표시 함수
+function showClothesResultImage(src) {
+  const clothesResultImage = document.getElementById('clothesResultImage');
+  const clothesResultPlaceholder = document.getElementById('clothesResultPlaceholder');
+  const clothesActionButtons = document.getElementById('clothesActionButtons');
+  const clothesGoogleLensSection = document.getElementById('clothesGoogleLensSection');
+  
+  clothesResultImage.onload = function() {
+    // 이미지 스타일 설정
+    this.style.maxWidth = '100%';
+    this.style.height = 'auto';
+    this.style.objectFit = 'contain';
+    this.style.display = 'block';
+    this.style.borderRadius = '1rem';
+    this.style.boxShadow = 'var(--shadow-lg)';
+    this.style.border = '1px solid var(--gray-200)';
+    
+    if (clothesResultPlaceholder) {
+      clothesResultPlaceholder.style.display = 'none';
+    }
+    if (clothesActionButtons) {
+      clothesActionButtons.style.display = 'flex';
+    }
+    if (clothesGoogleLensSection) {
+      clothesGoogleLensSection.style.display = 'block';
+    }
+  };
+  
+  clothesResultImage.onerror = function() {
+    resetClothesResultState();
+    alert('가상 피팅 결과 이미지를 불러오는데 실패했습니다.');
+  };
+  
+  clothesResultImage.src = src;
 }
 
 // 옷 이미지 모드 결과 상태 초기화
@@ -1224,4 +1358,4 @@ function showPageWithAnimation(hidePage, showPage) {
       showPage.style.transform = 'translateY(0)';
     }, 10);
   }
-} 
+}
