@@ -1198,7 +1198,7 @@ async function callOOTDiffusionAPI(bodyImageData, clothingImageData, prompt) {
 }
 
 // OOTDiffusion 결과 polling 함수
-async function pollForOOTDResult(predictionId, maxAttempts = 60, intervalMs = 2000) {
+async function pollForOOTDResult(predictionId, maxAttempts = 30, intervalMs = 1000) {
   const baseUrl = window.location.protocol + '//' + window.location.host;
   
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -1212,7 +1212,14 @@ async function pollForOOTDResult(predictionId, maxAttempts = 60, intervalMs = 20
       
       if (data.status === 'succeeded') {
         console.log('✅ OOTDiffusion 완료!', data.output);
-        return data.output;
+        // OOTDiffusion 결과가 배열로 오는 경우 첫 번째 이미지 URL 반환
+        if (Array.isArray(data.output) && data.output.length > 0) {
+          return data.output[0];
+        } else if (typeof data.output === 'string') {
+          return data.output;
+        } else {
+          throw new Error('OOTDiffusion 결과 형식이 올바르지 않습니다: ' + JSON.stringify(data.output));
+        }
       } else if (data.status === 'failed') {
         throw new Error('OOTDiffusion 생성 실패: ' + (data.error || 'Unknown error'));
       } else if (data.status === 'canceled') {
@@ -1230,7 +1237,7 @@ async function pollForOOTDResult(predictionId, maxAttempts = 60, intervalMs = 20
     }
   }
   
-  throw new Error('OOTDiffusion 결과 대기 시간 초과 (2분)');
+  throw new Error('OOTDiffusion 결과 대기 시간 초과 (30초)');
 }
 
 // 옷 이미지 모드 결과 이미지 표시 함수
