@@ -1170,7 +1170,7 @@ async function callIDMVTONAPI(bodyImageData, clothingImageData, prompt) {
       body: JSON.stringify({
         version: 'c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4', // 정확한 IDM-VTON 모델 버전 해시
         input: {
-          person_img: bodyImageUploadData.url,
+          human_img: bodyImageUploadData.url,
           garm_img: clothingImageUploadData.url,
           garment_des: prompt || "clothing", // 옷 설명 (선택사항)
           is_checked: true,
