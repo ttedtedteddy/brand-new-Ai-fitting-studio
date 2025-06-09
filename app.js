@@ -1168,7 +1168,7 @@ async function callOOTDiffusionAPI(bodyImageData, clothingImageData, prompt) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        version: 'qiweiii/oot_diffusion_dc', // 정확한 OOTDiffusion 모델
+        version: 'dfda793f95fb788961b38ce72978a350cd7b689c17bbfeb7e1048fc9c7c4849d', // 정확한 OOTDiffusion 모델 버전 해시
         input: {
           model_image: bodyImageUploadData.url,
           cloth_image: clothingImageUploadData.url,
