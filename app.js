@@ -1156,15 +1156,15 @@ async function callIDMVTONAPI(bodyImageData, clothingImageData, prompt) {
     const clothingImageUploadData = await clothingImageUploadRes.json();
     if (!clothingImageUploadData.url) throw new Error('옷 이미지 업로드 실패');
 
-    // 2. IDM-VTON API 호출
+    // 2. IDM-VTON API 호출 (최신 버전)
     const response = await fetch(`${baseUrl}/replicate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        // IDM-VTON 모델 (cuuupid/idm-vton)
-        version: "c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2a15372670e2f21",
+        // IDM-VTON 최신 모델 (cuuupid/idm-vton:0513734a)
+        version: "0513734a046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4",
         input: {
           human_img: bodyImageUploadData.url,
           garm_img: clothingImageUploadData.url,
