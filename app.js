@@ -1163,19 +1163,18 @@ async function callOOTDiffusionAPI(bodyImageData, clothingImageData, prompt) {
       clothingImage: clothingImageUploadData.url
     });
 
-    // 2. OOTDiffusion API 호출
+    // 2. OOTDiffusion API 호출 (qiweiii/oot_diffusion_dc 모델 사용)
     const replicateResponse = await fetch(`${baseUrl}/replicate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        version: 'levihsu/ootdiffusion', // OOTDiffusion 모델
+        version: 'qiweiii/oot_diffusion_dc', // 정확한 OOTDiffusion 모델
         input: {
           model_image: bodyImageUploadData.url,
           cloth_image: clothingImageUploadData.url,
-          category: 'upper_body', // upper_body, lower_body, dress
-          model_type: 'hd', // hd: half-body, dc: full-body
-          scale: 2.0,
-          sample: 1,
+          category: 0, // 0: upper_body, 1: lower_body, 2: dress
+          num_inference_steps: 20,
+          guidance_scale: 2.0,
           seed: Math.floor(Math.random() * 1000000)
         }
       })
