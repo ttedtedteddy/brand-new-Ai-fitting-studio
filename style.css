@@ -1591,4 +1591,218 @@ div {
     width: 16px;
     height: 16px;
   }
+}
+
+/* 업로드 방식 선택 스타일 */
+#outfitUploadModeSection {
+  transition: all 0.3s ease;
+  opacity: 1;
+  transform: translateY(0);
+  background: var(--gray-50);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--gray-200);
+}
+
+#outfitUploadMode {
+  transition: all 0.3s ease;
+  background: white;
+  cursor: pointer;
+}
+
+#outfitUploadMode:focus {
+  outline: none;
+  border-color: var(--cobalt-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+#outfitUploadMode:hover {
+  border-color: var(--cobalt-blue-light);
+}
+
+/* 상의/하의 각각 업로드 컨테이너 */
+#separateClothingUpload {
+  transition: all 0.3s ease;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 상의/하의 개별 섹션 */
+#separateClothingUpload h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+}
+
+/* 상의/하의 드롭 영역 크기 조정 */
+#upperClothingDropArea, #lowerClothingDropArea {
+  height: 150px !important;
+  margin-bottom: 1rem;
+}
+
+#upperClothingDropArea .drag-drop-icon, 
+#lowerClothingDropArea .drag-drop-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+#upperClothingDropArea .drag-drop-text, 
+#lowerClothingDropArea .drag-drop-text {
+  font-size: 1rem;
+  margin-bottom: 0.2rem;
+}
+
+#upperClothingDropArea .drag-drop-subtext, 
+#lowerClothingDropArea .drag-drop-subtext {
+  font-size: 0.85rem;
+}
+
+/* 상의/하의 미리보기 스타일 */
+#upperClothingPreview, #lowerClothingPreview {
+  text-align: center;
+  padding: 0.8rem;
+  background: var(--gray-50);
+  border-radius: 0.75rem;
+  border: 1px solid var(--gray-200);
+}
+
+#upperClothingDisplay, #lowerClothingDisplay {
+  display: block;
+  margin: 0 auto;
+  border: 2px solid var(--gray-200);
+  border-radius: 0.75rem;
+}
+
+#removeUpperClothingBtn, #removeLowerClothingBtn {
+  transition: all 0.3s ease;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.8rem;
+}
+
+#removeUpperClothingBtn:hover, #removeLowerClothingBtn:hover {
+  background: #dc2626 !important;
+  transform: translateY(-1px);
+}
+
+/* 업로드 방식 표시기 */
+.upload-mode-indicator {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+/* 진행 상태 표시 개선 */
+.outfit-progress {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  display: none;
+}
+
+.progress-step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  margin: 0.3rem 0;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.progress-step.active {
+  background: var(--cobalt-blue);
+  color: white;
+  font-weight: 600;
+}
+
+.progress-step.completed {
+  background: #10b981;
+  color: white;
+}
+
+.progress-step.pending {
+  background: var(--gray-200);
+  color: var(--gray-500);
+}
+
+/* 모바일 반응형 개선 */
+@media (max-width: 768px) {
+  #outfitUploadModeSection {
+    padding: 0.8rem;
+    margin-bottom: 1rem;
+  }
+  
+  #separateClothingUpload h3 {
+    font-size: 1.1rem;
+  }
+  
+  #upperClothingDropArea, #lowerClothingDropArea {
+    height: 120px !important;
+  }
+  
+  #upperClothingDropArea .drag-drop-icon, 
+  #lowerClothingDropArea .drag-drop-icon {
+    font-size: 2rem;
+  }
+  
+  #upperClothingDropArea .drag-drop-text, 
+  #lowerClothingDropArea .drag-drop-text {
+    font-size: 0.9rem;
+  }
+  
+  #upperClothingDisplay, #lowerClothingDisplay {
+    max-height: 180px;
+  }
+  
+  .upload-mode-indicator {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #separateClothingUpload {
+    margin-top: 1rem;
+  }
+  
+  #separateClothingUpload h3 {
+    font-size: 1rem;
+    margin-bottom: 0.6rem;
+  }
+  
+  #upperClothingDropArea, #lowerClothingDropArea {
+    height: 100px !important;
+  }
+  
+  #upperClothingDropArea .drag-drop-text, 
+  #lowerClothingDropArea .drag-drop-text {
+    font-size: 0.85rem;
+  }
+  
+  #upperClothingDropArea .drag-drop-subtext, 
+  #lowerClothingDropArea .drag-drop-subtext {
+    font-size: 0.75rem;
+  }
+  
+  #upperClothingDisplay, #lowerClothingDisplay {
+    max-height: 150px;
+  }
+  
+  #removeUpperClothingBtn, #removeLowerClothingBtn {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+  }
 } 
