@@ -12,67 +12,59 @@ document.addEventListener('DOMContentLoaded', () => {
   const promptModeBtn = document.getElementById('promptModeBtn');
   const clothesModeBtn = document.getElementById('clothesModeBtn');
   
+  // 뒤로가기 버튼들
+  const backToLandingBtn = document.getElementById('backToLandingBtn');
+  const backToModeSelectionFromMainBtn = document.getElementById('backToModeSelectionFromMainBtn');
+  const backToModeSelectionFromClothesBtn = document.getElementById('backToModeSelectionFromClothesBtn');
+  
   // Try my style 버튼 클릭 → 모드 선택 페이지 표시
   if (tryMyStyleBtn && landingPage && modeSelectionPage) {
     tryMyStyleBtn.addEventListener('click', () => {
-      // 랜딩 페이지 숨기고 모드 선택 페이지 표시
-      landingPage.style.display = 'none';
-      modeSelectionPage.style.display = 'flex';
-      
-      // 부드러운 애니메이션 효과
-      modeSelectionPage.style.opacity = '0';
-      modeSelectionPage.style.transform = 'translateY(20px)';
-      
-      setTimeout(() => {
-        modeSelectionPage.style.transition = 'all 0.5s ease-out';
-        modeSelectionPage.style.opacity = '1';
-        modeSelectionPage.style.transform = 'translateY(0)';
-      }, 10);
+      showPageWithAnimation(landingPage, modeSelectionPage);
     });
   }
   
   // Start with prompt 버튼 클릭 → 메인 앱 표시 (기존 기능)
   if (promptModeBtn && modeSelectionPage && mainApp) {
     promptModeBtn.addEventListener('click', () => {
-      // 모드 선택 페이지 숨기고 메인 앱 표시
-      modeSelectionPage.style.display = 'none';
-      mainApp.style.display = 'block';
-      
-      // 부드러운 애니메이션 효과
-      mainApp.style.opacity = '0';
-      mainApp.style.transform = 'translateY(20px)';
-      
-      setTimeout(() => {
-        mainApp.style.transition = 'all 0.5s ease-out';
-        mainApp.style.opacity = '1';
-        mainApp.style.transform = 'translateY(0)';
-      }, 10);
+      showPageWithAnimation(modeSelectionPage, mainApp);
     });
   }
   
-  // Start with pictures of clothes 버튼 클릭 → 옷 이미지 모드 (향후 구현)
+  // Start with pictures of clothes 버튼 클릭 → 옷 이미지 모드
   if (clothesModeBtn) {
     clothesModeBtn.addEventListener('click', () => {
-      // 옷 이미지 모드 페이지 표시
-      if (modeSelectionPage) {
-        modeSelectionPage.style.display = 'none';
-        const clothesModeApp = document.getElementById('clothesModeApp');
-        if (clothesModeApp) {
-          clothesModeApp.style.display = 'block';
-          
-          // 부드러운 애니메이션 효과
-          clothesModeApp.style.opacity = '0';
-          clothesModeApp.style.transform = 'translateY(20px)';
-          
-          setTimeout(() => {
-            clothesModeApp.style.transition = 'all 0.5s ease-out';
-            clothesModeApp.style.opacity = '1';
-            clothesModeApp.style.transform = 'translateY(0)';
-          }, 10);
-          
-          // 옷 이미지 모드 초기화
-          setupClothesMode();
-        }
+      const clothesModeApp = document.getElementById('clothesModeApp');
+      if (modeSelectionPage && clothesModeApp) {
+        showPageWithAnimation(modeSelectionPage, clothesModeApp);
+        // 옷 이미지 모드 초기화
+        setupClothesMode();
+      }
+    });
+  }
+  
+  // 뒤로가기 버튼 이벤트들
+  
+  // 모드 선택 → 랜딩 페이지
+  if (backToLandingBtn) {
+    backToLandingBtn.addEventListener('click', () => {
+      showPageWithAnimation(modeSelectionPage, landingPage);
+    });
+  }
+  
+  // 메인 앱 → 모드 선택 페이지
+  if (backToModeSelectionFromMainBtn) {
+    backToModeSelectionFromMainBtn.addEventListener('click', () => {
+      showPageWithAnimation(mainApp, modeSelectionPage);
+    });
+  }
+  
+  // 옷 이미지 모드 → 모드 선택 페이지
+  if (backToModeSelectionFromClothesBtn) {
+    backToModeSelectionFromClothesBtn.addEventListener('click', () => {
+      const clothesModeApp = document.getElementById('clothesModeApp');
+      if (clothesModeApp) {
+        showPageWithAnimation(clothesModeApp, modeSelectionPage);
       }
     });
   }
@@ -1209,5 +1201,27 @@ function setupClothesGoogleLens() {
       const searchUrl = `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(clothesResultImage.src)}`;
       window.open(searchUrl, '_blank');
     });
+  }
+}
+
+// 페이지 전환 애니메이션 함수
+function showPageWithAnimation(hidePage, showPage) {
+  if (hidePage) {
+    hidePage.style.display = 'none';
+  }
+  
+  if (showPage) {
+    showPage.style.display = showPage.classList.contains('landing-page') || 
+                             showPage.classList.contains('mode-selection-page') ? 'flex' : 'block';
+    
+    // 부드러운 애니메이션 효과
+    showPage.style.opacity = '0';
+    showPage.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+      showPage.style.transition = 'all 0.5s ease-out';
+      showPage.style.opacity = '1';
+      showPage.style.transform = 'translateY(0)';
+    }, 10);
   }
 } 
