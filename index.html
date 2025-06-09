@@ -26,111 +26,123 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header>
-    <h1>✨ AI Fitting Studio</h1>
-    <p class="subtitle">
-      AI 기술로 당신만의 스타일을 완성하세요
-    </p>
-  </header>
+  <!-- 랜딩 페이지 -->
+  <div id="landingPage" class="landing-page">
+    <div class="landing-content">
+      <h1 class="landing-title">🎨 AI Fitting Studio</h1>
+      <p class="landing-subtitle">AI 기술로 당신만의 스타일을 완성하세요</p>
+      <button id="tryMyStyleBtn" class="try-style-btn">Try my style</button>
+    </div>
+  </div>
 
-  <main>
-    <div id="uploadMaskSection">
-      <h2>📸 사진 업로드 & 마스킹</h2>
-      <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-        이곳을 클릭하거나 이곳에 드래그하여 사진을 업로드해주세요.<br>
-        업로드 후, 마스킹 브러쉬로 색칠할 수 있습니다.
+  <!-- 메인 애플리케이션 (처음에는 숨김) -->
+  <div id="mainApp" style="display: none;">
+    <header>
+      <h1>✨ AI Fitting Studio</h1>
+      <p class="subtitle">
+        AI 기술로 당신만의 스타일을 완성하세요
       </p>
-      <div class="drag-drop-area" id="dragDropArea">
-        <div class="drag-drop-icon">📷</div>
-        <div class="drag-drop-text">여기에 사진을 드래그하여 업로드해주세요</div>
-        <div class="drag-drop-subtext">또는 클릭하여 파일을 선택하세요</div>
-      </div>
-      <input type="file" id="imageUpload" accept="image/*" style="display: none;">
-      <div id="maskSection" style="display:none; margin-top:2rem;">
-        <h3>🎨 마스킹 브러시로 색칠</h3>
+    </header>
+
+    <main>
+      <div id="uploadMaskSection">
+        <h2>📸 사진 업로드 & 마스킹</h2>
         <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-          변경하고 싶은 부분을 브러시로 칠해주세요 (주황색으로 표시됩니다)
+          이곳을 클릭하거나 이곳에 드래그하여 사진을 업로드해주세요.<br>
+          업로드 후, 마스킹 브러쉬로 색칠할 수 있습니다.
         </p>
-        <div id="brushToolbar">
-          <label>브러시 크기: 
-            <input type="range" id="brushSize" min="5" max="80" value="30">
+        <div class="drag-drop-area" id="dragDropArea">
+          <div class="drag-drop-icon">📷</div>
+          <div class="drag-drop-text">여기에 사진을 드래그하여 업로드해주세요</div>
+          <div class="drag-drop-subtext">또는 클릭하여 파일을 선택하세요</div>
+        </div>
+        <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+        <div id="maskSection" style="display:none; margin-top:2rem;">
+          <h3>🎨 마스킹 브러시로 색칠</h3>
+          <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
+            변경하고 싶은 부분을 브러시로 칠해주세요 (주황색으로 표시됩니다)
+          </p>
+          <div id="brushToolbar">
+            <label>브러시 크기: 
+              <input type="range" id="brushSize" min="5" max="80" value="30">
+            </label>
+            <button id="clearMaskBtn">마스크 지우기</button>
+          </div>
+          <div id="canvasContainer">
+            <canvas id="photoCanvas" width="512" height="768"></canvas>
+            <canvas id="maskCanvas" width="512" height="768"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div style="max-width: 600px; margin: 2rem auto; background: var(--white); border-radius: 1.5rem; box-shadow: var(--shadow-lg); padding: 2.5rem 2rem; border: 1px solid var(--gray-200); position: relative; overflow: hidden;">
+        <div style="content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--cobalt-blue) 0%, var(--cobalt-blue-light) 100%);"></div>
+        <h2>🚀 AI 스타일링 생성</h2>
+        <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
+          텍스트로 원하는 스타일을 설명해주세요
+        </p>
+        
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem;">
+          <label style="flex: 1; min-width: 300px;">프롬프트: 
+            <input type="text" id="promptInput" placeholder="예: red dress, elegant, fashion" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 0.5rem; margin-top: 0.5rem;"/>
           </label>
-          <button id="clearMaskBtn">마스크 지우기</button>
         </div>
-        <div id="canvasContainer">
-          <canvas id="photoCanvas" width="512" height="768"></canvas>
-          <canvas id="maskCanvas" width="512" height="768"></canvas>
-        </div>
-      </div>
-    </div>
 
-    <div style="max-width: 600px; margin: 2rem auto; background: var(--white); border-radius: 1.5rem; box-shadow: var(--shadow-lg); padding: 2.5rem 2rem; border: 1px solid var(--gray-200); position: relative; overflow: hidden;">
-      <div style="content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--cobalt-blue) 0%, var(--cobalt-blue-light) 100%);"></div>
-      <h2>🚀 AI 스타일링 생성</h2>
-      <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-        텍스트로 원하는 스타일을 설명해주세요
-      </p>
-      
-      <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem;">
-        <label style="flex: 1; min-width: 300px;">프롬프트: 
-          <input type="text" id="promptInput" placeholder="예: red dress, elegant, fashion" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 0.5rem; margin-top: 0.5rem;"/>
-        </label>
-      </div>
-
-      <!-- 생성 버튼 -->
-      <div style="text-align: center; margin-top: 2rem;">
-        <button id="generateBtn" style="background: linear-gradient(135deg, var(--cobalt-blue) 0%, var(--cobalt-blue-dark) 100%); color: white; border: none; padding: 1rem 2rem; border-radius: 0.75rem; font-weight: 600; font-size: 1rem; cursor: pointer; box-shadow: var(--shadow-lg); transition: all 0.3s ease;">
-          🚀 AI 스타일링 생성
-        </button>
-      </div>
-    </div>
-
-    <div class="result-container">
-      <h2>✨ 결과 이미지</h2>
-      <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-        AI가 생성한 스타일링 결과를 확인하세요
-      </p>
-      <div class="result-image-wrapper">
-        <img id="resultImage" src="" alt="결과 이미지" style="display: none;">
-        <div id="resultPlaceholder" style="width: 100%; max-width: 512px; height: 300px; margin: 0 auto; border: 2px dashed var(--gray-300); border-radius: 1rem; display: flex; align-items: center; justify-content: center; color: var(--gray-400); font-size: 1rem;">
-          생성된 이미지가 여기에 표시됩니다
+        <!-- 생성 버튼 -->
+        <div style="text-align: center; margin-top: 2rem;">
+          <button id="generateBtn" style="background: linear-gradient(135deg, var(--cobalt-blue) 0%, var(--cobalt-blue-dark) 100%); color: white; border: none; padding: 1rem 2rem; border-radius: 0.75rem; font-weight: 600; font-size: 1rem; cursor: pointer; box-shadow: var(--shadow-lg); transition: all 0.3s ease;">
+            🚀 AI 스타일링 생성
+          </button>
         </div>
       </div>
-      
-      <div id="actionButtons" class="action-buttons" style="display: none;">
-        <button class="share-button instagram" onclick="shareToInstagram()">
-          📷 인스타그램 공유
-        </button>
-        <button class="share-button kakao" onclick="shareToKakao()">
-          💬 카카오톡 공유
-        </button>
-        <button class="save-button" onclick="saveImage()">
-          💾 이미지 저장
+
+      <div class="result-container">
+        <h2>✨ 결과 이미지</h2>
+        <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
+          AI가 생성한 스타일링 결과를 확인하세요
+        </p>
+        <div class="result-image-wrapper">
+          <img id="resultImage" src="" alt="결과 이미지" style="display: none;">
+          <div id="resultPlaceholder" style="width: 100%; max-width: 512px; height: 300px; margin: 0 auto; border: 2px dashed var(--gray-300); border-radius: 1rem; display: flex; align-items: center; justify-content: center; color: var(--gray-400); font-size: 1rem;">
+            생성된 이미지가 여기에 표시됩니다
+          </div>
+        </div>
+        
+        <div id="actionButtons" class="action-buttons" style="display: none;">
+          <button class="share-button instagram" onclick="shareToInstagram()">
+            📷 인스타그램 공유
+          </button>
+          <button class="share-button kakao" onclick="shareToKakao()">
+            💬 카카오톡 공유
+          </button>
+          <button class="save-button" onclick="saveImage()">
+            💾 이미지 저장
+          </button>
+        </div>
+      </div>
+
+      <!-- 구글 이미지 검색 섹션을 구글 렌즈 업로드로 대체 -->
+      <div class="google-search-container" id="googleLensSection" style="display: none;">
+        <h2>🔍 비슷한 제품 찾기 (구글 렌즈)</h2>
+        <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
+          결과 이미지를 구글 렌즈로 검색해 비슷한 제품을 찾아보세요
+        </p>
+        <button id="googleLensBtn" class="google-search-btn">
+          🔍 구글 렌즈로 이미지 검색
         </button>
       </div>
-    </div>
+    </main>
 
-    <!-- 구글 이미지 검색 섹션을 구글 렌즈 업로드로 대체 -->
-    <div class="google-search-container" id="googleLensSection" style="display: none;">
-      <h2>🔍 비슷한 제품 찾기 (구글 렌즈)</h2>
-      <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-        결과 이미지를 구글 렌즈로 검색해 비슷한 제품을 찾아보세요
-      </p>
-      <button id="googleLensBtn" class="google-search-btn">
-        🔍 구글 렌즈로 이미지 검색
-      </button>
-    </div>
-  </main>
-
-  <!-- 마스킹 브러쉬 작업 모달 -->
-  <div id="maskModal" class="modal">
-    <div class="modal-content">
-      <h2 style="color: var(--cobalt-blue); margin-bottom: 1.5rem;">🎨 마스킹 브러시 작업</h2>
-      <canvas id="modalPhotoCanvas" width="512" height="768"></canvas>
-      <canvas id="modalMaskCanvas" width="512" height="768"></canvas>
-      <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center;">
-        <button id="applyMaskBtn">적용</button>
-        <button id="closeMaskBtn">취소</button>
+    <!-- 마스킹 브러쉬 작업 모달 -->
+    <div id="maskModal" class="modal">
+      <div class="modal-content">
+        <h2 style="color: var(--cobalt-blue); margin-bottom: 1.5rem;">🎨 마스킹 브러시 작업</h2>
+        <canvas id="modalPhotoCanvas" width="512" height="768"></canvas>
+        <canvas id="modalMaskCanvas" width="512" height="768"></canvas>
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center;">
+          <button id="applyMaskBtn">적용</button>
+          <button id="closeMaskBtn">취소</button>
+        </div>
       </div>
     </div>
   </div>

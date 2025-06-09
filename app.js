@@ -3,6 +3,38 @@
 console.log('🚀 AI Fitting Studio v2.0.1-final + 옷 이미지 모드 로드됨');
 console.log('✅ 개선사항: 갤러리 제거, 업로드-마스킹 통합, 구글렌즈 연동, 모바일 반응형, 옷 이미지 자동 입히기');
 
+// 랜딩 페이지 버튼 이벤트 리스너
+document.addEventListener('DOMContentLoaded', () => {
+  const tryMyStyleBtn = document.getElementById('tryMyStyleBtn');
+  const landingPage = document.getElementById('landingPage');
+  const mainApp = document.getElementById('mainApp');
+  
+  if (tryMyStyleBtn && landingPage && mainApp) {
+    tryMyStyleBtn.addEventListener('click', () => {
+      // 랜딩 페이지 숨기고 메인 앱 표시
+      landingPage.style.display = 'none';
+      mainApp.style.display = 'block';
+      
+      // 부드러운 애니메이션 효과
+      mainApp.style.opacity = '0';
+      mainApp.style.transform = 'translateY(20px)';
+      
+      setTimeout(() => {
+        mainApp.style.transition = 'all 0.5s ease-out';
+        mainApp.style.opacity = '1';
+        mainApp.style.transform = 'translateY(0)';
+      }, 10);
+    });
+  }
+  
+  // 기존 초기화 함수들
+  setupDragAndDrop();
+  setupGoogleLensSearch();
+  initKakaoSDK();
+  registerServiceWorker();
+  setupPWAInstall();
+});
+
 // AI Fitting Studio v2.0.1-final
 // UI/UX 대폭 개선 버전: 갤러리 제거, 업로드-마스킹 통합, 구글렌즈 연동, 모바일 반응형
 console.log('🚀 AI Fitting Studio v2.0.1-final 로드됨');
@@ -155,15 +187,6 @@ function handleImageFile(file) {
   }
   reader.readAsDataURL(file);
 }
-
-// 페이지 로드 시 드래그 앤 드롭 설정
-document.addEventListener('DOMContentLoaded', () => {
-  setupDragAndDrop();
-  setupGoogleLensSearch();
-  initKakaoSDK();
-  registerServiceWorker();
-  setupPWAInstall();
-});
 
 // 이미지 업로드 시 마스킹 섹션 보이기 및 캔버스에 이미지 표시
 imageUpload.addEventListener('change', (e) => {
