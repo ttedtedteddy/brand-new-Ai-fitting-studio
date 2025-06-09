@@ -1003,12 +1003,12 @@ function setupClothesMode() {
       // 추가 프롬프트 가져오기
       const additionalPrompt = document.getElementById('clothesPrompt')?.value || '';
       
-      console.log('🚀 OOTDiffusion API 호출 시작...');
+      console.log('🚀 IDM-VTON API 호출 시작...');
       
-      // OOTDiffusion API 호출
-      const resultImageUrl = await callOOTDiffusionAPI(bodyImageData, clothingImageData, additionalPrompt);
+      // IDM-VTON API 호출 (정확한 cuuupid/idm-vton 모델 사용)
+      const resultImageUrl = await callIDMVTONAPI(bodyImageData, clothingImageData, additionalPrompt);
       
-      console.log('✅ OOTDiffusion 결과:', resultImageUrl);
+      console.log('✅ IDM-VTON 결과:', resultImageUrl);
       
       // 결과 이미지 표시
       showClothesResultImage(resultImageUrl);
@@ -1131,8 +1131,8 @@ function showClothesLoadingState() {
   }
 }
 
-// OOTDiffusion API 호출 함수 (IDM-VTON 대체)
-async function callOOTDiffusionAPI(bodyImageData, clothingImageData, prompt) {
+// IDM-VTON API 호출 함수 (정확한 cuuupid/idm-vton 모델 사용)
+async function callIDMVTONAPI(bodyImageData, clothingImageData, prompt) {
   // DataURL → base64 (헤더 제거)
   const bodyImageBase64 = bodyImageData.replace(/^data:image\/[a-z]+;base64,/, '');
   const clothingImageBase64 = clothingImageData.replace(/^data:image\/[a-z]+;base64,/, '');
@@ -1163,57 +1163,58 @@ async function callOOTDiffusionAPI(bodyImageData, clothingImageData, prompt) {
       clothingImage: clothingImageUploadData.url
     });
 
-    // 2. OOTDiffusion API 호출 (qiweiii/oot_diffusion_dc 모델 사용)
+    // 2. IDM-VTON API 호출 (정확한 cuuupid/idm-vton 모델 사용)
     const replicateResponse = await fetch(`${baseUrl}/replicate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        version: 'dfda793f95fb788961b38ce72978a350cd7b689c17bbfeb7e1048fc9c7c4849d', // 정확한 OOTDiffusion 모델 버전 해시
+        version: 'c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4', // 정확한 IDM-VTON 모델 버전 해시
         input: {
-          model_image: bodyImageUploadData.url,
-          cloth_image: clothingImageUploadData.url,
-          category: 0, // 0: upper_body, 1: lower_body, 2: dress
-          num_inference_steps: 20,
-          guidance_scale: 2.0,
+          person_img: bodyImageUploadData.url,
+          garm_img: clothingImageUploadData.url,
+          garment_des: prompt || "clothing", // 옷 설명 (선택사항)
+          is_checked: true,
+          is_checked_crop: false,
+          denoise_steps: 30,
           seed: Math.floor(Math.random() * 1000000)
         }
       })
     });
 
     const replicateData = await replicateResponse.json();
-    console.log('🚀 OOTDiffusion API 응답:', replicateData);
+    console.log('🚀 IDM-VTON API 응답:', replicateData);
 
     if (!replicateData.id) {
-      throw new Error('OOTDiffusion API 호출 실패: ' + (replicateData.detail || 'Unknown error'));
+      throw new Error('IDM-VTON API 호출 실패: ' + (replicateData.detail || 'Unknown error'));
     }
 
     // 3. 결과 polling
-    const result = await pollForOOTDResult(replicateData.id);
+    const result = await pollForIDMVTONResult(replicateData.id);
     return result;
 
   } catch (error) {
-    console.error('❌ OOTDiffusion API 오류:', error);
+    console.error('❌ IDM-VTON API 오류:', error);
     throw error;
   }
 }
 
-// OOTDiffusion 결과 polling 함수
-async function pollForOOTDResult(predictionId, maxAttempts = 60, intervalMs = 2000) {
+// IDM-VTON 결과 polling 함수
+async function pollForIDMVTONResult(predictionId, maxAttempts = 60, intervalMs = 2000) {
   const baseUrl = window.location.protocol + '//' + window.location.host;
   
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      console.log(`🔄 OOTDiffusion 결과 확인 중... (${attempt}/${maxAttempts})`);
+      console.log(`🔄 IDM-VTON 결과 확인 중... (${attempt}/${maxAttempts})`);
       
       const response = await fetch(`${baseUrl}/replicate/${predictionId}`);
       const data = await response.json();
       
-      console.log('📊 OOTDiffusion 상태:', data);
+      console.log('📊 IDM-VTON 상태:', data);
       
       if (data.status === 'succeeded') {
-        console.log('✅ OOTDiffusion 완료!', data.output);
-        console.log('🔍 OOTDiffusion 결과 타입:', typeof data.output, Array.isArray(data.output));
-        // OOTDiffusion 결과가 배열로 오는 경우 첫 번째 이미지 URL 반환
+        console.log('✅ IDM-VTON 완료!', data.output);
+        console.log('🔍 IDM-VTON 결과 타입:', typeof data.output, Array.isArray(data.output));
+        // IDM-VTON 결과가 배열로 오는 경우 첫 번째 이미지 URL 반환
         if (Array.isArray(data.output) && data.output.length > 0) {
           console.log('✅ 배열에서 첫 번째 결과 반환:', data.output[0]);
           return data.output[0];
@@ -1222,15 +1223,15 @@ async function pollForOOTDResult(predictionId, maxAttempts = 60, intervalMs = 20
           return data.output;
         } else {
           console.error('❌ 예상치 못한 결과 형식:', data.output);
-          throw new Error('OOTDiffusion 결과 형식이 올바르지 않습니다: ' + JSON.stringify(data.output));
+          throw new Error('IDM-VTON 결과 형식이 올바르지 않습니다: ' + JSON.stringify(data.output));
         }
       } else if (data.status === 'failed') {
-        console.error('❌ OOTDiffusion 실패:', data.error);
-        throw new Error('OOTDiffusion 생성 실패: ' + (data.error || 'Unknown error'));
+        console.error('❌ IDM-VTON 실패:', data.error);
+        throw new Error('IDM-VTON 생성 실패: ' + (data.error || 'Unknown error'));
       } else if (data.status === 'canceled') {
-        throw new Error('OOTDiffusion 작업이 취소되었습니다');
+        throw new Error('IDM-VTON 작업이 취소되었습니다');
       } else {
-        console.log(`⏳ OOTDiffusion 진행 중... 상태: ${data.status}`);
+        console.log(`⏳ IDM-VTON 진행 중... 상태: ${data.status}`);
       }
       
       // 아직 진행 중이면 대기
@@ -1238,13 +1239,13 @@ async function pollForOOTDResult(predictionId, maxAttempts = 60, intervalMs = 20
         await new Promise(resolve => setTimeout(resolve, intervalMs));
       }
     } catch (error) {
-      console.error(`❌ OOTDiffusion 결과 확인 오류 (시도 ${attempt}):`, error);
+      console.error(`❌ IDM-VTON 결과 확인 오류 (시도 ${attempt}):`, error);
       if (attempt === maxAttempts) throw error;
       await new Promise(resolve => setTimeout(resolve, intervalMs));
     }
   }
   
-  throw new Error('OOTDiffusion 결과 대기 시간 초과 (2분)');
+  throw new Error('IDM-VTON 결과 대기 시간 초과 (2분)');
 }
 
 // 옷 이미지 모드 결과 이미지 표시 함수
