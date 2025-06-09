@@ -1163,6 +1163,10 @@ async function callIDMVTONAPI(bodyImageData, clothingImageData, prompt) {
       clothingImage: clothingImageUploadData.url
     });
 
+    // 의류 카테고리 자동 감지 (간단한 휴리스틱)
+    const category = detectClothingCategory(clothingImageData);
+    console.log('🎯 감지된 의류 카테고리:', category);
+
     // 2. IDM-VTON API 호출 (정확한 cuuupid/idm-vton 모델 사용)
     const replicateResponse = await fetch(`${baseUrl}/replicate`, {
       method: 'POST',
@@ -1170,9 +1174,10 @@ async function callIDMVTONAPI(bodyImageData, clothingImageData, prompt) {
       body: JSON.stringify({
         version: 'c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4', // 정확한 IDM-VTON 모델 버전 해시
         input: {
-          human_img: bodyImageUploadData.url,
+          human_img: bodyImageUploadData.url, // person_img → human_img로 수정
           garm_img: clothingImageUploadData.url,
           garment_des: prompt || "clothing", // 옷 설명 (선택사항)
+          category: category, // 의류 카테고리 추가 (upper_body, lower_body, dresses)
           is_checked: true,
           is_checked_crop: false,
           denoise_steps: 30,
@@ -1195,6 +1200,35 @@ async function callIDMVTONAPI(bodyImageData, clothingImageData, prompt) {
   } catch (error) {
     console.error('❌ IDM-VTON API 오류:', error);
     throw error;
+  }
+}
+
+// 의류 카테고리 자동 감지 함수 (간단한 휴리스틱)
+function detectClothingCategory(imageData) {
+  // 1. 사용자가 직접 선택한 카테고리 우선 사용
+  const selectedCategory = document.getElementById('clothingCategory')?.value;
+  if (selectedCategory) {
+    console.log('👤 사용자 선택 카테고리:', selectedCategory);
+    return selectedCategory;
+  }
+  
+  // 2. 프롬프트 기반 자동 감지 (폴백)
+  const clothesPrompt = document.getElementById('clothesPrompt')?.value?.toLowerCase() || '';
+  
+  if (clothesPrompt.includes('pants') || clothesPrompt.includes('바지') || 
+      clothesPrompt.includes('skirt') || clothesPrompt.includes('스커트') ||
+      clothesPrompt.includes('shorts') || clothesPrompt.includes('반바지') ||
+      clothesPrompt.includes('jeans') || clothesPrompt.includes('청바지')) {
+    console.log('🤖 자동 감지: lower_body');
+    return 'lower_body';
+  } else if (clothesPrompt.includes('dress') || clothesPrompt.includes('원피스') ||
+             clothesPrompt.includes('gown') || clothesPrompt.includes('드레스') ||
+             clothesPrompt.includes('maxi') || clothesPrompt.includes('midi')) {
+    console.log('🤖 자동 감지: dresses');
+    return 'dresses';
+  } else {
+    console.log('🤖 자동 감지: upper_body (기본값)');
+    return 'upper_body'; // 기본값: 상의
   }
 }
 

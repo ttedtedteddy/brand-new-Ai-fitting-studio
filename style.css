@@ -1269,4 +1269,133 @@ div {
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
   }
+}
+
+/* 의류 카테고리 선택 스타일 */
+#clothingCategory {
+  transition: all 0.3s ease;
+  background: white;
+  cursor: pointer;
+}
+
+#clothingCategory:focus {
+  outline: none;
+  border-color: var(--cobalt-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+#clothingCategory:hover {
+  border-color: var(--cobalt-blue-light);
+}
+
+#clothingCategory option {
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+/* 추가 프롬프트 textarea 스타일 */
+#clothesPrompt {
+  transition: all 0.3s ease;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+#clothesPrompt:focus {
+  outline: none;
+  border-color: var(--cobalt-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+#clothesPrompt:hover {
+  border-color: var(--cobalt-blue-light);
+}
+
+/* 생성 컨테이너 개선 */
+.generate-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  background: var(--white);
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow-lg);
+  padding: 2.5rem 2rem;
+  border: 1px solid var(--gray-200);
+  position: relative;
+  overflow: hidden;
+}
+
+.generate-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--cobalt-blue) 0%, var(--cobalt-blue-light) 100%);
+}
+
+.generate-container h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* 생성 버튼 개선 */
+#generateClothesBtn {
+  position: relative;
+  overflow: hidden;
+}
+
+#generateClothesBtn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+#generateClothesBtn:not(:disabled):hover::before {
+  left: 100%;
+}
+
+/* 의류 모드 모바일 최적화 */
+@media (max-width: 768px) {
+  .generate-container {
+    margin: 1.5rem 1rem;
+    padding: 2rem 1.5rem;
+  }
+  
+  #clothingCategory, #clothesPrompt {
+    font-size: 0.95rem;
+  }
+  
+  #generateClothesBtn {
+    font-size: 1rem !important;
+    padding: 1rem 1.5rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .generate-container {
+    padding: 1.5rem 1rem;
+  }
+  
+  .generate-container h2 {
+    font-size: 1.3rem;
+  }
+  
+  #clothingCategory, #clothesPrompt {
+    font-size: 0.9rem;
+    padding: 0.6rem 0.8rem;
+  }
+  
+  #clothesPrompt {
+    min-height: 70px;
+  }
 } 
