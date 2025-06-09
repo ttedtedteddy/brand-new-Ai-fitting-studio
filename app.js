@@ -703,6 +703,11 @@ async function callReplicateAPI(imageData, maskData, prompt) {
   const maskUploadData = await maskUploadRes.json();
   if (!maskUploadData.url) throw new Error('마스크 이미지 업로드 실패');
 
+  console.log('✅ 이미지 업로드 완료:', {
+    bodyImage: imageUploadData.url,
+    clothingImage: maskUploadData.url
+  });
+
   // 2. Replicate API 호출 (FLUX Fill Pro 최신 모델)
   const response = await fetch(`${baseUrl}/replicate`, {
     method: 'POST',
@@ -721,7 +726,7 @@ async function callReplicateAPI(imageData, maskData, prompt) {
         output_format: "jpg",
         safety_tolerance: 2,
         prompt_upsampling: false,
-        seed: Math.floor(Math.random() * 1000000)
+        seed: Math.floor(Date.now() * Math.random() * 10000)
       }
     })
   });
@@ -744,7 +749,7 @@ async function callReplicateAPI(imageData, maskData, prompt) {
           steps: 28,
           guidance: 30,
           output_format: "jpg",
-          seed: Math.floor(Math.random() * 1000000)
+          seed: Math.floor(Date.now() * Math.random() * 10000)
         }
       })
     });
@@ -1183,6 +1188,21 @@ async function callOOTDiffusionAPI(bodyImageData, clothingImageData, prompt) {
       clothingImage: clothingImageUploadData.url
     });
 
+    // 디버깅을 위한 파라미터 로깅
+    const category = detectClothingCategory(prompt);
+    const seed = Math.floor(Date.now() * Math.random() * 10000); // 더 강력한 랜덤 시드
+    
+    console.log('🔧 OOTDiffusion 입력 파라미터:', {
+      model_image: bodyImageUploadData.url,
+      cloth_image: clothingImageUploadData.url,
+      category: category,
+      num_inference_steps: 30, // 50 → 30 (안정성)
+      guidance_scale: 5.0, // 7.5 → 5.0 (최대 허용값)
+      scale: 2.0, // 공식 GitHub 문서 권장값
+      seed: seed,
+      prompt: prompt
+    });
+
     // 2. OOTDiffusion API 호출 (qiweiii/oot_diffusion_dc 모델 사용)
     const replicateResponse = await fetch(`${baseUrl}/replicate`, {
       method: 'POST',
@@ -1192,10 +1212,11 @@ async function callOOTDiffusionAPI(bodyImageData, clothingImageData, prompt) {
         input: {
           model_image: bodyImageUploadData.url,
           cloth_image: clothingImageUploadData.url,
-          category: detectClothingCategory(prompt),
+          category: category,
           num_inference_steps: 30, // 50 → 30 (안정성)
           guidance_scale: 5.0, // 7.5 → 5.0 (최대 허용값)
-          seed: Math.floor(Math.random() * 1000000)
+          scale: 2.0, // 공식 GitHub 문서 권장값
+          seed: seed
         }
       })
     });
@@ -1204,7 +1225,28 @@ async function callOOTDiffusionAPI(bodyImageData, clothingImageData, prompt) {
     console.log('🚀 OOTDiffusion API 응답:', replicateData);
 
     if (!replicateData.id) {
-      throw new Error('OOTDiffusion API 호출 실패: ' + (replicateData.detail || 'Unknown error'));
+      console.log('❌ OOTDiffusion 실패, IDM-VTON으로 폴백 시도...');
+      // IDM-VTON 폴백 시도 (best-in-class 모델)
+      const idmVtonResponse = await fetch(`${baseUrl}/replicate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          version: 'cuuupid/idm-vton', // IDM-VTON 모델
+          input: {
+            human_img: bodyImageUploadData.url,
+            garm_img: clothingImageUploadData.url,
+            garment_des: prompt || 'clothing item'
+          }
+        })
+      });
+      
+      if (!idmVtonResponse.ok) {
+        throw new Error('OOTDiffusion API 호출 실패: ' + (replicateData.detail || 'Unknown error'));
+      }
+      
+      const idmVtonData = await idmVtonResponse.json();
+      console.log('🔄 IDM-VTON 폴백 시도:', idmVtonData);
+      return await pollForOOTDResult(idmVtonData.id);
     }
 
     // 3. 결과 polling
