@@ -40,27 +40,6 @@
         이곳을 클릭하거나 이곳에 드래그하여 사진을 업로드해주세요.<br>
         업로드 후, 마스킹 브러쉬로 색칠할 수 있습니다.
       </p>
-      
-      <!-- 성능 테스트 버튼 추가 -->
-      <div style="text-align: center; margin-bottom: 1rem;">
-        <button id="performanceTestBtn" style="
-          padding: 0.5rem 1rem;
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-          color: white;
-          border: none;
-          border-radius: 0.5rem;
-          font-size: 0.9rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
-        " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(16, 185, 129, 0.3)'" 
-           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(16, 185, 129, 0.2)'">
-          🔍 업로드 속도 테스트
-        </button>
-        <div id="performanceResult" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--gray-600);"></div>
-      </div>
-      
       <div class="drag-drop-area" id="dragDropArea">
         <div class="drag-drop-icon">📷</div>
         <div class="drag-drop-text">여기에 사진을 드래그하여 업로드해주세요</div>
@@ -89,60 +68,13 @@
       <div style="content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--cobalt-blue) 0%, var(--cobalt-blue-light) 100%);"></div>
       <h2>🚀 AI 스타일링 생성</h2>
       <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-        텍스트로 설명하거나 옷 이미지를 업로드해서 스타일링을 적용하세요
+        텍스트로 원하는 스타일을 설명해주세요
       </p>
       
-      <!-- 모드 선택 탭 -->
-      <div style="display: flex; justify-content: center; margin-bottom: 2rem; border-bottom: 1px solid var(--gray-200);">
-        <button id="textModeBtn" class="mode-tab active" style="padding: 0.75rem 1.5rem; border: none; background: none; color: var(--cobalt-blue); border-bottom: 2px solid var(--cobalt-blue); font-weight: 600; cursor: pointer;">
-          📝 텍스트 모드
-        </button>
-        <button id="imageModeBtn" class="mode-tab" style="padding: 0.75rem 1.5rem; border: none; background: none; color: var(--gray-500); border-bottom: 2px solid transparent; font-weight: 600; cursor: pointer;">
-          👗 옷 이미지 모드
-        </button>
-      </div>
-
-      <!-- 텍스트 모드 -->
-      <div id="textMode" style="display: block;">
-        <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem;">
-          <label style="flex: 1; min-width: 300px;">프롬프트: 
-            <input type="text" id="promptInput" placeholder="예: red dress, elegant, fashion" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 0.5rem; margin-top: 0.5rem;"/>
-          </label>
-        </div>
-      </div>
-
-      <!-- 옷 이미지 모드 -->
-      <div id="imageMode" style="display: none;">
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-          <!-- 옷 이미지 업로드 -->
-          <div style="flex: 1;">
-            <label style="display: block; font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem;">
-              👗 입힐 옷 이미지:
-            </label>
-            <div class="clothing-drop-area" id="clothingDropArea" style="border: 2px dashed var(--gray-300); border-radius: 1rem; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s ease; background: var(--gray-50);">
-              <div style="font-size: 2rem; margin-bottom: 0.5rem;">👗</div>
-              <div style="font-weight: 600; color: var(--gray-600);">옷 이미지를 드래그하거나 클릭하세요</div>
-              <div style="font-size: 0.9rem; color: var(--gray-500); margin-top: 0.5rem;">JPG, PNG 파일 지원</div>
-            </div>
-            <input type="file" id="clothingUpload" accept="image/*" style="display: none;">
-            
-            <!-- 옷 이미지 미리보기 -->
-            <div id="clothingPreview" style="display: none; margin-top: 1rem; text-align: center;">
-              <img id="clothingImage" style="max-width: 200px; max-height: 200px; border-radius: 0.5rem; box-shadow: var(--shadow-md);">
-              <button id="removeClothingBtn" style="display: block; margin: 0.5rem auto; padding: 0.25rem 0.75rem; background: var(--red-500); color: white; border: none; border-radius: 0.25rem; cursor: pointer; font-size: 0.8rem;">
-                ❌ 제거
-              </button>
-            </div>
-          </div>
-
-          <!-- 추가 설명 (선택사항) -->
-          <div style="flex: 1;">
-            <label style="display: block; font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem;">
-              ✏️ 추가 설명 (선택사항):
-            </label>
-            <input type="text" id="additionalPrompt" placeholder="예: casual style, summer outfit" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 0.5rem;"/>
-          </div>
-        </div>
+      <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem;">
+        <label style="flex: 1; min-width: 300px;">프롬프트: 
+          <input type="text" id="promptInput" placeholder="예: red dress, elegant, fashion" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 0.5rem; margin-top: 0.5rem;"/>
+        </label>
       </div>
 
       <!-- 생성 버튼 -->
