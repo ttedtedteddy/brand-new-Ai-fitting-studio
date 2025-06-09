@@ -1193,8 +1193,8 @@ async function callOOTDiffusionAPI(bodyImageData, clothingImageData, prompt) {
           model_image: bodyImageUploadData.url,
           cloth_image: clothingImageUploadData.url,
           category: detectClothingCategory(prompt),
-          num_inference_steps: 50, // 20 → 50 (품질 향상)
-          guidance_scale: 7.5, // 2.0 → 7.5 (옷 반영도 증가)
+          num_inference_steps: 30, // 50 → 30 (안정성)
+          guidance_scale: 5.0, // 7.5 → 5.0 (최대 허용값)
           seed: Math.floor(Math.random() * 1000000)
         }
       })
