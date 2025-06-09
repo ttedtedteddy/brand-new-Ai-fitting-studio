@@ -1398,4 +1398,197 @@ div {
   #clothesPrompt {
     min-height: 70px;
   }
+}
+
+/* 원피스 길이 선택 섹션 스타일 */
+#dressLengthSection {
+  transition: all 0.3s ease;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#dressLength {
+  transition: all 0.3s ease;
+  background: white;
+  cursor: pointer;
+}
+
+#dressLength:focus {
+  outline: none;
+  border-color: var(--cobalt-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+#dressLength:hover {
+  border-color: var(--cobalt-blue-light);
+}
+
+#dressLength option {
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+/* 전체 의상 모드 표시 */
+.full-outfit-indicator {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+/* 개선된 프롬프트 입력 필드 */
+#clothesPrompt {
+  position: relative;
+  background: linear-gradient(135deg, var(--white) 0%, var(--gray-50) 100%);
+  border: 2px solid var(--gray-200);
+  transition: all 0.3s ease;
+}
+
+#clothesPrompt:focus {
+  background: var(--white);
+  border-color: var(--cobalt-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+#clothesPrompt::placeholder {
+  color: var(--gray-400);
+  font-style: italic;
+}
+
+/* 카테고리 선택 개선 */
+#clothingCategory {
+  background: linear-gradient(135deg, var(--white) 0%, var(--gray-50) 100%);
+  border: 2px solid var(--gray-200);
+  position: relative;
+}
+
+#clothingCategory:focus {
+  background: var(--white);
+  border-color: var(--cobalt-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* 다단계 생성 진행 표시 */
+.multi-stage-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--gray-50);
+  border-radius: 0.75rem;
+  border: 1px solid var(--gray-200);
+}
+
+.stage-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.stage-indicator.active {
+  background: var(--cobalt-blue);
+  color: white;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+}
+
+.stage-indicator.completed {
+  background: #10b981;
+  color: white;
+}
+
+.stage-indicator.pending {
+  background: var(--gray-200);
+  color: var(--gray-500);
+}
+
+/* 스마트 프롬프트 미리보기 */
+.smart-prompt-preview {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  margin-top: 0.5rem;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.smart-prompt-preview::before {
+  content: "💡 AI 자동 향상: ";
+  font-weight: 600;
+  color: var(--cobalt-blue);
+}
+
+/* 로딩 스피너 개선 */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 0.5rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 모바일 반응형 개선 */
+@media (max-width: 768px) {
+  #dressLengthSection {
+    margin-bottom: 1rem;
+  }
+  
+  #dressLength, #clothingCategory {
+    font-size: 0.95rem;
+    padding: 0.6rem 0.8rem;
+  }
+  
+  .multi-stage-progress {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .stage-indicator {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .smart-prompt-preview {
+    font-size: 0.8rem;
+    padding: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #dressLength option, #clothingCategory option {
+    font-size: 0.9rem;
+  }
+  
+  .full-outfit-indicator {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .loading-spinner {
+    width: 16px;
+    height: 16px;
+  }
 } 

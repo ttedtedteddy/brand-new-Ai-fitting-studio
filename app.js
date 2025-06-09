@@ -1163,44 +1163,108 @@ async function callIDMVTONAPI(bodyImageData, clothingImageData, prompt) {
       clothingImage: clothingImageUploadData.url
     });
 
-    // 의류 카테고리 자동 감지 (간단한 휴리스틱)
+    // 의류 카테고리 자동 감지
     const category = detectClothingCategory(clothingImageData);
     console.log('🎯 감지된 의류 카테고리:', category);
 
-    // 2. IDM-VTON API 호출 (정확한 cuuupid/idm-vton 모델 사용)
-    const replicateResponse = await fetch(`${baseUrl}/replicate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        version: 'c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4', // 정확한 IDM-VTON 모델 버전 해시
-        input: {
-          human_img: bodyImageUploadData.url, // person_img → human_img로 수정
-          garm_img: clothingImageUploadData.url,
-          garment_des: prompt || "clothing", // 옷 설명 (선택사항)
-          category: category, // 의류 카테고리 추가 (upper_body, lower_body, dresses)
-          is_checked: true,
-          is_checked_crop: false,
-          denoise_steps: 30,
-          seed: Math.floor(Math.random() * 1000000)
-        }
-      })
-    });
+    // 스마트 프롬프트 생성
+    const enhancedPrompt = generateSmartPrompt(category, prompt);
+    console.log('✨ 최종 프롬프트:', enhancedPrompt);
 
-    const replicateData = await replicateResponse.json();
-    console.log('🚀 IDM-VTON API 응답:', replicateData);
-
-    if (!replicateData.id) {
-      throw new Error('IDM-VTON API 호출 실패: ' + (replicateData.detail || 'Unknown error'));
+    // 전체 의상 모드 처리
+    if (category === 'full_outfit') {
+      console.log('👔 전체 의상 모드: 상의와 하의를 순차적으로 처리합니다');
+      
+      // 1단계: 상의 변경
+      console.log('📝 1단계: 상의 변경 중...');
+      const upperResult = await callSingleIDMVTON(
+        bodyImageUploadData.url, 
+        clothingImageUploadData.url, 
+        'upper_body', 
+        `upper body clothing, top wear, ${enhancedPrompt}`
+      );
+      
+      if (!upperResult) {
+        throw new Error('상의 변경 실패');
+      }
+      
+      console.log('✅ 1단계 완료: 상의 변경 성공');
+      
+      // 2단계: 하의 변경 (상의 변경된 이미지 사용)
+      console.log('📝 2단계: 하의 변경 중...');
+      
+      // 상의 변경된 결과 이미지를 다시 업로드
+      const updatedBodyImageRes = await fetch(`${baseUrl}/upload`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl: upperResult })
+      });
+      const updatedBodyImageData = await updatedBodyImageRes.json();
+      
+      if (!updatedBodyImageData.url) {
+        console.warn('⚠️ 중간 결과 업로드 실패, 하의만 변경합니다');
+        return upperResult;
+      }
+      
+      const lowerResult = await callSingleIDMVTON(
+        updatedBodyImageData.url, 
+        clothingImageUploadData.url, 
+        'lower_body', 
+        `lower body clothing, bottom wear, ${enhancedPrompt}`
+      );
+      
+      console.log('✅ 2단계 완료: 전체 의상 변경 성공');
+      return lowerResult || upperResult;
+      
+    } else {
+      // 단일 카테고리 모드
+      return await callSingleIDMVTON(
+        bodyImageUploadData.url, 
+        clothingImageUploadData.url, 
+        category, 
+        enhancedPrompt
+      );
     }
-
-    // 3. 결과 polling
-    const result = await pollForIDMVTONResult(replicateData.id);
-    return result;
 
   } catch (error) {
     console.error('❌ IDM-VTON API 오류:', error);
     throw error;
   }
+}
+
+// 단일 IDM-VTON API 호출 함수 (내부 사용)
+async function callSingleIDMVTON(bodyImageUrl, clothingImageUrl, category, prompt) {
+  const baseUrl = window.location.protocol + '//' + window.location.host;
+  
+  console.log(`🚀 IDM-VTON API 호출 - 카테고리: ${category}`);
+  
+  const replicateResponse = await fetch(`${baseUrl}/replicate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      version: 'c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4', // 정확한 IDM-VTON 모델 버전 해시
+      input: {
+        human_img: bodyImageUrl,
+        garm_img: clothingImageUrl,
+        garment_des: prompt || "clothing",
+        category: category === 'full_outfit' ? 'upper_body' : category, // full_outfit은 처리 단계에서 분리됨
+        is_checked: true,
+        is_checked_crop: false,
+        denoise_steps: 30,
+        seed: Math.floor(Math.random() * 1000000)
+      }
+    })
+  });
+
+  const replicateData = await replicateResponse.json();
+  console.log(`📊 IDM-VTON API 응답 (${category}):`, replicateData);
+
+  if (!replicateData.id) {
+    throw new Error(`IDM-VTON API 호출 실패 (${category}): ` + (replicateData.detail || 'Unknown error'));
+  }
+
+  // 결과 polling
+  return await pollForIDMVTONResult(replicateData.id);
 }
 
 // 의류 카테고리 자동 감지 함수 (간단한 휴리스틱)
@@ -1226,6 +1290,10 @@ function detectClothingCategory(imageData) {
              clothesPrompt.includes('maxi') || clothesPrompt.includes('midi')) {
     console.log('🤖 자동 감지: dresses');
     return 'dresses';
+  } else if (clothesPrompt.includes('outfit') || clothesPrompt.includes('전체') ||
+             clothesPrompt.includes('세트') || clothesPrompt.includes('코디')) {
+    console.log('🤖 자동 감지: full_outfit');
+    return 'full_outfit';
   } else {
     console.log('🤖 자동 감지: upper_body (기본값)');
     return 'upper_body'; // 기본값: 상의
@@ -1415,4 +1483,86 @@ function showPageWithAnimation(hidePage, showPage) {
       showPage.style.transform = 'translateY(0)';
     }, 10);
   }
+}
+
+// 원피스 길이 옵션 토글 함수
+function toggleDressLengthOption() {
+  const categorySelect = document.getElementById('clothingCategory');
+  const dressLengthSection = document.getElementById('dressLengthSection');
+  
+  if (categorySelect && dressLengthSection) {
+    if (categorySelect.value === 'dresses') {
+      dressLengthSection.style.display = 'block';
+      // 부드러운 애니메이션 효과
+      dressLengthSection.style.opacity = '0';
+      dressLengthSection.style.transform = 'translateY(-10px)';
+      setTimeout(() => {
+        dressLengthSection.style.transition = 'all 0.3s ease';
+        dressLengthSection.style.opacity = '1';
+        dressLengthSection.style.transform = 'translateY(0)';
+      }, 10);
+    } else {
+      dressLengthSection.style.display = 'none';
+    }
+  }
+}
+
+// 스마트 프롬프트 생성 함수
+function generateSmartPrompt(category, userPrompt) {
+  const dressLength = document.getElementById('dressLength')?.value || 'midi';
+  let enhancedPrompt = userPrompt || '';
+  
+  // 카테고리별 프롬프트 강화
+  switch (category) {
+    case 'full_outfit':
+      // 전체 의상 모드: 상의와 하의 모두 언급
+      if (!enhancedPrompt.includes('outfit') && !enhancedPrompt.includes('전체')) {
+        enhancedPrompt = `complete outfit, full clothing set, ${enhancedPrompt}`;
+      }
+      console.log('👔 전체 의상 모드 활성화');
+      break;
+      
+    case 'dresses':
+      // 원피스 모드: 길이 정보 추가
+      const lengthMap = {
+        'short': 'short dress, mini dress, above knee',
+        'midi': 'midi dress, knee-length dress, mid-length',
+        'long': 'long dress, maxi dress, floor-length, ankle-length'
+      };
+      
+      const lengthDesc = lengthMap[dressLength] || lengthMap['midi'];
+      if (!enhancedPrompt.includes('dress') && !enhancedPrompt.includes('원피스')) {
+        enhancedPrompt = `${lengthDesc}, elegant dress, ${enhancedPrompt}`;
+      } else {
+        enhancedPrompt = `${lengthDesc}, ${enhancedPrompt}`;
+      }
+      console.log(`👗 원피스 모드 - 길이: ${dressLength}`);
+      break;
+      
+    case 'upper_body':
+      // 상의 모드: 상의 관련 키워드 강화
+      if (!enhancedPrompt.includes('shirt') && !enhancedPrompt.includes('상의') && 
+          !enhancedPrompt.includes('top') && !enhancedPrompt.includes('blouse')) {
+        enhancedPrompt = `stylish top, fashionable upper wear, ${enhancedPrompt}`;
+      }
+      console.log('👕 상의 모드');
+      break;
+      
+    case 'lower_body':
+      // 하의 모드: 하의 관련 키워드 강화
+      if (!enhancedPrompt.includes('pants') && !enhancedPrompt.includes('하의') && 
+          !enhancedPrompt.includes('bottom') && !enhancedPrompt.includes('skirt')) {
+        enhancedPrompt = `stylish bottoms, fashionable lower wear, ${enhancedPrompt}`;
+      }
+      console.log('👖 하의 모드');
+      break;
+  }
+  
+  // 공통 품질 향상 키워드 추가
+  if (!enhancedPrompt.includes('high quality') && !enhancedPrompt.includes('detailed')) {
+    enhancedPrompt = `${enhancedPrompt}, high quality, detailed, realistic`;
+  }
+  
+  console.log('✨ 향상된 프롬프트:', enhancedPrompt);
+  return enhancedPrompt.trim();
 }
