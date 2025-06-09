@@ -1083,4 +1083,120 @@ div {
   .mode-text p {
     font-size: 0.85rem;
   }
+}
+
+/* 옷 이미지 모드 페이지 스타일 */
+.upload-container {
+  display: flex;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.upload-section {
+  flex: 1;
+  background: var(--white);
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow-lg);
+  padding: 2.5rem 2rem;
+  border: 1px solid var(--gray-200);
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--cobalt-blue) 0%, var(--cobalt-blue-light) 100%);
+}
+
+.upload-section h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--cobalt-blue);
+  text-align: center;
+}
+
+/* 생성 버튼 활성화 스타일 */
+#generateClothesBtn:not(:disabled) {
+  background: linear-gradient(135deg, var(--cobalt-blue) 0%, var(--cobalt-blue-dark) 100%) !important;
+  cursor: pointer !important;
+  transform: none;
+  transition: all 0.3s ease;
+}
+
+#generateClothesBtn:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+}
+
+/* 이미지 미리보기 스타일 */
+#bodyImagePreview, #clothingImagePreview {
+  text-align: center;
+  padding: 1rem;
+  background: var(--gray-50);
+  border-radius: 1rem;
+  border: 1px solid var(--gray-200);
+}
+
+#bodyImageDisplay, #clothingImageDisplay {
+  display: block;
+  margin: 0 auto;
+  border: 2px solid var(--gray-200);
+}
+
+#removeBodyImageBtn, #removeClothingImageBtn {
+  transition: all 0.3s ease;
+}
+
+#removeBodyImageBtn:hover, #removeClothingImageBtn:hover {
+  background: #dc2626 !important;
+  transform: translateY(-1px);
+}
+
+/* 옷 이미지 모드 모바일 반응형 */
+@media (max-width: 768px) {
+  .upload-container {
+    flex-direction: column;
+    gap: 1.5rem;
+    margin: 1rem auto;
+    padding: 0 1rem;
+  }
+  
+  .upload-section {
+    padding: 2rem 1.5rem;
+  }
+  
+  .upload-section h2 {
+    font-size: 1.3rem;
+  }
+  
+  #bodyImageDisplay, #clothingImageDisplay {
+    max-height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .upload-section {
+    padding: 1.5rem 1rem;
+  }
+  
+  .upload-section h2 {
+    font-size: 1.2rem;
+  }
+  
+  #bodyImageDisplay, #clothingImageDisplay {
+    max-height: 200px;
+  }
+  
+  #generateClothesBtn {
+    padding: 0.9rem 1.5rem !important;
+    font-size: 0.9rem !important;
+  }
 } 

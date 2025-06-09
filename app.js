@@ -53,22 +53,26 @@ document.addEventListener('DOMContentLoaded', () => {
   // Start with pictures of clothes 버튼 클릭 → 옷 이미지 모드 (향후 구현)
   if (clothesModeBtn) {
     clothesModeBtn.addEventListener('click', () => {
-      // 현재는 알림만 표시하고, 향후 구현 예정
-      alert('🚧 옷 이미지 모드는 곧 출시됩니다! 현재는 프롬프트 모드를 이용해주세요.');
-      
-      // 임시로 프롬프트 모드로 연결
-      if (modeSelectionPage && mainApp) {
+      // 옷 이미지 모드 페이지 표시
+      if (modeSelectionPage) {
         modeSelectionPage.style.display = 'none';
-        mainApp.style.display = 'block';
-        
-        mainApp.style.opacity = '0';
-        mainApp.style.transform = 'translateY(20px)';
-        
-        setTimeout(() => {
-          mainApp.style.transition = 'all 0.5s ease-out';
-          mainApp.style.opacity = '1';
-          mainApp.style.transform = 'translateY(0)';
-        }, 10);
+        const clothesModeApp = document.getElementById('clothesModeApp');
+        if (clothesModeApp) {
+          clothesModeApp.style.display = 'block';
+          
+          // 부드러운 애니메이션 효과
+          clothesModeApp.style.opacity = '0';
+          clothesModeApp.style.transform = 'translateY(20px)';
+          
+          setTimeout(() => {
+            clothesModeApp.style.transition = 'all 0.5s ease-out';
+            clothesModeApp.style.opacity = '1';
+            clothesModeApp.style.transform = 'translateY(0)';
+          }, 10);
+          
+          // 옷 이미지 모드 초기화
+          setupClothesMode();
+        }
       }
     });
   }
@@ -140,7 +144,8 @@ let originalImageData = null; // 원본 이미지 데이터 저장
 
 // 새로운 변수들
 let currentMode = 'text'; // 'text' 또는 'image'
-let clothingImageData = null; // 업로드된 옷 이미지 데이터
+let bodyImageData = null; // 전신사진 데이터 (옷 이미지 모드용)
+let clothingImageData = null; // 옷 이미지 데이터 (옷 이미지 모드용)
 
 // 드래그 앤 드롭 기능 구현
 function setupDragAndDrop() {
@@ -940,5 +945,269 @@ function hideInstallButton() {
   const installBtn = document.getElementById('installBtn');
   if (installBtn) {
     installBtn.remove();
+  }
+}
+
+// 옷 이미지 모드 변수들
+// bodyImageData와 clothingImageData는 이미 전역변수로 선언됨
+
+// 옷 이미지 모드 초기화 함수
+function setupClothesMode() {
+  const bodyImageDropArea = document.getElementById('bodyImageDropArea');
+  const bodyImageUpload = document.getElementById('bodyImageUpload');
+  const bodyImagePreview = document.getElementById('bodyImagePreview');
+  const bodyImageDisplay = document.getElementById('bodyImageDisplay');
+  const removeBodyImageBtn = document.getElementById('removeBodyImageBtn');
+  
+  const clothingImageDropArea = document.getElementById('clothingImageDropArea');
+  const clothingImageUpload = document.getElementById('clothingImageUpload');
+  const clothingImagePreview = document.getElementById('clothingImagePreview');
+  const clothingImageDisplay = document.getElementById('clothingImageDisplay');
+  const removeClothingImageBtn = document.getElementById('removeClothingImageBtn');
+  
+  const generateClothesBtn = document.getElementById('generateClothesBtn');
+  const clothesPromptInput = document.getElementById('clothesPromptInput');
+  const clothesResultImage = document.getElementById('clothesResultImage');
+  const clothesResultPlaceholder = document.getElementById('clothesResultPlaceholder');
+  const clothesActionButtons = document.getElementById('clothesActionButtons');
+  const clothesGoogleLensSection = document.getElementById('clothesGoogleLensSection');
+  
+  // 전신사진 드래그 앤 드롭 설정
+  setupImageDragAndDrop(bodyImageDropArea, bodyImageUpload, (file) => {
+    handleBodyImageFile(file, bodyImageDisplay, bodyImagePreview);
+  });
+  
+  // 옷 사진 드래그 앤 드롭 설정
+  setupImageDragAndDrop(clothingImageDropArea, clothingImageUpload, (file) => {
+    handleClothingImageFile(file, clothingImageDisplay, clothingImagePreview);
+  });
+  
+  // 이미지 제거 버튼
+  removeBodyImageBtn.addEventListener('click', () => {
+    bodyImageData = null;
+    bodyImagePreview.style.display = 'none';
+    updateGenerateButton();
+  });
+  
+  removeClothingImageBtn.addEventListener('click', () => {
+    clothingImageData = null;
+    clothingImagePreview.style.display = 'none';
+    updateGenerateButton();
+  });
+  
+  // 생성 버튼
+  generateClothesBtn.addEventListener('click', async () => {
+    if (!bodyImageData || !clothingImageData) {
+      alert('전신사진과 옷 사진을 모두 업로드해주세요.');
+      return;
+    }
+    
+    const additionalPrompt = clothesPromptInput.value || 'natural fitting, realistic';
+    
+    // 로딩 상태 표시
+    showClothesLoadingState();
+    generateClothesBtn.disabled = true;
+    generateClothesBtn.textContent = '✨ 생성 중...';
+    
+    try {
+      // 가상 피팅 API 호출 (향후 구현)
+      await new Promise(resolve => setTimeout(resolve, 3000)); // 임시 로딩
+      
+      // 임시 결과 표시
+      alert('🚧 가상 피팅 기능은 개발 중입니다! 곧 만나보실 수 있어요.');
+      resetClothesResultState();
+      
+    } catch (err) {
+      resetClothesResultState();
+      alert('가상 피팅 생성 실패: ' + err.message);
+    }
+    
+    generateClothesBtn.disabled = false;
+    generateClothesBtn.textContent = '👤+👕 가상 피팅 생성';
+    updateGenerateButton();
+  });
+  
+  // 구글 렌즈 기능 초기화
+  setupClothesGoogleLens();
+}
+
+// 이미지 드래그 앤 드롭 설정 함수
+function setupImageDragAndDrop(dropArea, fileInput, handleFile) {
+  dropArea.addEventListener('click', () => {
+    fileInput.click();
+  });
+  
+  dropArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropArea.classList.add('drag-over');
+  });
+  
+  dropArea.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    dropArea.classList.remove('drag-over');
+  });
+  
+  dropArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropArea.classList.remove('drag-over');
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      const file = files[0];
+      if (file.type.startsWith('image/')) {
+        handleFile(file);
+      } else {
+        alert('이미지 파일만 업로드 가능합니다.');
+      }
+    }
+  });
+  
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      handleFile(file);
+    }
+  });
+}
+
+// 전신사진 파일 처리
+function handleBodyImageFile(file, displayImg, previewDiv) {
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    bodyImageData = evt.target.result;
+    displayImg.src = evt.target.result;
+    previewDiv.style.display = 'block';
+    updateGenerateButton();
+  };
+  reader.readAsDataURL(file);
+}
+
+// 옷 사진 파일 처리
+function handleClothingImageFile(file, displayImg, previewDiv) {
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    clothingImageData = evt.target.result;
+    displayImg.src = evt.target.result;
+    previewDiv.style.display = 'block';
+    updateGenerateButton();
+  };
+  reader.readAsDataURL(file);
+}
+
+// 생성 버튼 상태 업데이트
+function updateGenerateButton() {
+  const generateClothesBtn = document.getElementById('generateClothesBtn');
+  if (bodyImageData && clothingImageData) {
+    generateClothesBtn.disabled = false;
+    generateClothesBtn.style.background = 'linear-gradient(135deg, var(--cobalt-blue) 0%, var(--cobalt-blue-dark) 100%)';
+    generateClothesBtn.style.cursor = 'pointer';
+    generateClothesBtn.nextElementSibling.textContent = '가상 피팅을 시작할 준비가 되었습니다!';
+  } else {
+    generateClothesBtn.disabled = true;
+    generateClothesBtn.style.background = 'var(--gray-400)';
+    generateClothesBtn.style.cursor = 'not-allowed';
+    generateClothesBtn.nextElementSibling.textContent = '전신사진과 옷 사진을 모두 업로드해주세요';
+  }
+}
+
+// 옷 이미지 모드 로딩 상태 표시
+function showClothesLoadingState() {
+  const clothesResultPlaceholder = document.getElementById('clothesResultPlaceholder');
+  if (clothesResultPlaceholder) {
+    clothesResultPlaceholder.innerHTML = `
+      <div style="text-align: center;">
+        <div class="loading" style="margin: 0 auto 1rem auto; width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%); animation: pulse 1s infinite alternate;"></div>
+        <div style="font-weight: bold; font-size: 1.1rem; background: linear-gradient(90deg, #2563eb, #60a5fa, #2563eb); background-size: 200% auto; color: transparent; background-clip: text; -webkit-background-clip: text; animation: flowingText 2s linear infinite;">가상 피팅을 생성하는 중입니다...</div>
+        <div style="font-size: 0.9rem; color: var(--gray-500); margin-top: 0.5rem;">잠시만 기다려주세요</div>
+      </div>
+    `;
+    clothesResultPlaceholder.style.display = 'flex';
+  }
+  
+  const clothesResultImage = document.getElementById('clothesResultImage');
+  if (clothesResultImage) {
+    clothesResultImage.style.display = 'none';
+  }
+  
+  const clothesActionButtons = document.getElementById('clothesActionButtons');
+  if (clothesActionButtons) {
+    clothesActionButtons.style.display = 'none';
+  }
+}
+
+// 옷 이미지 모드 결과 상태 초기화
+function resetClothesResultState() {
+  const clothesResultPlaceholder = document.getElementById('clothesResultPlaceholder');
+  if (clothesResultPlaceholder) {
+    clothesResultPlaceholder.innerHTML = '가상 피팅 결과가 여기에 표시됩니다';
+    clothesResultPlaceholder.style.display = 'flex';
+  }
+  
+  const clothesResultImage = document.getElementById('clothesResultImage');
+  if (clothesResultImage) {
+    clothesResultImage.style.display = 'none';
+  }
+  
+  const clothesActionButtons = document.getElementById('clothesActionButtons');
+  if (clothesActionButtons) {
+    clothesActionButtons.style.display = 'none';
+  }
+  
+  const clothesGoogleLensSection = document.getElementById('clothesGoogleLensSection');
+  if (clothesGoogleLensSection) {
+    clothesGoogleLensSection.style.display = 'none';
+  }
+}
+
+// 옷 이미지 모드 공유 함수들 (기존 함수와 동일한 로직)
+function shareClothesToInstagram() {
+  const clothesResultImage = document.getElementById('clothesResultImage');
+  if (!clothesResultImage.src) {
+    alert('공유할 이미지가 없습니다.');
+    return;
+  }
+  shareToInstagram(); // 기존 함수 재사용
+}
+
+function shareClothesToKakao() {
+  const clothesResultImage = document.getElementById('clothesResultImage');
+  if (!clothesResultImage.src) {
+    alert('공유할 이미지가 없습니다.');
+    return;
+  }
+  shareToKakao(); // 기존 함수 재사용
+}
+
+function saveClothesImage() {
+  const clothesResultImage = document.getElementById('clothesResultImage');
+  if (!clothesResultImage.src) {
+    alert('저장할 이미지가 없습니다.');
+    return;
+  }
+  
+  // 이미지를 다운로드
+  const link = document.createElement('a');
+  link.href = clothesResultImage.src;
+  link.download = `ai-fitting-result-${Date.now()}.png`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// 옷 이미지 모드용 구글 렌즈 함수
+function setupClothesGoogleLens() {
+  const clothesGoogleLensBtn = document.getElementById('clothesGoogleLensBtn');
+  if (clothesGoogleLensBtn) {
+    clothesGoogleLensBtn.addEventListener('click', () => {
+      const clothesResultImage = document.getElementById('clothesResultImage');
+      if (!clothesResultImage.src) {
+        alert('검색할 이미지가 없습니다.');
+        return;
+      }
+      
+      // 구글 렌즈로 이미지 검색
+      const searchUrl = `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(clothesResultImage.src)}`;
+      window.open(searchUrl, '_blank');
+    });
   }
 } 
