@@ -1,22 +1,18 @@
 /* Modern Color Palette */
 :root {
-  --cobalt-blue: #2563eb;
-  --cobalt-blue-light: #3b82f6;
-  --cobalt-blue-dark: #1d4ed8;
-  --orange: #ea580c;
-  --orange-light: #f97316;
-  --orange-dark: #c2410c;
-  --gray-50: #f8fafc;
-  --gray-100: #f1f5f9;
-  --gray-200: #e2e8f0;
-  --gray-300: #cbd5e1;
-  --gray-400: #94a3b8;
-  --gray-500: #64748b;
-  --gray-600: #475569;
-  --gray-700: #334155;
-  --gray-800: #1e293b;
-  --gray-900: #0f172a;
-  --white: #ffffff;
+  --primary: #000000;
+  --secondary: #ffffff;
+  --accent: #333333;
+  --gray-50: #fafafa;
+  --gray-100: #f5f5f5;
+  --gray-200: #e5e5e5;
+  --gray-300: #d4d4d4;
+  --gray-400: #a3a3a3;
+  --gray-500: #737373;
+  --gray-600: #525252;
+  --gray-700: #404040;
+  --gray-800: #262626;
+  --gray-900: #171717;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
@@ -37,29 +33,30 @@ body {
   min-height: 100vh;
 }
 
-/* Header Styles with Elegant Serif Typography */
+/* Header Styles with Minimal Typography */
 h1 {
   text-align: center;
-  font-family: 'Playfair Display', 'Crimson Text', 'Cormorant Garamond', 'EB Garamond', Georgia, 'Times New Roman', serif;
-  font-weight: 700;
-  font-size: 3.5rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 300;
+  font-size: 2.5rem;
   margin: 2rem 0 1rem 0;
-  color: var(--gray-900);
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  position: relative;
+  color: var(--primary);
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  text-transform: uppercase;
 }
 
-/* Subtitle with serif accent */
+/* Subtitle with minimal style */
 .subtitle {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-style: normal;
-  font-weight: 500;
-  color: var(--gray-900);
-  font-size: 1.2rem;
+  font-weight: 300;
+  color: var(--gray-600);
+  font-size: 1rem;
   text-align: center;
   margin-bottom: 2rem;
-  letter-spacing: 0;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
 }
 
 h2 {
@@ -557,46 +554,121 @@ div {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem;
-  border: none;
-  border-radius: 0.75rem;
-  font-size: 0.95rem;
-  font-weight: 600;
+  border: 1px solid var(--primary);
+  border-radius: 0;
+  font-size: 0.9rem;
+  font-weight: 300;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: var(--shadow-md);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
   text-decoration: none;
 }
 
 .share-button.instagram {
-  background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%);
-  color: var(--white);
+  background: var(--primary);
+  color: var(--secondary);
 }
 
 .share-button.kakao {
-  background: #fee500;
-  color: #3c1e1e;
+  background: var(--secondary);
+  color: var(--primary);
+  border: 1px solid var(--primary);
 }
 
 .save-button {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: var(--white);
+  background: var(--primary);
+  color: var(--secondary);
 }
 
 .share-button:hover, .save-button:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  background: var(--secondary);
+  color: var(--primary);
+  border-color: var(--primary);
 }
 
 .share-button.instagram:hover {
-  background: linear-gradient(135deg, #9146ff 0%, #ff1744 50%, #ffa726 100%);
+  background: var(--secondary);
+  color: var(--primary);
 }
 
 .share-button.kakao:hover {
-  background: #ffeb3b;
+  background: var(--primary);
+  color: var(--secondary);
 }
 
 .save-button:hover {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: var(--secondary);
+  color: var(--primary);
+}
+
+/* Google Search Button */
+.google-search-btn {
+  width: 100%;
+  padding: 0.875rem 2rem;
+  background: var(--primary);
+  color: var(--secondary);
+  border: 1px solid var(--primary);
+  border-radius: 0;
+  font-size: 0.9rem;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.google-search-btn:hover {
+  background: var(--secondary);
+  color: var(--primary);
+}
+
+/* Back Button */
+.back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  padding: 0.75rem 1.5rem;
+  background: var(--secondary);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: 0;
+  font-size: 0.9rem;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.back-btn:hover {
+  background: var(--primary);
+  color: var(--secondary);
+}
+
+/* Clear Mask Button */
+#clearMaskBtn {
+  padding: 0.5rem 1rem;
+  background: var(--secondary);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: 0;
+  font-size: 0.9rem;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#clearMaskBtn:hover {
+  background: var(--primary);
+  color: var(--secondary);
 }
 
 /* Mask brush indicator */
@@ -690,30 +762,6 @@ div {
   box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
 }
 
-.google-search-btn {
-  width: 100%;
-  padding: 0.875rem 2rem;
-  background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
-  color: var(--white);
-  border: none;
-  border-radius: 0.75rem;
-  font-size: 1rem;
-  font-weight: 600;
-  box-shadow: var(--shadow-md);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.google-search-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-  background: linear-gradient(135deg, #3367d6 0%, #2d7d32 100%);
-}
-
 /* flowingText 애니메이션 */
 @keyframes flowingText {
   0% {
@@ -724,13 +772,13 @@ div {
   }
 }
 
-/* 랜딩 페이지 스타일 */
+/* Landing Page Styles */
 .landing-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #000000;
+  background: var(--secondary);
   position: relative;
   overflow: hidden;
 }
@@ -762,145 +810,52 @@ div {
 }
 
 .landing-title {
-  font-family: 'Playfair Display', 'Crimson Text', 'Cormorant Garamond', 'EB Garamond', Georgia, 'Times New Roman', serif;
-  font-size: 4.5rem;
-  font-weight: 700;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 3rem;
+  font-weight: 300;
   margin-bottom: 1.5rem;
-  background: linear-gradient(
-    45deg,
-    #1d4ed8,
-    #2563eb,
-    #3b82f6,
-    #60a5fa,
-    #93c5fd,
-    #3b82f6,
-    #2563eb,
-    #1d4ed8
-  );
-  background-size: 300% 300%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: waveFlow 3s ease-in-out infinite;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  text-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
-}
-
-@keyframes waveFlow {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
+  color: var(--primary);
+  letter-spacing: 0.2em;
+  line-height: 1.2;
+  text-transform: uppercase;
 }
 
 .landing-subtitle {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-size: 1.3rem;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--gray-600);
   margin-bottom: 3rem;
-  letter-spacing: 0.02em;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
 }
 
 .try-style-btn {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  border: 2px solid rgba(37, 99, 235, 0.3);
-  color: white;
-  font-size: 1.4rem;
-  font-weight: 600;
-  padding: 1.2rem 3rem;
-  border-radius: 50px;
+  background: var(--primary);
+  color: var(--secondary);
+  font-size: 0.9rem;
+  font-weight: 300;
+  padding: 1rem 3rem;
+  border: 1px solid var(--primary);
+  border-radius: 0;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
-    0 10px 30px rgba(37, 99, 235, 0.3),
-    0 0 20px rgba(37, 99, 235, 0.1) inset;
-  position: relative;
-  overflow: hidden;
-  letter-spacing: 0.02em;
-  backdrop-filter: blur(10px);
-}
-
-.try-style-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(255, 255, 255, 0.2), 
-    transparent
-  );
-  transition: left 0.6s;
-}
-
-.try-style-btn:hover::before {
-  left: 100%;
+  transition: all 0.3s ease;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
 }
 
 .try-style-btn:hover {
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 
-    0 15px 40px rgba(37, 99, 235, 0.4),
-    0 0 30px rgba(59, 130, 246, 0.2) inset;
-  border-color: rgba(59, 130, 246, 0.5);
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: var(--secondary);
+  color: var(--primary);
 }
 
-.try-style-btn:active {
-  transform: translateY(-1px) scale(1.02);
-  transition: all 0.1s;
-}
-
-/* 모바일 반응형 */
-@media (max-width: 768px) {
-  .landing-title {
-    font-size: 3rem;
-  }
-  
-  .landing-subtitle {
-    font-size: 1.1rem;
-    margin-bottom: 2.5rem;
-  }
-  
-  .try-style-btn {
-    font-size: 1.2rem;
-    padding: 1rem 2.5rem;
-  }
-  
-  .landing-content {
-    padding: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .landing-title {
-    font-size: 2.2rem;
-  }
-  
-  .landing-subtitle {
-    font-size: 1rem;
-  }
-  
-  .try-style-btn {
-    font-size: 1.1rem;
-    padding: 0.9rem 2rem;
-  }
-}
-
-/* 모드 선택 페이지 스타일 */
+/* Mode Selection Page Styles */
 .mode-selection-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #000000;
+  background: var(--secondary);
   position: relative;
   overflow: hidden;
 }
@@ -929,39 +884,24 @@ div {
 }
 
 .mode-title {
-  font-family: 'Playfair Display', 'Crimson Text', 'Cormorant Garamond', 'EB Garamond', Georgia, 'Times New Roman', serif;
-  font-size: 3rem;
-  font-weight: 700;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 2.5rem;
+  font-weight: 300;
   margin-bottom: 1rem;
-  background: linear-gradient(
-    45deg,
-    #1d4ed8,
-    #2563eb,
-    #3b82f6,
-    #60a5fa,
-    #93c5fd,
-    #3b82f6,
-    #2563eb,
-    #1d4ed8
-  );
-  background-size: 300% 300%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: waveFlow 3s ease-in-out infinite;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  text-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+  color: var(--primary);
+  letter-spacing: 0.2em;
+  line-height: 1.2;
+  text-transform: uppercase;
 }
 
 .mode-subtitle {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-size: 1.2rem;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  font-weight: 300;
+  color: var(--gray-600);
   margin-bottom: 3rem;
-  letter-spacing: 0.02em;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
 }
 
 .mode-options {
@@ -980,30 +920,21 @@ div {
 
 .mode-btn {
   width: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid rgba(37, 99, 235, 0.3);
-  border-radius: 1.5rem;
+  background: var(--secondary);
+  border: 1px solid var(--gray-200);
+  border-radius: 0;
   padding: 2rem;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
   text-align: center;
-  color: white;
+  color: var(--primary);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 .mode-btn:hover {
-  transform: translateY(-5px) scale(1.02);
-  background: rgba(37, 99, 235, 0.1);
-  border-color: rgba(59, 130, 246, 0.5);
-  box-shadow: 
-    0 20px 40px rgba(37, 99, 235, 0.2),
-    0 0 30px rgba(59, 130, 246, 0.1) inset;
-}
-
-.mode-btn:active {
-  transform: translateY(-2px) scale(1.01);
-  transition: all 0.1s;
+  background: var(--primary);
+  color: var(--secondary);
+  border-color: var(--primary);
 }
 
 .mode-icon {
@@ -1013,17 +944,21 @@ div {
 }
 
 .mode-text h3 {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 300;
   margin-bottom: 0.5rem;
-  color: rgba(255, 255, 255, 0.95);
+  color: inherit;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
 }
 
 .mode-text p {
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  color: inherit;
   line-height: 1.5;
   margin: 0;
+  letter-spacing: 0.1em;
+  opacity: 0.8;
 }
 
 /* 모드 선택 페이지 모바일 반응형 */

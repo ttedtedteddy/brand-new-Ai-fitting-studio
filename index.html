@@ -29,40 +29,38 @@
   <!-- 랜딩 페이지 -->
   <div id="landingPage" class="landing-page">
     <div class="landing-content">
-      <h1 class="landing-title">✨ AI Fitting Studio</h1>
-      <p class="landing-subtitle">AI 기술로 당신만의 스타일을 완성하세요</p>
+      <h1 class="landing-title">AI Fitting Studio</h1>
+      <p class="landing-subtitle">Complete your style with AI technology</p>
       <button id="tryMyStyleBtn" class="try-style-btn">Try my style</button>
     </div>
   </div>
 
-  <!-- 모드 선택 페이지 (새로 추가) -->
+  <!-- 모드 선택 페이지 -->
   <div id="modeSelectionPage" class="mode-selection-page" style="display: none;">
     <!-- 뒤로가기 버튼 -->
     <button id="backToLandingBtn" class="back-btn">
-      ← 홈으로
+      ← Home
     </button>
     
     <div class="mode-selection-content">
-      <h1 class="mode-title">✨ AI Fitting Studio</h1>
-      <p class="mode-subtitle">어떤 방식으로 스타일링을 시작하시겠어요?</p>
+      <h1 class="mode-title">AI Fitting Studio</h1>
+      <p class="mode-subtitle">How would you like to start styling?</p>
       
       <div class="mode-options">
         <div class="mode-option">
           <button id="promptModeBtn" class="mode-btn">
-            <div class="mode-icon">💭</div>
             <div class="mode-text">
               <h3>Start with prompt</h3>
-              <p>프롬프트를 이용해 나의 스타일을 완성해보세요.</p>
+              <p>Complete your style using text prompts</p>
             </div>
           </button>
         </div>
         
         <div class="mode-option">
           <button id="clothesModeBtn" class="mode-btn">
-            <div class="mode-icon">👕</div>
             <div class="mode-text">
               <h3>Start with pictures of clothes</h3>
-              <p>옷의 사진을 이용해 나의 스타일을 완성해보세요</p>
+              <p>Complete your style using clothing images</p>
             </div>
           </button>
         </div>
@@ -70,137 +68,61 @@
     </div>
   </div>
 
-  <!-- 옷 이미지 모드 페이지 (새로 추가) -->
+  <!-- 옷 이미지 모드 페이지 -->
   <div id="clothesModeApp" style="display: none;">
     <!-- 뒤로가기 버튼 -->
     <button id="backToModeSelectionFromClothesBtn" class="back-btn">
-      ← 모드 선택
+      ← Mode Selection
     </button>
     
-    <header>
-      <h1>✨ AI Fitting Studio</h1>
-      <p class="subtitle">
-        옷 이미지로 당신만의 스타일을 완성하세요
-      </p>
-    </header>
-
     <main>
-      <!-- 이미지 업로드 섹션 -->
       <div class="upload-container">
-        <!-- 왼쪽: 전신사진 업로드 -->
         <div class="upload-section">
-          <h2>👤 전신사진 업로드</h2>
+          <h2>Upload Clothes</h2>
           <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-            스타일링을 적용할 전신사진을 업로드해주세요
+            Upload the clothes you want to try on
           </p>
-          <div class="drag-drop-area" id="bodyImageDropArea">
-            <div class="drag-drop-icon">👤</div>
-            <div class="drag-drop-text">전신사진을 드래그하여 업로드해주세요</div>
-            <div class="drag-drop-subtext">또는 클릭하여 파일을 선택하세요</div>
+          
+          <div class="drag-drop-area" id="clothesDragDropArea">
+            <div class="drag-drop-text">Drag and drop your image here</div>
+            <div class="drag-drop-subtext">or click to select a file</div>
+          </div>
+          <input type="file" id="clothesImageUpload" accept="image/*" style="display: none;">
+        </div>
+        
+        <div class="upload-section">
+          <h2>Upload Full Body Photo</h2>
+          <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
+            Upload your full body photo for virtual fitting
+          </p>
+          
+          <div class="drag-drop-area" id="bodyDragDropArea">
+            <div class="drag-drop-text">Drag and drop your image here</div>
+            <div class="drag-drop-subtext">or click to select a file</div>
           </div>
           <input type="file" id="bodyImageUpload" accept="image/*" style="display: none;">
-          
-          <!-- 업로드된 전신사진 미리보기 -->
-          <div id="bodyImagePreview" style="display: none; margin-top: 1rem;">
-            <img id="bodyImageDisplay" style="max-width: 100%; max-height: 300px; border-radius: 1rem; box-shadow: var(--shadow-lg);" />
-            <button id="removeBodyImageBtn" style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 0.5rem; cursor: pointer;">이미지 제거</button>
-          </div>
-        </div>
-
-        <!-- 오른쪽: 옷 사진 업로드 -->
-        <div class="upload-section">
-          <h2>👕 옷 사진 업로드</h2>
-          <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-            입혀보고 싶은 옷의 사진을 업로드해주세요
-          </p>
-          
-          <!-- 전체 의상 모드일 때만 표시되는 업로드 방식 선택 -->
-          <div id="outfitUploadModeSection" style="display: none; margin-bottom: 1.5rem;">
-            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--gray-700);">
-              📂 업로드 방식 선택
-            </label>
-            <select id="outfitUploadMode" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--gray-300); border-radius: 0.75rem; font-size: 1rem; transition: all 0.3s ease;" onchange="toggleOutfitUploadMode()">
-              <option value="combined">🖼️ 조합된 이미지 (상하의가 함께 있는 사진)</option>
-              <option value="separate">📂 상의/하의 각각 업로드</option>
-            </select>
-            <p style="font-size: 0.85rem; color: var(--gray-500); margin-top: 0.5rem;">
-              조합된 이미지는 완성된 코디를, 각각 업로드는 상의와 하의를 따로 적용합니다.
-            </p>
-          </div>
-          
-          <!-- 기본 단일 이미지 업로드 (조합된 이미지 모드) -->
-          <div id="singleClothingUpload">
-            <div class="drag-drop-area" id="clothingImageDropArea">
-              <div class="drag-drop-icon">👕</div>
-              <div class="drag-drop-text">옷 사진을 드래그하여 업로드해주세요</div>
-              <div class="drag-drop-subtext">또는 클릭하여 파일을 선택하세요</div>
-            </div>
-            <input type="file" id="clothingImageUpload" accept="image/*" style="display: none;">
-            
-            <!-- 업로드된 옷 사진 미리보기 -->
-            <div id="clothingImagePreview" style="display: none; margin-top: 1rem;">
-              <img id="clothingImageDisplay" style="max-width: 100%; max-height: 300px; border-radius: 1rem; box-shadow: var(--shadow-lg);" />
-              <button id="removeClothingImageBtn" style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 0.5rem; cursor: pointer;">이미지 제거</button>
-            </div>
-          </div>
-          
-          <!-- 상의/하의 각각 업로드 모드 -->
-          <div id="separateClothingUpload" style="display: none;">
-            <!-- 상의 업로드 -->
-            <div style="margin-bottom: 2rem;">
-              <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--gray-700);">👔 상의 이미지</h3>
-              <div class="drag-drop-area" id="upperClothingDropArea" style="height: 150px;">
-                <div class="drag-drop-icon">👔</div>
-                <div class="drag-drop-text">상의 이미지 업로드</div>
-                <div class="drag-drop-subtext">셔츠, 블라우스, 재킷 등</div>
-              </div>
-              <input type="file" id="upperClothingUpload" accept="image/*" style="display: none;">
-              
-              <div id="upperClothingPreview" style="display: none; margin-top: 1rem;">
-                <img id="upperClothingDisplay" style="max-width: 100%; max-height: 200px; border-radius: 1rem; box-shadow: var(--shadow-lg);" />
-                <button id="removeUpperClothingBtn" style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 0.5rem; cursor: pointer;">이미지 제거</button>
-              </div>
-            </div>
-            
-            <!-- 하의 업로드 -->
-            <div>
-              <h3 style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--gray-700);">👖 하의 이미지</h3>
-              <div class="drag-drop-area" id="lowerClothingDropArea" style="height: 150px;">
-                <div class="drag-drop-icon">👖</div>
-                <div class="drag-drop-text">하의 이미지 업로드</div>
-                <div class="drag-drop-subtext">바지, 스커트, 반바지 등</div>
-              </div>
-              <input type="file" id="lowerClothingUpload" accept="image/*" style="display: none;">
-              
-              <div id="lowerClothingPreview" style="display: none; margin-top: 1rem;">
-                <img id="lowerClothingDisplay" style="max-width: 100%; max-height: 200px; border-radius: 1rem; box-shadow: var(--shadow-lg);" />
-                <button id="removeLowerClothingBtn" style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 0.5rem; cursor: pointer;">이미지 제거</button>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
-      <!-- AI 스타일링 생성 섹션 -->
       <div class="generate-container" style="margin-top: 2rem;">
-        <h2>🎨 가상 피팅 생성</h2>
+        <h2>Virtual Fitting Generation</h2>
         <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-          AI가 전신사진에 옷을 자동으로 입혀드립니다
+          AI will automatically fit the clothes on your full body photo
         </p>
         
         <!-- 의류 카테고리 선택 -->
         <div style="margin-bottom: 1.5rem;">
-          <label for="clothingCategory" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--gray-700);">
-            👔 의류 종류
+          <label for="clothingCategory" style="display: block; font-weight: 300; margin-bottom: 0.5rem; color: var(--gray-700);">
+            Clothing Category
           </label>
-          <select id="clothingCategory" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--gray-300); border-radius: 0.75rem; font-size: 1rem; transition: all 0.3s ease;" onchange="toggleDressLengthOption()">
-            <option value="upper_body">👕 상의 (셔츠, 블라우스, 재킷 등)</option>
-            <option value="lower_body">👖 하의 (바지, 스커트, 반바지 등)</option>
-            <option value="dresses">👗 원피스 (드레스, 원피스 등)</option>
-            <option value="full_outfit">👔 전체 의상 (상의 + 하의 조합)</option>
+          <select id="clothingCategory" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--gray-300); border-radius: 0; font-size: 1rem; transition: all 0.3s ease;" onchange="toggleDressLengthOption()">
+            <option value="upper_body">Upper Body (Shirts, Blouses, Jackets)</option>
+            <option value="lower_body">Lower Body (Pants, Skirts, Shorts)</option>
+            <option value="dresses">Dresses (Dresses, One-pieces)</option>
+            <option value="full_outfit">Full Outfit (Top + Bottom Combination)</option>
           </select>
           <p style="font-size: 0.85rem; color: var(--gray-500); margin-top: 0.5rem;">
-            업로드한 옷의 종류를 선택해주세요. "전체 의상"을 선택하면 상의와 하의를 동시에 변경할 수 있습니다.
+            Select the type of clothing you uploaded. Choose "Full Outfit" to change both top and bottom simultaneously.
           </p>
         </div>
         
@@ -281,43 +203,42 @@
     </main>
   </div>
 
-  <!-- 메인 애플리케이션 (처음에는 숨김) -->
+  <!-- 메인 애플리케이션 -->
   <div id="mainApp" style="display: none;">
     <!-- 뒤로가기 버튼 -->
     <button id="backToModeSelectionFromMainBtn" class="back-btn">
-      ← 모드 선택
+      ← Mode Selection
     </button>
     
     <header>
-      <h1>✨ AI Fitting Studio</h1>
+      <h1>AI Fitting Studio</h1>
       <p class="subtitle">
-        AI 기술로 당신만의 스타일을 완성하세요
+        Complete your style with AI technology
       </p>
     </header>
 
     <main>
       <div id="uploadMaskSection">
-        <h2>📸 사진 업로드 & 마스킹</h2>
+        <h2>Photo Upload & Masking</h2>
         <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-          이곳을 클릭하거나 이곳에 드래그하여 사진을 업로드해주세요.<br>
-          업로드 후, 마스킹 브러쉬로 색칠할 수 있습니다.
+          Click or drag and drop to upload your photo.<br>
+          After uploading, you can use the masking brush to select areas.
         </p>
         <div class="drag-drop-area" id="dragDropArea">
-          <div class="drag-drop-icon">📷</div>
-          <div class="drag-drop-text">여기에 사진을 드래그하여 업로드해주세요</div>
-          <div class="drag-drop-subtext">또는 클릭하여 파일을 선택하세요</div>
+          <div class="drag-drop-text">Drag and drop your image here</div>
+          <div class="drag-drop-subtext">or click to select a file</div>
         </div>
         <input type="file" id="imageUpload" accept="image/*" style="display: none;">
         <div id="maskSection" style="display:none; margin-top:2rem;">
-          <h3>✨ 마스킹 브러시로 색칠</h3>
+          <h3>Masking Brush</h3>
           <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-            변경하고 싶은 부분을 브러시로 칠해주세요 (주황색으로 표시됩니다)
+            Use the brush to select areas you want to change (shown in orange)
           </p>
           <div id="brushToolbar">
-            <label>브러시 크기: 
+            <label>Brush Size: 
               <input type="range" id="brushSize" min="5" max="80" value="30">
             </label>
-            <button id="clearMaskBtn">마스크 지우기</button>
+            <button id="clearMaskBtn">Clear Mask</button>
           </div>
           <div id="canvasContainer">
             <canvas id="photoCanvas" width="512" height="768"></canvas>
@@ -326,60 +247,55 @@
         </div>
       </div>
 
-      <div style="max-width: 600px; margin: 2rem auto; background: var(--white); border-radius: 1.5rem; box-shadow: var(--shadow-lg); padding: 2.5rem 2rem; border: 1px solid var(--gray-200); position: relative; overflow: hidden;">
-        <div style="content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--cobalt-blue) 0%, var(--cobalt-blue-light) 100%);"></div>
-        <h2>🚀 AI 스타일링 생성</h2>
+      <div style="max-width: 600px; margin: 2rem auto; background: var(--white); border-radius: 0; box-shadow: var(--shadow-lg); padding: 2.5rem 2rem; border: 1px solid var(--gray-200); position: relative; overflow: hidden;">
+        <div style="content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: var(--primary);"></div>
+        <h2>AI Styling Generation</h2>
         <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-          텍스트로 원하는 스타일을 설명해주세요
+          Describe your desired style in text
         </p>
         
         <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem;">
-          <label style="flex: 1; min-width: 300px;">프롬프트: 
-            <input type="text" id="promptInput" placeholder="예: red dress, elegant, fashion" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 0.5rem; margin-top: 0.5rem;"/>
+          <label style="flex: 1; min-width: 300px;">Prompt: 
+            <input type="text" id="promptInput" placeholder="e.g., red dress, elegant, fashion" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 0; margin-top: 0.5rem;"/>
           </label>
         </div>
 
         <!-- 생성 버튼 -->
         <div style="text-align: center; margin-top: 2rem;">
-          <button id="generateBtn" style="background: linear-gradient(135deg, var(--cobalt-blue) 0%, var(--cobalt-blue-dark) 100%); color: white; border: none; padding: 1rem 2rem; border-radius: 0.75rem; font-weight: 600; font-size: 1rem; cursor: pointer; box-shadow: var(--shadow-lg); transition: all 0.3s ease;">
-            🚀 AI 스타일링 생성
+          <button id="generateBtn" style="background: var(--primary); color: var(--secondary); border: 1px solid var(--primary); padding: 1rem 2rem; border-radius: 0; font-weight: 300; font-size: 0.9rem; cursor: pointer; letter-spacing: 0.2em; text-transform: uppercase; transition: all 0.3s ease;">
+            Generate AI Styling
           </button>
         </div>
       </div>
 
-      <div class="result-container">
-        <h2>✨ 결과 이미지</h2>
-        <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-          AI가 생성한 스타일링 결과를 확인하세요
-        </p>
-        <div class="result-image-wrapper">
-          <img id="resultImage" src="" alt="결과 이미지" style="display: none;">
-          <div id="resultPlaceholder" style="width: 100%; max-width: 512px; height: 300px; margin: 0 auto; border: 2px dashed var(--gray-300); border-radius: 1rem; display: flex; align-items: center; justify-content: center; color: var(--gray-400); font-size: 1rem;">
-            생성된 이미지가 여기에 표시됩니다
-          </div>
-        </div>
+      <!-- 결과 섹션 -->
+      <div id="resultSection" style="display: none; max-width: 600px; margin: 2rem auto; text-align: center;">
+        <h2>Generated Result</h2>
+        <div id="resultPlaceholder" style="display: none;"></div>
+        <img id="resultImage" style="max-width: 100%; border-radius: 0; box-shadow: var(--shadow-lg);" />
         
-        <div id="actionButtons" class="action-buttons" style="display: none;">
+        <!-- 액션 버튼 -->
+        <div class="action-buttons">
           <button class="share-button instagram" onclick="shareToInstagram()">
-            📷 인스타그램 공유
+            Share to Instagram
           </button>
           <button class="share-button kakao" onclick="shareToKakao()">
-            💬 카카오톡 공유
+            Share to KakaoTalk
           </button>
           <button class="save-button" onclick="saveImage()">
-            💾 이미지 저장
+            Save Image
           </button>
         </div>
       </div>
 
-      <!-- 구글 이미지 검색 섹션을 구글 렌즈 업로드로 대체 -->
+      <!-- 구글 렌즈 검색 섹션 -->
       <div class="google-search-container" id="googleLensSection" style="display: none;">
-        <h2>🔍 비슷한 제품 찾기 (구글 렌즈)</h2>
+        <h2>Find Similar Products</h2>
         <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-          결과 이미지를 구글 렌즈로 검색해 비슷한 제품을 찾아보세요
+          Search for similar products using Google Lens
         </p>
         <button id="googleLensBtn" class="google-search-btn">
-          🔍 구글 렌즈로 이미지 검색
+          Search with Google Lens
         </button>
       </div>
     </main>
