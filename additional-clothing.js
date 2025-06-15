@@ -8,18 +8,20 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // 새로운 함수로 교체
   window.showClothesResultImage = function(src) {
+    console.log('🎯 showClothesResultImage 호출됨:', src);
+    
     // 기존 함수 실행
     if (originalShowClothesResultImage) {
       originalShowClothesResultImage(src);
     }
     
-    // 이미지 로드 후 추가 버튼 표시
+    // 이미지 로드 후 추가 의류 섹션 표시
     const clothesResultImage = document.getElementById('clothesResultImage');
     if (clothesResultImage) {
       clothesResultImage.addEventListener('load', function() {
         setTimeout(() => {
-          showAdditionalClothingButtons();
-        }, 500); // 0.5초 후 버튼 표시
+          showAdditionalClothingSection();
+        }, 1000); // 1초 후 섹션 표시
       });
     }
   };
@@ -27,122 +29,196 @@ document.addEventListener('DOMContentLoaded', function() {
   console.log('showClothesResultImage 함수 확장 완료');
 });
 
-// 추가 의류 제안 버튼 표시 함수
-function showAdditionalClothingButtons() {
-  console.log('🔍 showAdditionalClothingButtons 호출됨');
+// 추가 의류 섹션 표시 함수
+function showAdditionalClothingSection() {
+  console.log('🔍 showAdditionalClothingSection 호출됨');
   
-  const additionalClothingButtons = document.getElementById('additionalClothingButtons');
-  const addLowerClothingBtn = document.getElementById('addLowerClothingBtn');
-  const addUpperClothingBtn = document.getElementById('addUpperClothingBtn');
-  const addAccessoryBtn = document.getElementById('addAccessoryBtn');
   const clothingCategory = document.getElementById('clothingCategory');
-  
-  console.log('🔍 DOM 요소 확인:', {
-    additionalClothingButtons: !!additionalClothingButtons,
-    addLowerClothingBtn: !!addLowerClothingBtn,
-    addUpperClothingBtn: !!addUpperClothingBtn,
-    addAccessoryBtn: !!addAccessoryBtn,
-    clothingCategory: !!clothingCategory
-  });
-  
-  if (!additionalClothingButtons || !clothingCategory) {
-    console.error('❌ 필수 DOM 요소가 없습니다');
+  if (!clothingCategory) {
+    console.error('❌ clothingCategory 요소가 없습니다');
     return;
   }
-  
-  // 모든 버튼 숨기기
-  if (addLowerClothingBtn) addLowerClothingBtn.style.display = 'none';
-  if (addUpperClothingBtn) addUpperClothingBtn.style.display = 'none';
-  if (addAccessoryBtn) addAccessoryBtn.style.display = 'none';
   
   const currentCategory = clothingCategory.value;
   console.log('🎯 현재 의류 카테고리:', currentCategory);
   
-  // 카테고리에 따라 적절한 버튼 표시
+  // 기존 추가 의류 섹션이 있으면 제거
+  const existingSection = document.getElementById('additionalClothingSection');
+  if (existingSection) {
+    existingSection.remove();
+  }
+  
+  // 카테고리에 따른 제안 텍스트와 타겟 카테고리 결정
+  let suggestionText = '';
+  let targetCategory = '';
+  let emoji = '';
+  
   switch (currentCategory) {
     case 'upper_body':
-      console.log('👕 상의 모드 - 하의 버튼 표시');
-      // 상의 결과 → 하의 제안
-      if (addLowerClothingBtn) {
-        addLowerClothingBtn.style.display = 'block';
-        addLowerClothingBtn.onclick = () => showAdditionalClothingUpload('lower_body');
-        console.log('✅ 하의 버튼 표시 완료');
-      } else {
-        console.error('❌ addLowerClothingBtn 요소가 없습니다');
-      }
+      suggestionText = '하의도 추가해서 완벽한 코디를 완성해보세요!';
+      targetCategory = 'lower_body';
+      emoji = '👖';
       break;
-      
     case 'lower_body':
-      console.log('👖 하의 모드 - 상의 버튼 표시');
-      // 하의 결과 → 상의 제안
-      if (addUpperClothingBtn) {
-        addUpperClothingBtn.style.display = 'block';
-        addUpperClothingBtn.onclick = () => showAdditionalClothingUpload('upper_body');
-        console.log('✅ 상의 버튼 표시 완료');
-      } else {
-        console.error('❌ addUpperClothingBtn 요소가 없습니다');
-      }
+      suggestionText = '상의도 추가해서 완벽한 코디를 완성해보세요!';
+      targetCategory = 'upper_body';
+      emoji = '👕';
       break;
-      
     case 'dresses':
-      console.log('👗 원피스 모드 - 액세서리 버튼 표시');
-      // 원피스 결과 → 액세서리 제안
-      if (addAccessoryBtn) {
-        addAccessoryBtn.style.display = 'block';
-        addAccessoryBtn.onclick = () => showAdditionalClothingUpload('accessories');
-        console.log('✅ 액세서리 버튼 표시 완료');
-      } else {
-        console.error('❌ addAccessoryBtn 요소가 없습니다');
-      }
+      suggestionText = '액세서리를 추가해서 더욱 멋진 스타일을 만들어보세요!';
+      targetCategory = 'accessories';
+      emoji = '✨';
       break;
-      
     default:
       console.warn('⚠️ 알 수 없는 카테고리:', currentCategory);
+      return;
   }
   
-  // 추가 버튼 섹션 표시
-  additionalClothingButtons.style.display = 'block';
-  console.log('✅ 추가 의류 제안 버튼 섹션 표시 완료');
+  // 추가 의류 섹션 HTML 생성
+  const additionalClothingHTML = `
+    <div id="additionalClothingSection" style="max-width: 600px; margin: 2rem auto; background: var(--white); border-radius: 1rem; box-shadow: var(--shadow-lg); padding: 2rem; border: 1px solid var(--gray-200); animation: fadeInUp 0.5s ease-out;">
+      <div style="text-align: center; margin-bottom: 1.5rem;">
+        <h3 style="color: var(--gray-800); margin-bottom: 0.5rem; font-size: 1.3rem;">
+          ${emoji} 추가 의류 합성
+        </h3>
+        <p style="color: var(--gray-600); font-size: 0.95rem;">
+          ${suggestionText}
+        </p>
+      </div>
+      
+      <!-- 추가 의류 업로드 영역 -->
+      <div class="upload-section" style="margin-bottom: 1.5rem;">
+        <div class="drag-drop-area" id="additionalClothingDragDrop" style="width: 100%; height: 200px; border: 2px dashed var(--primary); border-radius: 1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; background: rgba(37, 99, 235, 0.05);">
+          <div class="drag-drop-content" style="text-align: center; pointer-events: none;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">${emoji}</div>
+            <div class="drag-drop-text" style="font-weight: 600; color: var(--primary); margin-bottom: 0.25rem;">
+              ${targetCategory === 'upper_body' ? '상의' : targetCategory === 'lower_body' ? '하의' : '액세서리'} 사진을 드래그하세요
+            </div>
+            <div class="drag-drop-subtext" style="color: var(--gray-500); font-size: 0.9rem;">
+              또는 클릭해서 파일을 선택하세요
+            </div>
+          </div>
+        </div>
+        <input type="file" id="additionalClothingUpload" accept="image/*" style="display: none;">
+      </div>
+      
+      <!-- 미리보기 이미지 -->
+      <div id="additionalClothingPreview" style="display: none; text-align: center; margin-bottom: 1.5rem;">
+        <img id="additionalClothingPreviewImg" style="max-width: 200px; max-height: 200px; border-radius: 0.5rem; box-shadow: var(--shadow-md);">
+        <p style="color: var(--gray-600); font-size: 0.9rem; margin-top: 0.5rem;">
+          선택된 ${targetCategory === 'upper_body' ? '상의' : targetCategory === 'lower_body' ? '하의' : '액세서리'} 이미지
+        </p>
+      </div>
+      
+      <!-- 합성 버튼 -->
+      <div style="text-align: center;">
+        <button id="processAdditionalClothingBtn" disabled style="width: 100%; max-width: 300px; padding: 1rem 1.5rem; background: var(--primary); color: white; border: none; border-radius: 0.75rem; font-size: 1rem; font-weight: 600; cursor: not-allowed; transition: all 0.3s ease; position: relative; overflow: hidden;">
+          <span class="button-text">${emoji} 추가 의류 합성하기</span>
+          <div class="loading-spinner" style="display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        </button>
+        <p style="color: var(--gray-500); font-size: 0.85rem; margin-top: 0.5rem;">
+          현재 결과 이미지에 새로운 의류를 합성합니다
+        </p>
+      </div>
+    </div>
+  `;
+  
+  // 결과 컨테이너 다음에 추가 의류 섹션 삽입
+  const resultContainer = document.querySelector('.result-container');
+  if (resultContainer) {
+    resultContainer.insertAdjacentHTML('afterend', additionalClothingHTML);
+    
+    // 이벤트 리스너 설정
+    setupAdditionalClothingEvents(targetCategory);
+    
+    console.log('✅ 추가 의류 섹션 생성 완료');
+  } else {
+    console.error('❌ result-container를 찾을 수 없습니다');
+  }
 }
 
-// 추가 의류 업로드 모달 표시 함수
-function showAdditionalClothingUpload(targetCategory) {
-  console.log('추가 의류 업로드 시작:', targetCategory);
+// 추가 의류 이벤트 설정
+function setupAdditionalClothingEvents(targetCategory) {
+  const dragDropArea = document.getElementById('additionalClothingDragDrop');
+  const fileInput = document.getElementById('additionalClothingUpload');
+  const previewDiv = document.getElementById('additionalClothingPreview');
+  const previewImg = document.getElementById('additionalClothingPreviewImg');
+  const processBtn = document.getElementById('processAdditionalClothingBtn');
   
-  // 카테고리별 메시지
-  const categoryMessages = {
-    'upper_body': '상의 사진을 업로드해서 현재 결과에 합성해보세요!',
-    'lower_body': '하의 사진을 업로드해서 현재 결과에 합성해보세요!',
-    'accessories': '액세서리 사진을 업로드해서 현재 결과에 합성해보세요!'
-  };
-  
-  const categoryEmojis = {
-    'upper_body': '👕',
-    'lower_body': '👖',
-    'accessories': '✨'
-  };
-  
-  // 파일 입력 요소 생성
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.accept = 'image/*';
-  fileInput.style.display = 'none';
-  
-  fileInput.onchange = function(e) {
-    const file = e.target.files[0];
-    if (file) {
-      console.log('추가 의류 파일 선택됨:', file.name);
-      processAdditionalClothing(file, targetCategory);
-    }
-  };
-  
-  // 사용자에게 알림 후 파일 선택
-  const message = `${categoryEmojis[targetCategory]} ${categoryMessages[targetCategory]}`;
-  if (confirm(message)) {
-    document.body.appendChild(fileInput);
-    fileInput.click();
-    document.body.removeChild(fileInput);
+  if (!dragDropArea || !fileInput || !previewDiv || !previewImg || !processBtn) {
+    console.error('❌ 추가 의류 DOM 요소를 찾을 수 없습니다');
+    return;
   }
+  
+  // 드래그 앤 드롭 이벤트
+  dragDropArea.addEventListener('click', () => fileInput.click());
+  
+  dragDropArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dragDropArea.style.borderColor = 'var(--primary)';
+    dragDropArea.style.backgroundColor = 'rgba(37, 99, 235, 0.1)';
+  });
+  
+  dragDropArea.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    dragDropArea.style.borderColor = 'var(--primary)';
+    dragDropArea.style.backgroundColor = 'rgba(37, 99, 235, 0.05)';
+  });
+  
+  dragDropArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dragDropArea.style.borderColor = 'var(--primary)';
+    dragDropArea.style.backgroundColor = 'rgba(37, 99, 235, 0.05)';
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleAdditionalClothingFile(files[0], targetCategory);
+    }
+  });
+  
+  // 파일 선택 이벤트
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      handleAdditionalClothingFile(e.target.files[0], targetCategory);
+    }
+  });
+  
+  // 합성 버튼 이벤트
+  processBtn.addEventListener('click', () => {
+    if (fileInput.files.length > 0) {
+      processAdditionalClothing(fileInput.files[0], targetCategory);
+    }
+  });
+}
+
+// 추가 의류 파일 처리
+function handleAdditionalClothingFile(file, targetCategory) {
+  console.log('추가 의류 파일 처리:', file.name, targetCategory);
+  
+  const previewDiv = document.getElementById('additionalClothingPreview');
+  const previewImg = document.getElementById('additionalClothingPreviewImg');
+  const processBtn = document.getElementById('processAdditionalClothingBtn');
+  
+  if (!previewDiv || !previewImg || !processBtn) {
+    console.error('❌ 미리보기 요소를 찾을 수 없습니다');
+    return;
+  }
+  
+  // 파일을 이미지로 미리보기
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    previewImg.src = e.target.result;
+    previewDiv.style.display = 'block';
+    
+    // 합성 버튼 활성화
+    processBtn.disabled = false;
+    processBtn.style.cursor = 'pointer';
+    processBtn.style.opacity = '1';
+    
+    console.log('✅ 추가 의류 미리보기 표시 완료');
+  };
+  
+  reader.readAsDataURL(file);
 }
 
 // 추가 의류 처리 함수
@@ -158,10 +234,14 @@ async function processAdditionalClothing(file, targetCategory) {
     }
     
     // 로딩 상태 표시
-    const generateClothesBtn = document.getElementById('generateClothesBtn');
-    if (typeof showButtonLoading === 'function') {
-      showButtonLoading(generateClothesBtn, true);
-    }
+    const processBtn = document.getElementById('processAdditionalClothingBtn');
+    const buttonText = processBtn.querySelector('.button-text');
+    const loadingSpinner = processBtn.querySelector('.loading-spinner');
+    
+    processBtn.disabled = true;
+    processBtn.style.cursor = 'not-allowed';
+    buttonText.style.display = 'none';
+    loadingSpinner.style.display = 'block';
     
     // 추가 의류 이미지 최적화
     const processedFile = await optimizeImage(file, 1024, 1024, 0.8);
@@ -192,6 +272,12 @@ async function processAdditionalClothing(file, targetCategory) {
       };
       
       alert(`${categoryNames[targetCategory]} 합성이 완료되었습니다! 🎉`);
+      
+      // 기존 추가 의류 섹션 제거 (새로운 섹션이 자동으로 생성됨)
+      const additionalSection = document.getElementById('additionalClothingSection');
+      if (additionalSection) {
+        additionalSection.remove();
+      }
     };
     
     reader.readAsDataURL(processedFile);
@@ -199,11 +285,15 @@ async function processAdditionalClothing(file, targetCategory) {
   } catch (error) {
     console.error('추가 의류 처리 오류:', error);
     alert('추가 의류 합성 중 오류가 발생했습니다: ' + error.message);
-  } finally {
+    
     // 로딩 상태 해제
-    const generateClothesBtn = document.getElementById('generateClothesBtn');
-    if (typeof showButtonLoading === 'function') {
-      showButtonLoading(generateClothesBtn, false);
-    }
+    const processBtn = document.getElementById('processAdditionalClothingBtn');
+    const buttonText = processBtn.querySelector('.button-text');
+    const loadingSpinner = processBtn.querySelector('.loading-spinner');
+    
+    processBtn.disabled = false;
+    processBtn.style.cursor = 'pointer';
+    buttonText.style.display = 'block';
+    loadingSpinner.style.display = 'none';
   }
 } 

@@ -1,6 +1,6 @@
 /* Modern Color Palette */
 :root {
-  --primary: #000000;
+  --primary: #2563eb;
   --secondary: #ffffff;
   --accent: #333333;
   --gray-50: #fafafa;
@@ -13,6 +13,7 @@
   --gray-700: #404040;
   --gray-800: #262626;
   --gray-900: #171717;
+  --white: #ffffff;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
@@ -1760,9 +1761,101 @@ div {
 
 @media (max-width: 480px) {
   .back-btn {
-    top: 10px;
-    left: 10px;
+    font-size: 0.8rem;
     padding: 0.5rem 1rem;
-    font-size: 0.85rem;
+    top: 0.5rem;
+    left: 0.5rem;
+  }
+}
+
+/* 추가 의류 합성 섹션 애니메이션 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 추가 의류 섹션 스타일 */
+#additionalClothingSection {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+#additionalClothingSection .drag-drop-area {
+  transition: all 0.3s ease;
+}
+
+#additionalClothingSection .drag-drop-area:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15);
+}
+
+#additionalClothingSection .drag-drop-area:active {
+  transform: translateY(0);
+}
+
+/* 추가 의류 미리보기 이미지 스타일 */
+#additionalClothingPreviewImg {
+  transition: all 0.3s ease;
+}
+
+#additionalClothingPreviewImg:hover {
+  transform: scale(1.05);
+}
+
+/* 추가 의류 합성 버튼 스타일 */
+#processAdditionalClothingBtn:not(:disabled) {
+  background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
+  cursor: pointer;
+}
+
+#processAdditionalClothingBtn:not(:disabled):hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+}
+
+#processAdditionalClothingBtn:not(:disabled):active {
+  transform: translateY(0);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  #additionalClothingSection {
+    margin: 1.5rem 1rem;
+    padding: 1.5rem;
+  }
+  
+  #additionalClothingSection .drag-drop-area {
+    height: 150px;
+  }
+  
+  #additionalClothingPreviewImg {
+    max-width: 150px;
+    max-height: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  #additionalClothingSection {
+    margin: 1rem 0.5rem;
+    padding: 1rem;
+  }
+  
+  #additionalClothingSection h3 {
+    font-size: 1.1rem;
+  }
+  
+  #additionalClothingSection .drag-drop-area {
+    height: 120px;
+  }
+  
+  #processAdditionalClothingBtn {
+    font-size: 0.9rem;
+    padding: 0.8rem 1.2rem;
   }
 } 
