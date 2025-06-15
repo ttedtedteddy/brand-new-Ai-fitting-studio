@@ -557,9 +557,52 @@ function showResultImage(imageUrl) {
     
     if (rect.width === 0 || rect.height === 0) {
       console.error('❌ 이미지가 화면에 보이지 않습니다!');
-      // 강제로 크기 설정
-      this.style.width = '400px';
-      this.style.height = 'auto';
+      
+      // 🚨 강제로 모든 CSS 속성 오버라이드 🚨
+      this.style.cssText = `
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        width: 400px !important;
+        height: auto !important;
+        max-width: none !important;
+        max-height: none !important;
+        min-width: 400px !important;
+        min-height: auto !important;
+        margin: 20px auto !important;
+        padding: 0 !important;
+        border: 2px solid #ff0000 !important;
+        border-radius: 8px !important;
+        background: white !important;
+        position: relative !important;
+        z-index: 9999 !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+        transform: none !important;
+        clip: none !important;
+        overflow: visible !important;
+      `;
+      
+      // 부모 요소들도 강제로 표시
+      let parent = this.parentElement;
+      while (parent && parent !== document.body) {
+        parent.style.display = 'block';
+        parent.style.visibility = 'visible';
+        parent.style.opacity = '1';
+        parent.style.overflow = 'visible';
+        parent.style.height = 'auto';
+        parent.style.minHeight = 'auto';
+        parent = parent.parentElement;
+      }
+      
+      console.log('🔥 강제 CSS 적용 완료 - 이미지가 빨간 테두리로 표시됩니다!');
+      
+      // 이미지로 스크롤
+      this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
+      // 3초 후 빨간 테두리 제거
+      setTimeout(() => {
+        this.style.border = '1px solid #ddd';
+      }, 3000);
     }
   };
   
