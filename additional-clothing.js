@@ -280,22 +280,42 @@ async function processAdditionalClothing(file, targetCategory) {
     console.log('📸 전신사진: 현재 결과 이미지 (상의를 입은 사람)');
     console.log('👖 의류 사진: 새로 업로드한', targetCategory === 'upper_body' ? '상의' : targetCategory === 'lower_body' ? '하의' : '액세서리');
     
-    // 4. API 호출 - 현재 결과를 전신사진으로, 새 의류를 옷 이미지로 사용
-    const resultImageUrl = await window.callIDMVTONAPI(
-      currentResultBase64,  // 현재 결과를 전신사진으로 사용
-      newClothingBase64,    // 새 의류 이미지
-      `additional ${targetCategory} clothing, layered outfit` // 추가 의류 프롬프트
-    );
-    
-    console.log('✅ 추가 의류 합성 완료:', resultImageUrl);
-    
-    // 새로운 결과 표시
-    if (typeof window.showClothesResultImage === 'function') {
-      window.showClothesResultImage(resultImageUrl);
+    // 카테고리 설정 - targetCategory를 그대로 사용 (추가할 의류의 종류)
+    const clothingCategory = document.getElementById('clothingCategory');
+    if (clothingCategory) {
+      // 임시로 카테고리를 targetCategory로 설정
+      const originalCategory = clothingCategory.value;
+      clothingCategory.value = targetCategory;
+      
+      console.log('🎯 API 호출 카테고리:', targetCategory);
+      console.log('📝 카테고리 설명:', 
+        targetCategory === 'upper_body' ? '상의 (새로 추가할 상의)' : 
+        targetCategory === 'lower_body' ? '하의 (새로 추가할 하의)' : 
+        '액세서리 (새로 추가할 액세서리)'
+      );
+      
+      // 4. API 호출 - 현재 결과를 전신사진으로, 새 의류를 옷 이미지로 사용
+      const resultImageUrl = await window.callIDMVTONAPI(
+        currentResultBase64,  // 현재 결과를 전신사진으로 사용
+        newClothingBase64,    // 새 의류 이미지
+        `additional ${targetCategory} clothing, layered outfit` // 추가 의류 프롬프트
+      );
+      
+      // 원래 카테고리로 복원
+      clothingCategory.value = originalCategory;
+      
+      console.log('✅ 추가 의류 합성 완료:', resultImageUrl);
+      
+      // 새로운 결과 표시
+      if (typeof window.showClothesResultImage === 'function') {
+        window.showClothesResultImage(resultImageUrl);
+      } else {
+        // 직접 이미지 표시
+        clothesResultImage.src = resultImageUrl;
+        clothesResultImage.style.display = 'block';
+      }
     } else {
-      // 직접 이미지 표시
-      clothesResultImage.src = resultImageUrl;
-      clothesResultImage.style.display = 'block';
+      throw new Error('clothingCategory 요소를 찾을 수 없습니다.');
     }
     
     // 성공 메시지
