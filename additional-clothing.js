@@ -29,13 +29,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 추가 의류 제안 버튼 표시 함수
 function showAdditionalClothingButtons() {
+  console.log('🔍 showAdditionalClothingButtons 호출됨');
+  
   const additionalClothingButtons = document.getElementById('additionalClothingButtons');
   const addLowerClothingBtn = document.getElementById('addLowerClothingBtn');
   const addUpperClothingBtn = document.getElementById('addUpperClothingBtn');
   const addAccessoryBtn = document.getElementById('addAccessoryBtn');
   const clothingCategory = document.getElementById('clothingCategory');
   
-  if (!additionalClothingButtons || !clothingCategory) return;
+  console.log('🔍 DOM 요소 확인:', {
+    additionalClothingButtons: !!additionalClothingButtons,
+    addLowerClothingBtn: !!addLowerClothingBtn,
+    addUpperClothingBtn: !!addUpperClothingBtn,
+    addAccessoryBtn: !!addAccessoryBtn,
+    clothingCategory: !!clothingCategory
+  });
+  
+  if (!additionalClothingButtons || !clothingCategory) {
+    console.error('❌ 필수 DOM 요소가 없습니다');
+    return;
+  }
   
   // 모든 버튼 숨기기
   if (addLowerClothingBtn) addLowerClothingBtn.style.display = 'none';
@@ -43,38 +56,53 @@ function showAdditionalClothingButtons() {
   if (addAccessoryBtn) addAccessoryBtn.style.display = 'none';
   
   const currentCategory = clothingCategory.value;
-  console.log('현재 의류 카테고리:', currentCategory);
+  console.log('🎯 현재 의류 카테고리:', currentCategory);
   
   // 카테고리에 따라 적절한 버튼 표시
   switch (currentCategory) {
     case 'upper_body':
+      console.log('👕 상의 모드 - 하의 버튼 표시');
       // 상의 결과 → 하의 제안
       if (addLowerClothingBtn) {
         addLowerClothingBtn.style.display = 'block';
         addLowerClothingBtn.onclick = () => showAdditionalClothingUpload('lower_body');
+        console.log('✅ 하의 버튼 표시 완료');
+      } else {
+        console.error('❌ addLowerClothingBtn 요소가 없습니다');
       }
       break;
       
     case 'lower_body':
+      console.log('👖 하의 모드 - 상의 버튼 표시');
       // 하의 결과 → 상의 제안
       if (addUpperClothingBtn) {
         addUpperClothingBtn.style.display = 'block';
         addUpperClothingBtn.onclick = () => showAdditionalClothingUpload('upper_body');
+        console.log('✅ 상의 버튼 표시 완료');
+      } else {
+        console.error('❌ addUpperClothingBtn 요소가 없습니다');
       }
       break;
       
     case 'dresses':
+      console.log('👗 원피스 모드 - 액세서리 버튼 표시');
       // 원피스 결과 → 액세서리 제안
       if (addAccessoryBtn) {
         addAccessoryBtn.style.display = 'block';
         addAccessoryBtn.onclick = () => showAdditionalClothingUpload('accessories');
+        console.log('✅ 액세서리 버튼 표시 완료');
+      } else {
+        console.error('❌ addAccessoryBtn 요소가 없습니다');
       }
       break;
+      
+    default:
+      console.warn('⚠️ 알 수 없는 카테고리:', currentCategory);
   }
   
   // 추가 버튼 섹션 표시
   additionalClothingButtons.style.display = 'block';
-  console.log('추가 의류 제안 버튼 표시 완료');
+  console.log('✅ 추가 의류 제안 버튼 섹션 표시 완료');
 }
 
 // 추가 의류 업로드 모달 표시 함수
