@@ -29,9 +29,9 @@
   <!-- 랜딩 페이지 -->
   <div id="landingPage" class="landing-page">
     <div class="landing-content">
-      <h1 class="landing-title">AI Fitting Studio</h1>
-      <p class="landing-subtitle">Complete your style with AI technology</p>
-      <button id="tryMyStyleBtn" class="try-style-btn">Try my style</button>
+      <h1 class="landing-title">홈화면</h1>
+      <p class="landing-subtitle">어떤 방식으로 스타일링을 시작하시겠어요?</p>
+      <button id="tryMyStyleBtn" class="try-style-btn">나만의 스타일 시작하기</button>
     </div>
   </div>
 
@@ -39,19 +39,19 @@
   <div id="modeSelectionPage" class="mode-selection-page" style="display: none;">
     <!-- 뒤로가기 버튼 -->
     <button id="backToLandingBtn" class="back-btn">
-      ← Home
+      ← 홈으로
     </button>
     
     <div class="mode-selection-content">
       <h1 class="mode-title">AI Fitting Studio</h1>
-      <p class="mode-subtitle">How would you like to start styling?</p>
+      <p class="mode-subtitle">어떤 방식으로 스타일링을 시작하시겠어요?</p>
       
       <div class="mode-options">
         <div class="mode-option">
           <button id="promptModeBtn" class="mode-btn">
             <div class="mode-text">
-              <h3>Start with prompt</h3>
-              <p>Complete your style using text prompts</p>
+              <h3>텍스트로 스타일링</h3>
+              <p>원하는 스타일을 텍스트로 설명해서 AI가 적용해드려요</p>
             </div>
           </button>
         </div>
@@ -59,8 +59,8 @@
         <div class="mode-option">
           <button id="clothesModeBtn" class="mode-btn">
             <div class="mode-text">
-              <h3>Start with pictures of clothes</h3>
-              <p>Complete your style using clothing images</p>
+              <h3>옷 사진으로 가상 피팅</h3>
+              <p>실제 옷 사진을 업로드해서 가상으로 입어보세요</p>
             </div>
           </button>
         </div>
@@ -72,92 +72,84 @@
   <div id="clothesModeApp" style="display: none;">
     <!-- 뒤로가기 버튼 -->
     <button id="backToModeSelectionFromClothesBtn" class="back-btn">
-      ← Mode Selection
+      ← 모드 선택
     </button>
     
     <main>
       <div class="upload-container">
+        <!-- 전신사진 업로드를 먼저 배치 -->
         <div class="upload-section">
-          <h2>Upload Clothes</h2>
+          <h2>전신사진 업로드</h2>
           <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-            Upload the clothes you want to try on
+            가상 피팅을 위한 전신사진을 업로드해주세요
           </p>
           
-          <div class="drag-drop-area" id="clothesDragDropArea">
-            <div class="drag-drop-text">Drag and drop your image here</div>
-            <div class="drag-drop-subtext">or click to select a file</div>
-          </div>
-          <input type="file" id="clothesImageUpload" accept="image/*" style="display: none;">
-        </div>
-        
-        <div class="upload-section">
-          <h2>Upload Full Body Photo</h2>
-          <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-            Upload your full body photo for virtual fitting
-          </p>
-          
-          <div class="drag-drop-area" id="bodyDragDropArea">
-            <div class="drag-drop-text">Drag and drop your image here</div>
-            <div class="drag-drop-subtext">or click to select a file</div>
+          <div class="drag-drop-area" id="bodyDragDropArea" style="width: 100%; height: 300px; max-width: 400px; margin: 0 auto; border: 2px dashed var(--gray-300); border-radius: 1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; background-size: cover; background-position: center; background-repeat: no-repeat;">
+            <div class="drag-drop-content" style="text-align: center; pointer-events: none;">
+              <div class="drag-drop-text">여기에 전신사진을 드래그하세요</div>
+              <div class="drag-drop-subtext">또는 클릭해서 파일을 선택하세요</div>
+            </div>
           </div>
           <input type="file" id="bodyImageUpload" accept="image/*" style="display: none;">
+        </div>
+        
+        <!-- 옷 사진 업로드를 두 번째로 배치 -->
+        <div class="upload-section">
+          <h2>옷 사진 업로드</h2>
+          <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
+            입어보고 싶은 옷 사진을 업로드해주세요
+          </p>
+          
+          <div class="drag-drop-area" id="clothesDragDropArea" style="width: 100%; height: 300px; max-width: 400px; margin: 0 auto; border: 2px dashed var(--gray-300); border-radius: 1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; background-size: cover; background-position: center; background-repeat: no-repeat;">
+            <div class="drag-drop-content" style="text-align: center; pointer-events: none;">
+              <div class="drag-drop-text">여기에 옷 사진을 드래그하세요</div>
+              <div class="drag-drop-subtext">또는 클릭해서 파일을 선택하세요</div>
+            </div>
+          </div>
+          <input type="file" id="clothesImageUpload" accept="image/*" style="display: none;">
         </div>
       </div>
 
       <div class="generate-container" style="margin-top: 2rem;">
-        <h2>Virtual Fitting Generation</h2>
+        <h2>가상 피팅 생성</h2>
         <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-          AI will automatically fit the clothes on your full body photo
+          AI가 자동으로 전신사진에 옷을 입혀드립니다
         </p>
         
         <!-- 의류 카테고리 선택 -->
         <div style="margin-bottom: 1.5rem;">
-          <label for="clothingCategory" style="display: block; font-weight: 300; margin-bottom: 0.5rem; color: var(--gray-700);">
-            Clothing Category
+          <label for="clothingCategory" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--gray-700);">
+            의류 카테고리
           </label>
-          <select id="clothingCategory" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--gray-300); border-radius: 0; font-size: 1rem; transition: all 0.3s ease;" onchange="toggleDressLengthOption()">
-            <option value="upper_body">Upper Body (Shirts, Blouses, Jackets)</option>
-            <option value="lower_body">Lower Body (Pants, Skirts, Shorts)</option>
-            <option value="dresses">Dresses (Dresses, One-pieces)</option>
-            <option value="full_outfit">Full Outfit (Top + Bottom Combination)</option>
+          <select id="clothingCategory" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--gray-300); border-radius: 0.75rem; font-size: 1rem; transition: all 0.3s ease;" onchange="toggleDressLengthOption()">
+            <option value="upper_body">상의 (셔츠, 블라우스, 재킷)</option>
+            <option value="lower_body">하의 (바지, 스커트, 반바지)</option>
+            <option value="dresses">원피스 (드레스, 원피스)</option>
+            <option value="full_outfit">전체 의상 (상의 + 하의 조합)</option>
           </select>
           <p style="font-size: 0.85rem; color: var(--gray-500); margin-top: 0.5rem;">
-            Select the type of clothing you uploaded. Choose "Full Outfit" to change both top and bottom simultaneously.
+            업로드한 옷의 종류를 선택하세요. "전체 의상"을 선택하면 상의와 하의를 동시에 변경합니다.
           </p>
         </div>
         
         <!-- 원피스 길이 선택 (원피스 선택 시에만 표시) -->
         <div id="dressLengthSection" style="margin-bottom: 1.5rem; display: none;">
           <label for="dressLength" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--gray-700);">
-            📏 원피스 길이
+            원피스 길이
           </label>
           <select id="dressLength" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--gray-300); border-radius: 0.75rem; font-size: 1rem; transition: all 0.3s ease;">
-            <option value="short">🩳 짧은 길이 (미니 드레스, 무릎 위)</option>
-            <option value="midi" selected>👗 중간 길이 (미디 드레스, 무릎 아래)</option>
-            <option value="long">👘 긴 길이 (맥시 드레스, 발목까지)</option>
+            <option value="short">짧은 길이 (미니 드레스, 무릎 위)</option>
+            <option value="midi" selected>중간 길이 (미디 드레스, 무릎 아래)</option>
+            <option value="long">긴 길이 (맥시 드레스, 발목까지)</option>
           </select>
           <p style="font-size: 0.85rem; color: var(--gray-500); margin-top: 0.5rem;">
             원하는 원피스 길이를 선택하세요. 더 정확한 결과를 위해 아래 설명란에 구체적인 길이를 적어주셔도 좋습니다.
           </p>
         </div>
         
-        <!-- 추가 프롬프트 (선택사항) -->
-        <div style="margin-bottom: 2rem;">
-          <label for="clothesPrompt" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--gray-700);">
-            💬 추가 설명 (선택사항)
-          </label>
-          <textarea 
-            id="clothesPrompt" 
-            placeholder="예: 파란색 긴팔 셔츠, 검은색 청바지, 화이트 원피스 등..." 
-            style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--gray-300); border-radius: 0.75rem; resize: vertical; min-height: 80px; font-size: 1rem; transition: all 0.3s ease;"
-          ></textarea>
-          <p style="font-size: 0.85rem; color: var(--gray-500); margin-top: 0.5rem;">
-            옷의 색상, 스타일, 재질 등을 구체적으로 설명하면 더 정확한 결과를 얻을 수 있습니다.
-          </p>
-        </div>
-        
-        <button id="generateClothesBtn" disabled style="width: 100%; padding: 1.2rem 2rem; background: var(--gray-400); color: white; border: none; border-radius: 0.75rem; font-size: 1.1rem; font-weight: 700; cursor: not-allowed; transition: all 0.3s ease; position: relative; overflow: hidden;">
-          🚀 가상 피팅 생성
+        <button id="generateClothesBtn" disabled style="width: 100%; padding: 1.2rem 2rem; background: #000000; color: white; border: none; border-radius: 0.75rem; font-size: 1.1rem; font-weight: 700; cursor: not-allowed; transition: all 0.3s ease; position: relative; overflow: hidden;">
+          <span class="button-text">가상 피팅 생성</span>
+          <div class="loading-spinner" style="display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite;"></div>
         </button>
         <p style="text-align: center; color: var(--gray-500); margin-top: 1rem; font-size: 0.9rem;">
           전신사진과 옷 사진을 모두 업로드해주세요
@@ -166,7 +158,7 @@
 
       <!-- 결과 이미지 섹션 -->
       <div class="result-container">
-        <h2>✨ 가상 피팅 결과</h2>
+        <h2>가상 피팅 결과</h2>
         <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
           AI가 생성한 가상 피팅 결과를 확인하세요
         </p>
@@ -178,21 +170,22 @@
         </div>
         
         <div id="clothesActionButtons" class="action-buttons" style="display: none;">
-          <button class="share-button instagram" onclick="shareClothesToInstagram()">
-            📷 인스타그램 공유
+          <button class="share-button instagram" onclick="shareClothesToInstagram()" style="background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); color: white; border: none;">
+            인스타그램 공유
           </button>
-          <button class="share-button kakao" onclick="shareClothesToKakao()">
-            💬 카카오톡 공유
+          <button onclick="shareClothesToKakao()" class="share-btn kakao-btn">
+            <span class="button-text">이미지 공유</span>
+            <div class="button-loading-spinner"></div>
           </button>
           <button class="save-button" onclick="saveClothesImage()">
-            💾 이미지 저장
+            이미지 저장
           </button>
         </div>
       </div>
 
       <!-- 구글 렌즈 섹션 -->
       <div class="google-search-container" id="clothesGoogleLensSection" style="display: none;">
-        <h2>🔍 비슷한 제품 찾기 (구글 렌즈)</h2>
+        <h2>비슷한 제품 찾기 (구글 렌즈)</h2>
         <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
           결과 이미지를 구글 렌즈로 검색해 비슷한 제품을 찾아보세요
         </p>
@@ -203,42 +196,42 @@
     </main>
   </div>
 
-  <!-- 메인 애플리케이션 -->
+  <!-- 메인 애플리케이션 (텍스트 프롬프트 모드) -->
   <div id="mainApp" style="display: none;">
     <!-- 뒤로가기 버튼 -->
     <button id="backToModeSelectionFromMainBtn" class="back-btn">
-      ← Mode Selection
+      ← 모드 선택
     </button>
     
     <header>
       <h1>AI Fitting Studio</h1>
       <p class="subtitle">
-        Complete your style with AI technology
+        AI 기술로 당신만의 스타일을 완성하세요
       </p>
     </header>
 
     <main>
       <div id="uploadMaskSection">
-        <h2>Photo Upload & Masking</h2>
+        <h2>사진 업로드 & 마스킹</h2>
         <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-          Click or drag and drop to upload your photo.<br>
-          After uploading, you can use the masking brush to select areas.
+          클릭하거나 드래그 앤 드롭으로 사진을 업로드하세요.<br>
+          업로드 후 브러시로 변경하고 싶은 부분을 선택할 수 있습니다.
         </p>
         <div class="drag-drop-area" id="dragDropArea">
-          <div class="drag-drop-text">Drag and drop your image here</div>
-          <div class="drag-drop-subtext">or click to select a file</div>
+          <div class="drag-drop-text">여기에 사진을 드래그하여 업로드하세요</div>
+          <div class="drag-drop-subtext">또는 클릭하여 파일을 선택하세요</div>
         </div>
         <input type="file" id="imageUpload" accept="image/*" style="display: none;">
         <div id="maskSection" style="display:none; margin-top:2rem;">
-          <h3>Masking Brush</h3>
+          <h3>마스킹 브러시</h3>
           <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-            Use the brush to select areas you want to change (shown in orange)
+            브러시를 사용해서 변경하고 싶은 부분을 선택하세요 (주황색으로 표시됩니다)
           </p>
           <div id="brushToolbar">
-            <label>Brush Size: 
+            <label>브러시 크기: 
               <input type="range" id="brushSize" min="5" max="80" value="30">
             </label>
-            <button id="clearMaskBtn">Clear Mask</button>
+            <button id="clearMaskBtn">마스크 지우기</button>
           </div>
           <div id="canvasContainer">
             <canvas id="photoCanvas" width="512" height="768"></canvas>
@@ -249,53 +242,55 @@
 
       <div style="max-width: 600px; margin: 2rem auto; background: var(--white); border-radius: 0; box-shadow: var(--shadow-lg); padding: 2.5rem 2rem; border: 1px solid var(--gray-200); position: relative; overflow: hidden;">
         <div style="content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: var(--primary);"></div>
-        <h2>AI Styling Generation</h2>
+        <h2>AI 스타일링 생성</h2>
         <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-          Describe your desired style in text
+          원하는 스타일을 텍스트로 설명해주세요
         </p>
         
         <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem;">
-          <label style="flex: 1; min-width: 300px;">Prompt: 
-            <input type="text" id="promptInput" placeholder="e.g., red dress, elegant, fashion" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 0; margin-top: 0.5rem;"/>
+          <label style="flex: 1; min-width: 300px;">프롬프트: 
+            <input type="text" id="promptInput" placeholder="예: 빨간 드레스, 우아한, 패션" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 0; margin-top: 0.5rem;"/>
           </label>
         </div>
 
         <!-- 생성 버튼 -->
         <div style="text-align: center; margin-top: 2rem;">
-          <button id="generateBtn" style="background: var(--primary); color: var(--secondary); border: 1px solid var(--primary); padding: 1rem 2rem; border-radius: 0; font-weight: 300; font-size: 0.9rem; cursor: pointer; letter-spacing: 0.2em; text-transform: uppercase; transition: all 0.3s ease;">
-            Generate AI Styling
+          <button id="generateBtn" style="background: var(--primary); color: var(--secondary); border: 1px solid var(--primary); padding: 1rem 2rem; border-radius: 0; font-weight: 300; font-size: 0.9rem; cursor: pointer; letter-spacing: 0.2em; text-transform: uppercase; transition: all 0.3s ease; position: relative; overflow: hidden;">
+            <span class="button-text">AI 스타일링 생성</span>
+            <div class="loading-spinner" style="display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>
           </button>
         </div>
       </div>
 
       <!-- 결과 섹션 -->
       <div id="resultSection" style="display: none; max-width: 600px; margin: 2rem auto; text-align: center;">
-        <h2>Generated Result</h2>
+        <h2>생성 결과</h2>
         <div id="resultPlaceholder" style="display: none;"></div>
         <img id="resultImage" style="max-width: 100%; border-radius: 0; box-shadow: var(--shadow-lg);" />
         
         <!-- 액션 버튼 -->
         <div class="action-buttons">
-          <button class="share-button instagram" onclick="shareToInstagram()">
-            Share to Instagram
+          <button class="share-button instagram" onclick="shareToInstagram()" style="background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); color: white; border: none;">
+            인스타그램 공유
           </button>
-          <button class="share-button kakao" onclick="shareToKakao()">
-            Share to KakaoTalk
+          <button onclick="shareToKakao()" class="share-btn kakao-btn">
+            <span class="button-text">이미지 공유</span>
+            <div class="button-loading-spinner"></div>
           </button>
           <button class="save-button" onclick="saveImage()">
-            Save Image
+            이미지 저장
           </button>
         </div>
       </div>
 
       <!-- 구글 렌즈 검색 섹션 -->
       <div class="google-search-container" id="googleLensSection" style="display: none;">
-        <h2>Find Similar Products</h2>
+        <h2>비슷한 제품 찾기</h2>
         <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
-          Search for similar products using Google Lens
+          구글 렌즈로 비슷한 제품을 검색해보세요
         </p>
         <button id="googleLensBtn" class="google-search-btn">
-          Search with Google Lens
+          🔍 구글 렌즈로 검색
         </button>
       </div>
     </main>
@@ -303,7 +298,7 @@
     <!-- 마스킹 브러쉬 작업 모달 -->
     <div id="maskModal" class="modal">
       <div class="modal-content">
-        <h2 style="color: var(--cobalt-blue); margin-bottom: 1.5rem;">✨ 마스킹 브러시 작업</h2>
+        <h2 style="color: var(--cobalt-blue); margin-bottom: 1.5rem;">마스킹 브러시 작업</h2>
         <canvas id="modalPhotoCanvas" width="512" height="768"></canvas>
         <canvas id="modalMaskCanvas" width="512" height="768"></canvas>
         <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center;">

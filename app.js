@@ -1,7 +1,7 @@
 // AI Fitting Studio v2.0.1-final + 옷 이미지 자동 입히기 기능
 // UI/UX 대폭 개선 버전: 갤러리 제거, 업로드-마스킹 통합, 구글렌즈 연동, 모바일 반응형, 옷 이미지 모드
-console.log('🚀 AI Fitting Studio v2.0.1-final + 옷 이미지 모드 로드됨');
-console.log('✅ 개선사항: 갤러리 제거, 업로드-마스킹 통합, 구글렌즈 연동, 모바일 반응형, 옷 이미지 자동 입히기');
+console.log('AI Fitting Studio v2.0.1-final + 옷 이미지 모드 로드됨');
+console.log('개선사항: 갤러리 제거, 업로드-마스킹 통합, 구글렌즈 연동, 모바일 반응형, 옷 이미지 자동 입히기');
 
 // 랜딩 페이지 버튼 이벤트 리스너
 document.addEventListener('DOMContentLoaded', () => {
@@ -74,18 +74,17 @@ document.addEventListener('DOMContentLoaded', () => {
   setupGoogleLensSearch();
   initKakaoSDK();
   registerServiceWorker();
-  setupPWAInstall();
 });
 
 // AI Fitting Studio v2.0.1-final
 // UI/UX 대폭 개선 버전: 갤러리 제거, 업로드-마스킹 통합, 구글렌즈 연동, 모바일 반응형
-console.log('🚀 AI Fitting Studio v2.0.1-final 로드됨');
-console.log('✅ 개선사항: 갤러리 제거, 업로드-마스킹 통합, 구글렌즈 연동, 모바일 반응형');
+console.log('AI Fitting Studio v2.0.1-final 로드됨');
+console.log('개선사항: 갤러리 제거, 업로드-마스킹 통합, 구글렌즈 연동, 모바일 반응형');
 
 // AI Fitting Studio v2.0.1-final
 // UI/UX 대폭 개선 버전: 갤러리 제거, 업로드-마스킹 통합, 구글렌즈 연동, 모바일 반응형
-console.log('🚀 AI Fitting Studio v2.0.1-final 로드됨');
-console.log('✅ 개선사항: 갤러리 제거, 업로드-마스킹 통합, 구글렌즈 연동, 모바일 반응형');
+console.log('AI Fitting Studio v2.0.1-final 로드됨');
+console.log('개선사항: 갤러리 제거, 업로드-마스킹 통합, 구글렌즈 연동, 모바일 반응형');
 
 const photoCanvas = document.getElementById('photoCanvas');
 const maskCanvas = document.getElementById('maskCanvas');
@@ -240,10 +239,18 @@ imageUpload.addEventListener('change', (e) => {
   handleImageFile(file);
 });
 
-// 결과 이미지 표시 함수 (비율 유지)
+// 결과 이미지 표시 함수
 function showResultImage(src) {
+  const resultPlaceholder = document.getElementById('resultPlaceholder');
+  const actionButtons = document.querySelector('.action-buttons');
+  const resultSection = document.getElementById('resultSection');
+  
+  // 결과 섹션 표시
+  if (resultSection) {
+    resultSection.style.display = 'block';
+  }
+  
   resultImage.onload = function() {
-    // 원본 이미지 비율 유지
     const maxWidth = 512;
     const maxHeight = 768;
     const imgWidth = this.naturalWidth;
@@ -494,8 +501,7 @@ generateBtn.addEventListener('click', async () => {
 
   // 로딩 상태 표시
   showLoadingState();
-  generateBtn.disabled = true;
-  generateBtn.textContent = '✨ 생성 중...';
+  showButtonLoading(generateBtn, true);
 
   try {
     const outputUrl = await callReplicateAPI(imageData, maskData, prompt);
@@ -509,8 +515,7 @@ generateBtn.addEventListener('click', async () => {
     resetResultState();
     alert('AI 스타일링 생성 실패: ' + err.message);
   }
-  generateBtn.disabled = false;
-  generateBtn.textContent = '🚀 AI 스타일링 생성';
+  showButtonLoading(generateBtn, false);
 });
 
 // 결과 이미지 로드 완료 시 이벤트
@@ -527,7 +532,7 @@ resultImage.addEventListener('error', () => {
   alert('이미지를 불러오는데 실패했습니다.');
 });
 
-// 구글 렌즈 연동 - 생성된 이미지를 구글 이미지 검색에 전달 (파일 다운로드 없이)
+// 구글 렌즈 연동 - 생성된 이미지를 구글 이미지 검색에 전달 (개선된 버전)
 function setupGoogleLensSearch() {
   const googleLensBtn = document.getElementById('googleLensBtn');
   if (!googleLensBtn) return;
@@ -539,14 +544,15 @@ function setupGoogleLensSearch() {
     }
     
     try {
-      // 구글 이미지 검색에 이미지 URL 직접 전달
-      const searchUrl = `https://www.google.com/searchbyimage?image_url=${encodeURIComponent(resultImage.src)}`;
-      window.open(searchUrl, '_blank');
+      console.log('구글 렌즈 검색 시작...');
+      console.log('이미지 URL:', resultImage.src);
       
-      // 추가로 구글 렌즈도 열어주기
-      setTimeout(() => {
-        window.open('https://lens.google.com/', '_blank');
-      }, 1000);
+      // 구글 렌즈로 직접 이미지 검색 (옷 이미지 모드와 동일한 방식)
+      const searchUrl = `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(resultImage.src)}`;
+      console.log('구글 렌즈 URL:', searchUrl);
+      
+      window.open(searchUrl, '_blank');
+      console.log('구글 렌즈 검색 완료');
       
     } catch (error) {
       console.error('구글 렌즈 연동 오류:', error);
@@ -583,7 +589,7 @@ function imageToBase64(img) {
   return canvas.toDataURL('image/png');
 }
 
-// 개선된 이미지 저장 기능 (저장 다이얼로그 방식)
+// 개선된 이미지 저장 기능 (우클릭 저장처럼 다이얼로그 표시)
 async function saveImage() {
   if (!resultImage.src) {
     alert('저장할 이미지가 없습니다.');
@@ -591,60 +597,65 @@ async function saveImage() {
   }
   
   try {
-    // 이미지를 캔버스로 변환
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = resultImage.naturalWidth || resultImage.width;
-    canvas.height = resultImage.naturalHeight || resultImage.height;
-    ctx.drawImage(resultImage, 0, 0);
+    console.log('이미지 저장 시작...');
+    console.log('이미지 URL:', resultImage.src);
     
-    // 파일명 생성
-    const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
-    const filename = `ai-fitting-result-${timestamp}.png`;
+    // 파일명 생성 (타임스탬프 포함)
+    const now = new Date();
+    const timestamp = now.getFullYear() + 
+                     String(now.getMonth() + 1).padStart(2, '0') + 
+                     String(now.getDate()).padStart(2, '0') + '_' +
+                     String(now.getHours()).padStart(2, '0') + 
+                     String(now.getMinutes()).padStart(2, '0') + 
+                     String(now.getSeconds()).padStart(2, '0');
+    const filename = `AI스타일링_결과_${timestamp}.jpg`;
     
-    // File System Access API 지원 확인 (Chrome 86+, Edge 86+)
+    console.log('파일명:', filename);
+    
+    // File System Access API 사용하여 저장 다이얼로그 표시
     if ('showSaveFilePicker' in window) {
       try {
+        console.log('파일 저장 다이얼로그 표시...');
+        
+        // 이미지를 fetch로 가져와서 blob으로 변환
+        const response = await fetch(resultImage.src);
+        const blob = await response.blob();
+        
+        console.log('이미지 blob 생성 완료, 크기:', blob.size);
+        
         // 저장 다이얼로그 표시
         const fileHandle = await window.showSaveFilePicker({
           suggestedName: filename,
           types: [
+            {
+              description: 'JPEG 이미지',
+              accept: {
+                'image/jpeg': ['.jpg', '.jpeg'],
+              },
+            },
             {
               description: 'PNG 이미지',
               accept: {
                 'image/png': ['.png'],
               },
             },
-            {
-              description: 'JPEG 이미지', 
-              accept: {
-                'image/jpeg': ['.jpg', '.jpeg'],
-              },
-            },
           ],
         });
         
-        // 선택한 파일 형식에 따라 변환
-        const fileExtension = fileHandle.name.split('.').pop().toLowerCase();
-        const mimeType = fileExtension === 'jpg' || fileExtension === 'jpeg' ? 'image/jpeg' : 'image/png';
-        const quality = mimeType === 'image/jpeg' ? 0.95 : 1.0;
-        
-        // 파일 데이터 생성
-        const blob = await new Promise(resolve => {
-          canvas.toBlob(resolve, mimeType, quality);
-        });
+        console.log('파일 핸들 생성 완료:', fileHandle.name);
         
         // 파일 쓰기
         const writable = await fileHandle.createWritable();
         await writable.write(blob);
         await writable.close();
         
-        alert('✅ 이미지가 성공적으로 저장되었습니다!');
+        console.log('파일 저장 완료');
+        alert(`이미지가 성공적으로 저장되었습니다!\n파일명: ${fileHandle.name}`);
         return;
         
       } catch (error) {
         if (error.name === 'AbortError') {
-          // 사용자가 취소한 경우
+          console.log('사용자가 저장을 취소했습니다.');
           return;
         }
         console.error('File System Access API 오류:', error);
@@ -652,30 +663,41 @@ async function saveImage() {
       }
     }
     
-    // 폴백: 기본 다운로드 방식 (구형 브라우저 또는 API 실패 시)
-    canvas.toBlob((blob) => {
-      if (navigator.msSaveBlob) {
-        // IE/Edge 레거시
-        navigator.msSaveBlob(blob, filename);
-      } else {
-        // 모던 브라우저 기본 다운로드
-        const url = URL.createObjectURL(blob);
+    // 폴백: 기본 다운로드 방식
+    console.log('기본 다운로드 방식 사용');
         const link = document.createElement('a');
-        link.href = url;
+    link.href = resultImage.src;
         link.download = filename;
+    link.target = '_blank';
         link.style.display = 'none';
+    
         document.body.appendChild(link);
         link.click();
+    
+    setTimeout(() => {
         document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }
+    }, 100);
       
-      alert('💾 이미지가 다운로드 폴더에 저장되었습니다!');
-    }, 'image/png', 1.0);
+    alert(`이미지가 다운로드 폴더에 저장되었습니다!\n파일명: ${filename}`);
+    console.log('이미지 저장 완료:', filename);
     
   } catch (error) {
     console.error('이미지 저장 오류:', error);
-    alert('이미지 저장 중 오류가 발생했습니다.');
+    
+    // 간단한 우클릭 저장 안내
+    alert('자동 저장에 실패했습니다.\n\n해결 방법:\n1. 결과 이미지에서 우클릭\n2. "이미지를 다른 이름으로 저장" 선택\n3. 원하는 위치에 저장');
+    
+    // 이미지에 포커스를 주어 우클릭하기 쉽게 만들기
+    if (resultImage) {
+      resultImage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      resultImage.style.border = '3px solid #ff6b6b';
+      resultImage.style.borderRadius = '8px';
+      
+      setTimeout(() => {
+        resultImage.style.border = '';
+        resultImage.style.borderRadius = '';
+      }, 3000);
+    }
   }
 }
 
@@ -798,9 +820,10 @@ async function pollForResult(baseUrl, predictionId) {
   return outputUrl;
 }
 
-// 공유 및 저장 기능
-function shareToInstagram() {
-  if (!resultImage.src) {
+// 옷 이미지 모드 공유 함수들
+function shareClothesToInstagram() {
+  const clothesResultImage = document.getElementById('clothesResultImage');
+  if (!clothesResultImage || !clothesResultImage.src) {
     alert('공유할 이미지가 없습니다.');
     return;
   }
@@ -808,7 +831,7 @@ function shareToInstagram() {
   // 모바일에서는 인스타그램 앱으로, 데스크톱에서는 웹으로
   if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
     // 모바일: 이미지를 다운로드하고 인스타그램 앱 열기
-    saveImage();
+    saveClothesImage();
     setTimeout(() => {
       window.open('instagram://camera', '_blank');
     }, 1000);
@@ -819,36 +842,166 @@ function shareToInstagram() {
   }
 }
 
-function shareToKakao() {
-  if (!resultImage.src) {
+function shareClothesToKakao() {
+  const clothesResultImage = document.getElementById('clothesResultImage');
+  if (!clothesResultImage || !clothesResultImage.src) {
     alert('공유할 이미지가 없습니다.');
     return;
   }
   
-  if (window.Kakao && window.Kakao.isInitialized()) {
-    window.Kakao.Share.sendDefault({
-      objectType: 'feed',
-      content: {
-        title: 'AI Fitting Studio',
-        description: 'AI 기술로 생성한 스타일링 이미지입니다! ✨',
-        imageUrl: resultImage.src,
-        link: {
-          mobileWebUrl: window.location.origin,
-          webUrl: window.location.origin
-        }
-      },
-      buttons: [
-        {
-          title: 'AI Fitting Studio 체험하기',
-          link: {
-            mobileWebUrl: window.location.origin,
-            webUrl: window.location.origin
+  try {
+    console.log('가상 피팅 이미지 파일 공유 시작...');
+    console.log('공유할 이미지 URL:', clothesResultImage.src);
+    
+    // Web Share API로 실제 이미지 파일만 공유
+    if (navigator.share) {
+      console.log('Web Share API 사용 - 이미지 파일 공유');
+      
+      // 이미지를 Blob으로 변환하여 파일로 공유
+      fetch(clothesResultImage.src)
+        .then(response => response.blob())
+        .then(blob => {
+          const file = new File([blob], 'AI가상피팅_결과.jpg', { type: 'image/jpeg' });
+          
+          return navigator.share({
+            title: 'AI Fitting Studio - 가상 피팅 결과',
+            text: 'AI 기술로 생성한 멋진 가상 피팅 결과를 확인해보세요!',
+            files: [file] // 실제 이미지 파일만 공유
+          });
+        })
+        .then(() => {
+          console.log('가상 피팅 이미지 파일 공유 성공');
+        })
+        .catch((error) => {
+          console.log('이미지 파일 공유 실패:', error);
+          if (error.name === 'AbortError') {
+            console.log('사용자가 공유를 취소했습니다.');
+          } else {
+            alert('이미지 파일 공유가 지원되지 않는 환경입니다.\n이미지를 저장한 후 직접 공유해주세요.');
           }
-        }
-      ]
-    });
-  } else {
-    alert('카카오톡 공유를 위해 카카오 SDK가 초기화되어야 합니다.');
+        });
+      return;
+    }
+    
+    // Web Share API 미지원시
+    alert('이 브라우저에서는 이미지 파일 공유가 지원되지 않습니다.\n이미지를 저장한 후 직접 공유해주세요.');
+    
+  } catch (error) {
+    console.error('가상 피팅 이미지 공유 오류:', error);
+    alert('이미지 파일 공유 중 오류가 발생했습니다.\n이미지를 저장한 후 직접 공유해주세요.');
+  }
+}
+
+// 개선된 옷 이미지 저장 기능 (우클릭 저장처럼 다이얼로그 표시)
+async function saveClothesImage() {
+  const clothesResultImage = document.getElementById('clothesResultImage');
+  if (!clothesResultImage || !clothesResultImage.src) {
+    alert('저장할 이미지가 없습니다.');
+    return;
+  }
+  
+  try {
+    console.log('가상 피팅 이미지 저장 시작...');
+    console.log('이미지 URL:', clothesResultImage.src);
+    
+    // 파일명 생성 (타임스탬프 포함)
+    const now = new Date();
+    const timestamp = now.getFullYear() + 
+                     String(now.getMonth() + 1).padStart(2, '0') + 
+                     String(now.getDate()).padStart(2, '0') + '_' +
+                     String(now.getHours()).padStart(2, '0') + 
+                     String(now.getMinutes()).padStart(2, '0') + 
+                     String(now.getSeconds()).padStart(2, '0');
+    const filename = `AI가상피팅_결과_${timestamp}.jpg`;
+    
+    console.log('파일명:', filename);
+    
+    // File System Access API 사용하여 저장 다이얼로그 표시
+    if ('showSaveFilePicker' in window) {
+      try {
+        console.log('파일 저장 다이얼로그 표시...');
+        
+        // 이미지를 fetch로 가져와서 blob으로 변환
+        const response = await fetch(clothesResultImage.src);
+        const blob = await response.blob();
+        
+        console.log('이미지 blob 생성 완료, 크기:', blob.size);
+        
+        // 저장 다이얼로그 표시
+        const fileHandle = await window.showSaveFilePicker({
+          suggestedName: filename,
+          types: [
+            {
+              description: 'JPEG 이미지',
+              accept: {
+                'image/jpeg': ['.jpg', '.jpeg'],
+              },
+            },
+            {
+              description: 'PNG 이미지',
+              accept: {
+                'image/png': ['.png'],
+              },
+            },
+          ],
+        });
+        
+        console.log('파일 핸들 생성 완료:', fileHandle.name);
+        
+        // 파일 쓰기
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        
+        console.log('파일 저장 완료');
+        alert(`이미지가 성공적으로 저장되었습니다!\n파일명: ${fileHandle.name}`);
+    return;
+        
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          console.log('사용자가 저장을 취소했습니다.');
+    return;
+  }
+        console.error('File System Access API 오류:', error);
+        // 에러 시 폴백 방식 사용
+      }
+    }
+    
+    // 폴백: 기본 다운로드 방식
+    console.log('기본 다운로드 방식 사용');
+  const link = document.createElement('a');
+  link.href = clothesResultImage.src;
+    link.download = filename;
+    link.target = '_blank';
+    link.style.display = 'none';
+    
+  document.body.appendChild(link);
+  link.click();
+    
+    setTimeout(() => {
+  document.body.removeChild(link);
+    }, 100);
+    
+    alert(`이미지가 다운로드 폴더에 저장되었습니다!\n파일명: ${filename}`);
+    console.log('가상 피팅 이미지 저장 완료:', filename);
+    
+  } catch (error) {
+    console.error('가상 피팅 이미지 저장 오류:', error);
+    
+    // 간단한 우클릭 저장 안내
+    alert('자동 저장에 실패했습니다.\n\n해결 방법:\n1. 결과 이미지에서 우클릭\n2. "이미지를 다른 이름으로 저장" 선택\n3. 원하는 위치에 저장');
+    
+    // 이미지에 포커스를 주어 우클릭하기 쉽게 만들기
+    if (clothesResultImage) {
+      clothesResultImage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      clothesResultImage.style.border = '3px solid #ff6b6b';
+      clothesResultImage.style.borderRadius = '8px';
+    
+    setTimeout(() => {
+        clothesResultImage.style.border = '';
+        clothesResultImage.style.borderRadius = '';
+      }, 3000);
+    }
   }
 }
 
@@ -867,253 +1020,439 @@ function registerServiceWorker() {
   }
 }
 
-// PWA 설치 프롬프트 설정
-function setupPWAInstall() {
-  let deferredPrompt;
+// 버튼 로딩 상태 표시 함수
+function showButtonLoading(button, isLoading) {
+  if (!button) return;
   
-  // 설치 프롬프트 이벤트 캐치
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    
-    // 설치 버튼 표시 (선택사항)
-    showInstallButton(deferredPrompt);
-  });
-  
-  // 앱이 설치되었을 때
-  window.addEventListener('appinstalled', (evt) => {
-    console.log('앱이 설치되었습니다!');
-    // 설치 버튼 숨기기
-    hideInstallButton();
-  });
-}
-
-// 설치 버튼 표시 함수
-function showInstallButton(deferredPrompt) {
-  // 헤더에 설치 버튼 추가
-  const header = document.querySelector('header');
-  if (header && !document.getElementById('installBtn')) {
-    const installBtn = document.createElement('button');
-    installBtn.id = 'installBtn';
-    installBtn.innerHTML = '📱 앱 설치';
-    installBtn.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: linear-gradient(135deg, var(--cobalt-blue) 0%, var(--cobalt-blue-dark) 100%);
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: var(--shadow-lg);
-      z-index: 1000;
-      transition: all 0.3s ease;
-    `;
-    
-    installBtn.addEventListener('click', async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        console.log(`사용자 선택: ${outcome}`);
-        deferredPrompt = null;
-        hideInstallButton();
-      }
-    });
-    
-    installBtn.addEventListener('mouseenter', () => {
-      installBtn.style.transform = 'translateY(-2px)';
-    });
-    
-    installBtn.addEventListener('mouseleave', () => {
-      installBtn.style.transform = 'translateY(0)';
-    });
-    
-    document.body.appendChild(installBtn);
+  if (isLoading) {
+    button.classList.add('button-loading');
+    button.disabled = true;
+    } else {
+    button.classList.remove('button-loading');
+    button.disabled = false;
   }
 }
-
-// 설치 버튼 숨기기 함수
-function hideInstallButton() {
-  const installBtn = document.getElementById('installBtn');
-  if (installBtn) {
-    installBtn.remove();
-  }
-}
-
-// 옷 이미지 모드 변수들
-// bodyImageData와 clothingImageData는 이미 전역변수로 선언됨
 
 // 옷 이미지 모드 초기화 함수
 function setupClothesMode() {
-  const bodyImageDropArea = document.getElementById('bodyImageDropArea');
+  console.log('옷 이미지 모드 초기화 시작...');
+  
+  // HTML에서 실제 존재하는 요소들과 연결
+  const clothesDragDropArea = document.getElementById('clothesDragDropArea');
+  const clothesImageUpload = document.getElementById('clothesImageUpload');
+  const bodyDragDropArea = document.getElementById('bodyDragDropArea');
   const bodyImageUpload = document.getElementById('bodyImageUpload');
-  const bodyImagePreview = document.getElementById('bodyImagePreview');
-  const bodyImageDisplay = document.getElementById('bodyImageDisplay');
-  const removeBodyImageBtn = document.getElementById('removeBodyImageBtn');
-  
-  // 기존 단일 옷 이미지 업로드 요소들
-  const clothingImageDropArea = document.getElementById('clothingImageDropArea');
-  const clothingImageUpload = document.getElementById('clothingImageUpload');
-  const clothingImagePreview = document.getElementById('clothingImagePreview');
-  const clothingImageDisplay = document.getElementById('clothingImageDisplay');
-  const removeClothingImageBtn = document.getElementById('removeClothingImageBtn');
-  
-  // 새로운 상의/하의 각각 업로드 요소들
-  const upperClothingDropArea = document.getElementById('upperClothingDropArea');
-  const upperClothingUpload = document.getElementById('upperClothingUpload');
-  const upperClothingPreview = document.getElementById('upperClothingPreview');
-  const upperClothingDisplay = document.getElementById('upperClothingDisplay');
-  const removeUpperClothingBtn = document.getElementById('removeUpperClothingBtn');
-  
-  const lowerClothingDropArea = document.getElementById('lowerClothingDropArea');
-  const lowerClothingUpload = document.getElementById('lowerClothingUpload');
-  const lowerClothingPreview = document.getElementById('lowerClothingPreview');
-  const lowerClothingDisplay = document.getElementById('lowerClothingDisplay');
-  const removeLowerClothingBtn = document.getElementById('removeLowerClothingBtn');
-  
   const generateClothesBtn = document.getElementById('generateClothesBtn');
-  const clothesPromptInput = document.getElementById('clothesPromptInput');
+  const clothingCategory = document.getElementById('clothingCategory');
+  
+  // 결과 표시 요소들
   const clothesResultImage = document.getElementById('clothesResultImage');
   const clothesResultPlaceholder = document.getElementById('clothesResultPlaceholder');
   const clothesActionButtons = document.getElementById('clothesActionButtons');
   const clothesGoogleLensSection = document.getElementById('clothesGoogleLensSection');
   
-  // 전신사진 드래그 앤 드롭 설정
-  setupImageDragAndDrop(bodyImageDropArea, bodyImageUpload, (file) => {
-    handleBodyImageFile(file, bodyImageDisplay, bodyImagePreview);
-  });
+  // 옷 이미지 업로드 설정
+  if (clothesDragDropArea && clothesImageUpload) {
+    setupImageDragAndDrop(clothesDragDropArea, clothesImageUpload, (file) => {
+      console.log('옷 이미지 업로드:', file.name);
+      handleClothingImageFile(file);
+    });
+  }
   
-  // 기존 옷 사진 드래그 앤 드롭 설정 (단일 업로드)
-  setupImageDragAndDrop(clothingImageDropArea, clothingImageUpload, (file) => {
-    handleClothingImageFile(file, clothingImageDisplay, clothingImagePreview);
-  });
+  // 전신사진 업로드 설정
+  if (bodyDragDropArea && bodyImageUpload) {
+    setupImageDragAndDrop(bodyDragDropArea, bodyImageUpload, (file) => {
+      console.log('전신사진 업로드:', file.name);
+      handleBodyImageFile(file);
+    });
+  }
   
-  // 상의 드래그 앤 드롭 설정
-  setupImageDragAndDrop(upperClothingDropArea, upperClothingUpload, (file) => {
-    handleUpperClothingImageFile(file, upperClothingDisplay, upperClothingPreview);
-  });
-  
-  // 하의 드래그 앤 드롭 설정
-  setupImageDragAndDrop(lowerClothingDropArea, lowerClothingUpload, (file) => {
-    handleLowerClothingImageFile(file, lowerClothingDisplay, lowerClothingPreview);
-  });
-  
-  // 이미지 제거 버튼들
-  removeBodyImageBtn.addEventListener('click', () => {
-    bodyImageData = null;
-    bodyImagePreview.style.display = 'none';
-    updateGenerateButton();
-  });
-  
-  removeClothingImageBtn.addEventListener('click', () => {
-    clothingImageData = null;
-    clothingImagePreview.style.display = 'none';
-    updateGenerateButton();
-  });
-  
-  removeUpperClothingBtn.addEventListener('click', () => {
-    upperClothingImageData = null;
-    upperClothingPreview.style.display = 'none';
-    updateGenerateButton();
-  });
-  
-  removeLowerClothingBtn.addEventListener('click', () => {
-    lowerClothingImageData = null;
-    lowerClothingPreview.style.display = 'none';
-    updateGenerateButton();
-  });
-  
-  // 생성 버튼
-  generateClothesBtn.addEventListener('click', async function() {
-    // 전체 의상 모드에서 업로드 방식 확인
-    const category = document.getElementById('clothingCategory')?.value;
-    const outfitUploadMode = document.getElementById('outfitUploadMode')?.value;
-    
-    // 이미지 유효성 검사
-    if (!bodyImageData) {
-      alert('전신사진을 업로드해주세요.');
-      return;
-    }
-    
-    if (category === 'full_outfit' && outfitUploadMode === 'separate') {
-      // 상의/하의 각각 업로드 모드
-      if (!upperClothingImageData || !lowerClothingImageData) {
-        alert('상의와 하의 이미지를 모두 업로드해주세요.');
+  // 생성 버튼 이벤트
+  if (generateClothesBtn) {
+    generateClothesBtn.addEventListener('click', async function() {
+      console.log('가상 피팅 생성 시작...');
+      
+      // 이미지 유효성 검사
+      if (!bodyImageData) {
+        alert('전신사진을 업로드해주세요.');
         return;
       }
-    } else {
-      // 단일 이미지 업로드 모드
+      
       if (!clothingImageData) {
         alert('옷 사진을 업로드해주세요.');
         return;
       }
-    }
-    
-    // 로딩 상태 시작
-    generateClothesBtn.disabled = true;
-    generateClothesBtn.innerHTML = '<span class="loading-spinner"></span>AI가 옷을 입혀드리고 있어요...';
-    
-    try {
-      // 추가 프롬프트 가져오기
-      const additionalPrompt = document.getElementById('clothesPrompt')?.value || '';
       
-      console.log('🚀 가상 피팅 시작...');
+      // 로딩 상태 시작
+      showButtonLoading(generateClothesBtn, true);
       
-      let resultImageUrl;
-      
-      if (category === 'full_outfit' && outfitUploadMode === 'separate') {
-        // 상의/하의 각각 처리 모드
-        console.log('👔 상의/하의 각각 처리 모드');
-        resultImageUrl = await callSeparateOutfitAPI(bodyImageData, upperClothingImageData, lowerClothingImageData, additionalPrompt);
-      } else {
-        // 기존 단일 이미지 처리 모드
-        console.log('🎯 단일 이미지 처리 모드');
-        resultImageUrl = await callIDMVTONAPI(bodyImageData, clothingImageData, additionalPrompt);
+      try {
+        // 추가 프롬프트 가져오기
+        const additionalPrompt = '';
+        const category = clothingCategory?.value || 'upper_body';
+        
+        console.log('가상 피팅 설정:', {
+          category,
+          prompt: additionalPrompt,
+          bodyImage: bodyImageData ? '있음' : '없음',
+          clothingImage: clothingImageData ? '있음' : '없음'
+        });
+        
+        // IDM-VTON API 호출
+        const resultImageUrl = await callIDMVTONAPI(bodyImageData, clothingImageData, additionalPrompt);
+        
+        console.log('가상 피팅 완료:', resultImageUrl);
+        
+        // 결과 이미지 표시
+        showClothesResultImage(resultImageUrl);
+        
+      } catch (error) {
+        console.error('가상 피팅 오류:', error);
+        alert('가상 피팅 생성 중 오류가 발생했습니다: ' + error.message);
+      } finally {
+        // 로딩 상태 종료
+        showButtonLoading(generateClothesBtn, false);
+        updateGenerateButton();
       }
-      
-      console.log('✅ 가상 피팅 완료:', resultImageUrl);
-      
-      // 결과 이미지 표시
-      showClothesResultImage(resultImageUrl);
-      
-    } catch (error) {
-      console.error('❌ 가상 피팅 오류:', error);
-      alert('가상 피팅 생성 중 오류가 발생했습니다: ' + error.message);
-    } finally {
-      // 로딩 상태 종료
-      generateClothesBtn.disabled = false;
-      generateClothesBtn.innerHTML = '가상 피팅 생성';
-    }
-  });
+    });
+  }
   
   // 구글 렌즈 기능 초기화
   setupClothesGoogleLens();
+  
+  // 초기 버튼 상태 업데이트
+  updateGenerateButton();
+  
+  console.log('옷 이미지 모드 초기화 완료');
 }
 
-// 상의 이미지 파일 처리
-function handleUpperClothingImageFile(file, displayImg, previewDiv) {
+// 드래그 앤 드롭 설정 함수 (개선된 버전)
+function setupImageDragAndDrop(dropArea, fileInput, handleFileCallback) {
+  if (!dropArea || !fileInput) {
+    console.warn('드래그 앤 드롭 요소가 없습니다:', { dropArea, fileInput });
+    return;
+  }
+  
+  // 드래그 앤 드롭 영역 클릭 시 파일 선택
+  dropArea.addEventListener('click', () => {
+    fileInput.click();
+  });
+  
+  // 파일 선택 이벤트
+  fileInput.addEventListener('change', (e) => {
+    const files = e.target.files;
+    if (files.length > 0) {
+      const file = files[0];
+      if (file.type.startsWith('image/')) {
+        handleFileCallback(file);
+      } else {
+        alert('이미지 파일만 업로드 가능합니다.');
+      }
+    }
+  });
+
+  // 드래그 오버 이벤트
+  dropArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropArea.classList.add('drag-over');
+  });
+  
+  // 드래그 리브 이벤트
+  dropArea.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    dropArea.classList.remove('drag-over');
+  });
+  
+  // 드롭 이벤트
+  dropArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropArea.classList.remove('drag-over');
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      const file = files[0];
+      if (file.type.startsWith('image/')) {
+        handleFileCallback(file);
+      } else {
+        alert('이미지 파일만 업로드 가능합니다.');
+      }
+    }
+  });
+}
+
+// 전신사진 파일 처리 (개선된 버전)
+function handleBodyImageFile(file) {
   const reader = new FileReader();
   reader.onload = function(evt) {
-    upperClothingImageData = evt.target.result;
-    displayImg.src = evt.target.result;
-    previewDiv.style.display = 'block';
+    bodyImageData = evt.target.result;
+    
+    // 업로드 영역 업데이트
+    const bodyDragDropArea = document.getElementById('bodyDragDropArea');
+    if (bodyDragDropArea) {
+      bodyDragDropArea.style.backgroundImage = `url(${evt.target.result})`;
+      bodyDragDropArea.style.backgroundSize = 'contain';
+      bodyDragDropArea.style.backgroundPosition = 'center';
+      bodyDragDropArea.style.backgroundRepeat = 'no-repeat';
+      bodyDragDropArea.classList.add('has-image');
+      
+      const content = bodyDragDropArea.querySelector('.drag-drop-content');
+      if (content) {
+        content.innerHTML = '<div>전신사진 업로드 완료</div>';
+      }
+    }
+    
     updateGenerateButton();
+    console.log('전신사진 업로드 완료');
   };
   reader.readAsDataURL(file);
 }
 
-// 하의 이미지 파일 처리
-function handleLowerClothingImageFile(file, displayImg, previewDiv) {
+// 옷 이미지 파일 처리 (개선된 버전)
+function handleClothingImageFile(file) {
   const reader = new FileReader();
   reader.onload = function(evt) {
-    lowerClothingImageData = evt.target.result;
-    displayImg.src = evt.target.result;
-    previewDiv.style.display = 'block';
+    clothingImageData = evt.target.result;
+    
+    // 업로드 영역 업데이트
+    const clothesDragDropArea = document.getElementById('clothesDragDropArea');
+    if (clothesDragDropArea) {
+      clothesDragDropArea.style.backgroundImage = `url(${evt.target.result})`;
+      clothesDragDropArea.style.backgroundSize = 'contain';
+      clothesDragDropArea.style.backgroundPosition = 'center';
+      clothesDragDropArea.style.backgroundRepeat = 'no-repeat';
+      clothesDragDropArea.classList.add('has-image');
+      
+      const content = clothesDragDropArea.querySelector('.drag-drop-content');
+      if (content) {
+        content.innerHTML = '<div>옷 이미지 업로드 완료</div>';
+      }
+    }
+    
     updateGenerateButton();
+    console.log('옷 이미지 업로드 완료');
   };
   reader.readAsDataURL(file);
+}
+
+// 생성 버튼 상태 업데이트
+function updateGenerateButton() {
+  const generateClothesBtn = document.getElementById('generateClothesBtn');
+  if (!generateClothesBtn) return;
+  
+  const hasBodyImage = !!bodyImageData;
+  const hasClothingImage = !!clothingImageData;
+  const canGenerate = hasBodyImage && hasClothingImage;
+  
+  if (canGenerate) {
+    generateClothesBtn.disabled = false;
+    generateClothesBtn.style.background = 'var(--primary)';
+    generateClothesBtn.style.cursor = 'pointer';
+    const buttonText = generateClothesBtn.querySelector('.button-text');
+    if (buttonText) buttonText.textContent = '가상 피팅 생성';
+  } else {
+    generateClothesBtn.disabled = true;
+    generateClothesBtn.style.background = 'var(--gray-400)';
+    generateClothesBtn.style.cursor = 'not-allowed';
+    const buttonText = generateClothesBtn.querySelector('.button-text');
+    if (buttonText) buttonText.textContent = '가상 피팅 생성';
+  }
+  
+  console.log('버튼 상태 업데이트:', { hasBodyImage, hasClothingImage, canGenerate });
+}
+
+// IDM-VTON API 호출 함수 (정확한 cuuupid/idm-vton 모델 사용)
+async function callIDMVTONAPI(bodyImageData, clothingImageData, prompt) {
+  // DataURL → base64 (헤더 제거)
+  const bodyImageBase64 = bodyImageData.replace(/^data:image\/[a-z]+;base64,/, '');
+  const clothingImageBase64 = clothingImageData.replace(/^data:image\/[a-z]+;base64,/, '');
+
+  // 현재 페이지의 호스트를 기반으로 API URL 생성
+  const baseUrl = window.location.protocol + '//' + window.location.host;
+  
+  try {
+    // 1. 이미지 업로드 (base64 → URL)
+    const bodyImageUploadRes = await fetch(`${baseUrl}/upload`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: bodyImageBase64 })
+    });
+    const bodyImageUploadData = await bodyImageUploadRes.json();
+    if (!bodyImageUploadData.url) throw new Error('전신사진 업로드 실패');
+
+    const clothingImageUploadRes = await fetch(`${baseUrl}/upload`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: clothingImageBase64 })
+    });
+    const clothingImageUploadData = await clothingImageUploadRes.json();
+    if (!clothingImageUploadData.url) throw new Error('옷 사진 업로드 실패');
+
+    console.log('이미지 업로드 완료:', {
+      bodyImage: bodyImageUploadData.url,
+      clothingImage: clothingImageUploadData.url
+    });
+
+    // 의류 카테고리 자동 감지
+    const category = detectClothingCategory(clothingImageData);
+    console.log('감지된 의류 카테고리:', category);
+
+    // 스마트 프롬프트 생성
+    const enhancedPrompt = generateSmartPrompt(category, prompt);
+    console.log('최종 프롬프트:', enhancedPrompt);
+
+    // 전체 의상 모드 처리 (조합된 이미지)
+    if (category === 'full_outfit') {
+      console.log('전체 의상 모드: 상의와 하의를 순차적으로 처리합니다');
+      
+      // 1단계: 상의 변경
+      console.log('상의 변경 중...');
+      const upperResult = await callSingleIDMVTON(
+        bodyImageUploadData.url, 
+        clothingImageUploadData.url, 
+        'upper_body', 
+        `upper body clothing, top wear, ${enhancedPrompt}`
+      );
+      
+      if (!upperResult) {
+        throw new Error('상의 변경 실패');
+      }
+      
+      console.log('상의 변경 완료: 전체 의상 변경 성공');
+      
+      // 2단계: 하의 변경 (상의 변경된 이미지 사용)
+      console.log('하의 변경 중...');
+      const lowerPrompt = generateSmartPrompt('lower_body', `lower body clothing, bottom wear, ${enhancedPrompt}`);
+      
+      // 상의 변경 결과를 바이너리 데이터로 변환
+      const upperResultResponse = await fetch(upperResult);
+      const upperResultBlob = await upperResultResponse.blob();
+      
+      // Blob을 base64로 변환
+      const upperResultBase64 = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(upperResultBlob);
+      });
+      
+      // 변환된 결과로 하의 변경
+      const finalResult = await callIDMVTONAPI(upperResultBase64, lowerClothingImageData, lowerPrompt);
+      
+      console.log('하의 변경 완료: 전체 의상 변경 성공');
+      return finalResult;
+      
+    } else {
+      // 단일 카테고리 모드
+      return await callSingleIDMVTON(
+        bodyImageUploadData.url, 
+        clothingImageUploadData.url, 
+        category, 
+        enhancedPrompt
+      );
+    }
+
+  } catch (error) {
+    console.error('IDM-VTON API 오류:', error);
+    throw error;
+  }
+}
+
+// 단일 IDM-VTON API 호출 함수 (내부 사용)
+async function callSingleIDMVTON(bodyImageUrl, clothingImageUrl, category, prompt) {
+  const baseUrl = window.location.protocol + '//' + window.location.host;
+  
+  console.log(`IDM-VTON API 호출 - 카테고리: ${category}`);
+  
+  const replicateResponse = await fetch(`${baseUrl}/replicate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      version: 'c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4', // 정확한 IDM-VTON 모델 버전 해시
+      input: {
+        human_img: bodyImageUrl,
+        garm_img: clothingImageUrl,
+        garment_des: prompt || "clothing",
+        category: category === 'full_outfit' ? 'upper_body' : category, // full_outfit은 처리 단계에서 분리됨
+        is_checked: true,
+        is_checked_crop: false,
+        denoise_steps: 30,
+        seed: Math.floor(Math.random() * 1000000)
+      }
+    })
+  });
+
+  const replicateData = await replicateResponse.json();
+  console.log(`IDM-VTON API 응답 (${category}):`, replicateData);
+
+  if (!replicateData.id) {
+    throw new Error(`IDM-VTON API 호출 실패 (${category}): ` + (replicateData.detail || 'Unknown error'));
+  }
+
+  // 결과 polling
+  return await pollForIDMVTONResult(replicateData.id);
+}
+
+// 의류 카테고리 자동 감지 함수 (간단한 휴리스틱)
+function detectClothingCategory(imageData) {
+  // 1. 사용자가 직접 선택한 카테고리 우선 사용
+  const selectedCategory = document.getElementById('clothingCategory')?.value;
+  if (selectedCategory) {
+    console.log('사용자 선택 카테고리:', selectedCategory);
+    return selectedCategory;
+  }
+  
+  // 2. 기본값: 상의
+  console.log('자동 감지: upper_body (기본값)');
+    return 'upper_body'; // 기본값: 상의
+}
+
+// IDM-VTON 결과 polling 함수
+async function pollForIDMVTONResult(predictionId, maxAttempts = 60, intervalMs = 2000) {
+  const baseUrl = window.location.protocol + '//' + window.location.host;
+  
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      console.log(`IDM-VTON 결과 확인 중... (${attempt}/${maxAttempts})`);
+      
+      const response = await fetch(`${baseUrl}/replicate/${predictionId}`);
+      const data = await response.json();
+      
+      console.log('IDM-VTON 상태:', data);
+      
+      if (data.status === 'succeeded') {
+        console.log('IDM-VTON 완료!', data.output);
+        console.log('IDM-VTON 결과 타입:', typeof data.output, Array.isArray(data.output));
+        // IDM-VTON 결과가 배열로 오는 경우 첫 번째 이미지 URL 반환
+        if (Array.isArray(data.output) && data.output.length > 0) {
+          console.log('배열에서 첫 번째 결과 반환:', data.output[0]);
+          return data.output[0];
+        } else if (typeof data.output === 'string') {
+          console.log('문자열 결과 반환:', data.output);
+          return data.output;
+        } else {
+          console.error('예상치 못한 결과 형식:', data.output);
+          throw new Error('IDM-VTON 결과 형식이 올바르지 않습니다: ' + JSON.stringify(data.output));
+        }
+      } else if (data.status === 'failed') {
+        console.error('IDM-VTON 실패:', data.error);
+        throw new Error('IDM-VTON 생성 실패: ' + (data.error || 'Unknown error'));
+      } else if (data.status === 'canceled') {
+        throw new Error('IDM-VTON 작업이 취소되었습니다');
+      } else {
+        console.log(`IDM-VTON 진행 중... 상태: ${data.status}`);
+      }
+      
+      // 아직 진행 중이면 대기
+      if (attempt < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, intervalMs));
+      }
+    } catch (error) {
+      console.error(`IDM-VTON 결과 확인 오류 (시도 ${attempt}):`, error);
+      if (attempt === maxAttempts) throw error;
+      await new Promise(resolve => setTimeout(resolve, intervalMs));
+    }
+  }
+  
+  throw new Error('IDM-VTON 결과 대기 시간 초과 (2분)');
 }
 
 // 옷 이미지 모드 결과 이미지 표시 함수
@@ -1122,6 +1461,11 @@ function showClothesResultImage(src) {
   const clothesResultPlaceholder = document.getElementById('clothesResultPlaceholder');
   const clothesActionButtons = document.getElementById('clothesActionButtons');
   const clothesGoogleLensSection = document.getElementById('clothesGoogleLensSection');
+  
+  if (!clothesResultImage) {
+    console.error('clothesResultImage 요소를 찾을 수 없습니다');
+    return;
+  }
   
   clothesResultImage.onload = function() {
     // 이미지 스타일 설정
@@ -1142,6 +1486,8 @@ function showClothesResultImage(src) {
     if (clothesGoogleLensSection) {
       clothesGoogleLensSection.style.display = 'block';
     }
+    
+    console.log('가상 피팅 결과 이미지 표시 완료');
   };
   
   clothesResultImage.onerror = function() {
@@ -1176,55 +1522,26 @@ function resetClothesResultState() {
   }
 }
 
-// 옷 이미지 모드 공유 함수들 (기존 함수와 동일한 로직)
-function shareClothesToInstagram() {
-  const clothesResultImage = document.getElementById('clothesResultImage');
-  if (!clothesResultImage.src) {
-    alert('공유할 이미지가 없습니다.');
-    return;
-  }
-  shareToInstagram(); // 기존 함수 재사용
-}
-
-function shareClothesToKakao() {
-  const clothesResultImage = document.getElementById('clothesResultImage');
-  if (!clothesResultImage.src) {
-    alert('공유할 이미지가 없습니다.');
-    return;
-  }
-  shareToKakao(); // 기존 함수 재사용
-}
-
-function saveClothesImage() {
-  const clothesResultImage = document.getElementById('clothesResultImage');
-  if (!clothesResultImage.src) {
-    alert('저장할 이미지가 없습니다.');
-    return;
-  }
-  
-  // 이미지를 다운로드
-  const link = document.createElement('a');
-  link.href = clothesResultImage.src;
-  link.download = `ai-fitting-result-${Date.now()}.png`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
 // 옷 이미지 모드용 구글 렌즈 함수
 function setupClothesGoogleLens() {
   const clothesGoogleLensBtn = document.getElementById('clothesGoogleLensBtn');
   if (clothesGoogleLensBtn) {
     clothesGoogleLensBtn.addEventListener('click', () => {
       const clothesResultImage = document.getElementById('clothesResultImage');
-      if (!clothesResultImage.src) {
+      if (!clothesResultImage || !clothesResultImage.src) {
         alert('검색할 이미지가 없습니다.');
         return;
       }
       
-      // 구글 렌즈로 이미지 검색
-      const searchUrl = `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(clothesResultImage.src)}`;
-      window.open(searchUrl, '_blank');
+      try {
+        // 구글 렌즈로 이미지 검색
+        const searchUrl = `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(clothesResultImage.src)}`;
+        window.open(searchUrl, '_blank');
+      } catch (error) {
+        console.error('구글 렌즈 연동 오류:', error);
+        window.open('https://lens.google.com/', '_blank');
+        alert('구글 렌즈 페이지가 열렸습니다. 생성된 이미지를 수동으로 업로드해주세요.');
+      }
     });
   }
 }
@@ -1255,18 +1572,11 @@ function showPageWithAnimation(hidePage, showPage) {
 function toggleDressLengthOption() {
   const categorySelect = document.getElementById('clothingCategory');
   const dressLengthSection = document.getElementById('dressLengthSection');
-  const outfitUploadModeSection = document.getElementById('outfitUploadModeSection');
   
-  if (categorySelect && dressLengthSection && outfitUploadModeSection) {
+  if (categorySelect && dressLengthSection) {
     if (categorySelect.value === 'dresses') {
-      // 원피스 모드: 길이 선택 표시, 업로드 방식 선택 숨김
+      // 원피스 모드: 길이 선택 표시
       dressLengthSection.style.display = 'block';
-      outfitUploadModeSection.style.display = 'none';
-      // 기본 단일 업로드로 복원
-      const singleUpload = document.getElementById('singleClothingUpload');
-      const separateUpload = document.getElementById('separateClothingUpload');
-      if (singleUpload) singleUpload.style.display = 'block';
-      if (separateUpload) separateUpload.style.display = 'none';
       
       // 부드러운 애니메이션 효과
       dressLengthSection.style.opacity = '0';
@@ -1276,31 +1586,9 @@ function toggleDressLengthOption() {
         dressLengthSection.style.opacity = '1';
         dressLengthSection.style.transform = 'translateY(0)';
       }, 10);
-    } else if (categorySelect.value === 'full_outfit') {
-      // 전체 의상 모드: 업로드 방식 선택 표시, 길이 선택 숨김
-      dressLengthSection.style.display = 'none';
-      outfitUploadModeSection.style.display = 'block';
-      
-      // 부드러운 애니메이션 효과
-      outfitUploadModeSection.style.opacity = '0';
-      outfitUploadModeSection.style.transform = 'translateY(-10px)';
-      setTimeout(() => {
-        outfitUploadModeSection.style.transition = 'all 0.3s ease';
-        outfitUploadModeSection.style.opacity = '1';
-        outfitUploadModeSection.style.transform = 'translateY(0)';
-      }, 10);
-      
-      // 현재 선택된 업로드 모드에 따라 UI 조정
-      toggleOutfitUploadMode();
     } else {
-      // 기타 모드: 모든 추가 옵션 숨김
+      // 기타 모드: 길이 선택 숨김
       dressLengthSection.style.display = 'none';
-      outfitUploadModeSection.style.display = 'none';
-      // 기본 단일 업로드로 복원
-      const singleUpload = document.getElementById('singleClothingUpload');
-      const separateUpload = document.getElementById('separateClothingUpload');
-      if (singleUpload) singleUpload.style.display = 'block';
-      if (separateUpload) separateUpload.style.display = 'none';
     }
   }
 }
@@ -1317,7 +1605,7 @@ function generateSmartPrompt(category, userPrompt) {
       if (!enhancedPrompt.includes('outfit') && !enhancedPrompt.includes('전체')) {
         enhancedPrompt = `complete outfit, full clothing set, ${enhancedPrompt}`;
       }
-      console.log('👔 전체 의상 모드 활성화');
+      console.log('전체 의상 모드 활성화');
       break;
       
     case 'dresses':
@@ -1334,7 +1622,7 @@ function generateSmartPrompt(category, userPrompt) {
       } else {
         enhancedPrompt = `${lengthDesc}, ${enhancedPrompt}`;
       }
-      console.log(`👗 원피스 모드 - 길이: ${dressLength}`);
+      console.log(`원피스 모드 - 길이: ${dressLength}`);
       break;
       
     case 'upper_body':
@@ -1343,7 +1631,7 @@ function generateSmartPrompt(category, userPrompt) {
           !enhancedPrompt.includes('top') && !enhancedPrompt.includes('blouse')) {
         enhancedPrompt = `stylish top, fashionable upper wear, ${enhancedPrompt}`;
       }
-      console.log('👕 상의 모드');
+      console.log('상의 모드');
       break;
       
     case 'lower_body':
@@ -1352,7 +1640,7 @@ function generateSmartPrompt(category, userPrompt) {
           !enhancedPrompt.includes('bottom') && !enhancedPrompt.includes('skirt')) {
         enhancedPrompt = `stylish bottoms, fashionable lower wear, ${enhancedPrompt}`;
       }
-      console.log('👖 하의 모드');
+      console.log('하의 모드');
       break;
   }
   
@@ -1361,410 +1649,76 @@ function generateSmartPrompt(category, userPrompt) {
     enhancedPrompt = `${enhancedPrompt}, high quality, detailed, realistic`;
   }
   
-  console.log('✨ 향상된 프롬프트:', enhancedPrompt);
+  console.log('향상된 프롬프트:', enhancedPrompt);
   return enhancedPrompt.trim();
 }
 
-// 전체 의상 업로드 모드 토글 함수
-function toggleOutfitUploadMode() {
-  const outfitUploadMode = document.getElementById('outfitUploadMode')?.value;
-  const singleClothingUpload = document.getElementById('singleClothingUpload');
-  const separateClothingUpload = document.getElementById('separateClothingUpload');
-  
-  if (outfitUploadMode === 'separate') {
-    // 상의/하의 각각 업로드 모드
-    if (singleClothingUpload) singleClothingUpload.style.display = 'none';
-    if (separateClothingUpload) {
-      separateClothingUpload.style.display = 'block';
-      // 부드러운 애니메이션
-      separateClothingUpload.style.opacity = '0';
-      separateClothingUpload.style.transform = 'translateY(-10px)';
-      setTimeout(() => {
-        separateClothingUpload.style.transition = 'all 0.3s ease';
-        separateClothingUpload.style.opacity = '1';
-        separateClothingUpload.style.transform = 'translateY(0)';
-      }, 10);
-    }
-  } else {
-    // 조합된 이미지 업로드 모드 (기본)
-    if (singleClothingUpload) singleClothingUpload.style.display = 'block';
-    if (separateClothingUpload) separateClothingUpload.style.display = 'none';
+// 공유 및 저장 기능 (텍스트 모드)
+function shareToInstagram() {
+  if (!resultImage.src) {
+    alert('공유할 이미지가 없습니다.');
+    return;
   }
   
-  // 생성 버튼 상태 업데이트
-  updateGenerateButton();
+  // 모바일에서는 인스타그램 앱으로, 데스크톱에서는 웹으로
+  if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+    // 모바일: 이미지를 다운로드하고 인스타그램 앱 열기
+    saveImage();
+    setTimeout(() => {
+      window.open('instagram://camera', '_blank');
+    }, 1000);
+  } else {
+    // 데스크톱: 인스타그램 웹사이트 열기
+    window.open('https://www.instagram.com/', '_blank');
+    alert('이미지를 저장한 후 인스타그램에 업로드해주세요.');
+  }
 }
 
-// 상의/하의 각각 처리 API 함수
-async function callSeparateOutfitAPI(bodyImageData, upperClothingImageData, lowerClothingImageData, prompt) {
-  console.log('👔 상의/하의 각각 처리 모드 시작');
+function shareToKakao() {
+  if (!resultImage.src) {
+    alert('공유할 이미지가 없습니다.');
+    return;
+  }
   
   try {
-    // 1단계: 상의 변경
-    console.log('📝 1단계: 상의 변경 중...');
-    const upperPrompt = generateSmartPrompt('upper_body', `upper body clothing, top wear, ${prompt}`);
-    const upperResult = await callIDMVTONAPI(bodyImageData, upperClothingImageData, upperPrompt);
+    console.log('AI 스타일링 이미지 파일 공유 시작...');
+    console.log('공유할 이미지 URL:', resultImage.src);
     
-    if (!upperResult) {
-      throw new Error('상의 변경 실패');
+    // Web Share API로 실제 이미지 파일만 공유
+    if (navigator.share) {
+      console.log('Web Share API 사용 - 이미지 파일 공유');
+      
+      // 이미지를 Blob으로 변환하여 파일로 공유
+      fetch(resultImage.src)
+        .then(response => response.blob())
+        .then(blob => {
+          const file = new File([blob], 'AI스타일링_결과.jpg', { type: 'image/jpeg' });
+          
+          return navigator.share({
+            title: 'AI Fitting Studio - AI 스타일링 결과',
+            text: 'AI 기술로 생성한 멋진 스타일링 결과를 확인해보세요!',
+            files: [file] // 실제 이미지 파일만 공유
+          });
+        })
+        .then(() => {
+          console.log('AI 스타일링 이미지 파일 공유 성공');
+        })
+        .catch((error) => {
+          console.log('이미지 파일 공유 실패:', error);
+          if (error.name === 'AbortError') {
+            console.log('사용자가 공유를 취소했습니다.');
+          } else {
+            alert('이미지 파일 공유가 지원되지 않는 환경입니다.\n이미지를 저장한 후 직접 공유해주세요.');
+          }
+        });
+      return;
     }
     
-    console.log('✅ 1단계 완료: 상의 변경 성공');
-    
-    // 2단계: 하의 변경 (상의 변경된 이미지 사용)
-    console.log('📝 2단계: 하의 변경 중...');
-    const lowerPrompt = generateSmartPrompt('lower_body', `lower body clothing, bottom wear, ${prompt}`);
-    
-    // 상의 변경 결과를 바이너리 데이터로 변환
-    const upperResultResponse = await fetch(upperResult);
-    const upperResultBlob = await upperResultResponse.blob();
-    
-    // Blob을 base64로 변환
-    const upperResultBase64 = await new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.readAsDataURL(upperResultBlob);
-    });
-    
-    // 변환된 결과로 하의 변경
-    const finalResult = await callIDMVTONAPI(upperResultBase64, lowerClothingImageData, lowerPrompt);
-    
-    console.log('✅ 2단계 완료: 전체 의상 변경 성공');
-    return finalResult;
+    // Web Share API 미지원시
+    alert('이 브라우저에서는 이미지 파일 공유가 지원되지 않습니다.\n이미지를 저장한 후 직접 공유해주세요.');
     
   } catch (error) {
-    console.error('❌ 상의/하의 각각 처리 오류:', error);
-    throw error;
+    console.error('AI 스타일링 이미지 공유 오류:', error);
+    alert('이미지 파일 공유 중 오류가 발생했습니다.\n이미지를 저장한 후 직접 공유해주세요.');
   }
-}
-
-// 이미지 드래그 앤 드롭 설정 함수
-function setupImageDragAndDrop(dropArea, fileInput, handleFile) {
-  if (!dropArea || !fileInput) return;
-  
-  dropArea.addEventListener('click', () => {
-    fileInput.click();
-  });
-  
-  dropArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropArea.classList.add('drag-over');
-  });
-  
-  dropArea.addEventListener('dragleave', (e) => {
-    e.preventDefault();
-    dropArea.classList.remove('drag-over');
-  });
-  
-  dropArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropArea.classList.remove('drag-over');
-    
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      const file = files[0];
-      if (file.type.startsWith('image/')) {
-        handleFile(file);
-      } else {
-        alert('이미지 파일만 업로드 가능합니다.');
-      }
-    }
-  });
-  
-  fileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      handleFile(file);
-    }
-  });
-}
-
-// 전신사진 파일 처리
-function handleBodyImageFile(file, displayImg, previewDiv) {
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    bodyImageData = evt.target.result;
-    displayImg.src = evt.target.result;
-    previewDiv.style.display = 'block';
-    updateGenerateButton();
-  };
-  reader.readAsDataURL(file);
-}
-
-// 옷 사진 파일 처리
-function handleClothingImageFile(file, displayImg, previewDiv) {
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    clothingImageData = evt.target.result;
-    displayImg.src = evt.target.result;
-    previewDiv.style.display = 'block';
-    updateGenerateButton();
-  };
-  reader.readAsDataURL(file);
-}
-
-// 생성 버튼 상태 업데이트
-function updateGenerateButton() {
-  const generateClothesBtn = document.getElementById('generateClothesBtn');
-  const category = document.getElementById('clothingCategory')?.value;
-  const outfitUploadMode = document.getElementById('outfitUploadMode')?.value;
-  
-  if (!generateClothesBtn) return;
-  
-  let isReady = false;
-  let statusText = '';
-  
-  if (!bodyImageData) {
-    statusText = '전신사진을 업로드해주세요';
-  } else if (category === 'full_outfit' && outfitUploadMode === 'separate') {
-    // 상의/하의 각각 업로드 모드
-    if (upperClothingImageData && lowerClothingImageData) {
-      isReady = true;
-      statusText = '상의/하의 가상 피팅을 시작할 준비가 되었습니다!';
-    } else {
-      statusText = '상의와 하의 이미지를 모두 업로드해주세요';
-    }
-  } else {
-    // 단일 이미지 업로드 모드
-    if (clothingImageData) {
-      isReady = true;
-      statusText = '가상 피팅을 시작할 준비가 되었습니다!';
-    } else {
-      statusText = '옷 사진을 업로드해주세요';
-    }
-  }
-  
-  if (isReady) {
-    generateClothesBtn.disabled = false;
-    generateClothesBtn.style.background = 'linear-gradient(135deg, var(--cobalt-blue) 0%, var(--cobalt-blue-dark) 100%)';
-    generateClothesBtn.style.cursor = 'pointer';
-  } else {
-    generateClothesBtn.disabled = true;
-    generateClothesBtn.style.background = 'var(--gray-400)';
-    generateClothesBtn.style.cursor = 'not-allowed';
-  }
-  
-  const statusElement = generateClothesBtn.nextElementSibling;
-  if (statusElement) {
-    statusElement.textContent = statusText;
-  }
-}
-
-// IDM-VTON API 호출 함수 (정확한 cuuupid/idm-vton 모델 사용)
-async function callIDMVTONAPI(bodyImageData, clothingImageData, prompt) {
-  // DataURL → base64 (헤더 제거)
-  const bodyImageBase64 = bodyImageData.replace(/^data:image\/[a-z]+;base64,/, '');
-  const clothingImageBase64 = clothingImageData.replace(/^data:image\/[a-z]+;base64,/, '');
-
-  // 현재 페이지의 호스트를 기반으로 API URL 생성
-  const baseUrl = window.location.protocol + '//' + window.location.host;
-  
-  try {
-    // 1. 이미지 업로드 (base64 → URL)
-    const bodyImageUploadRes = await fetch(`${baseUrl}/upload`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: bodyImageBase64 })
-    });
-    const bodyImageUploadData = await bodyImageUploadRes.json();
-    if (!bodyImageUploadData.url) throw new Error('전신사진 업로드 실패');
-
-    const clothingImageUploadRes = await fetch(`${baseUrl}/upload`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: clothingImageBase64 })
-    });
-    const clothingImageUploadData = await clothingImageUploadRes.json();
-    if (!clothingImageUploadData.url) throw new Error('옷 사진 업로드 실패');
-
-    console.log('✅ 이미지 업로드 완료:', {
-      bodyImage: bodyImageUploadData.url,
-      clothingImage: clothingImageUploadData.url
-    });
-
-    // 의류 카테고리 자동 감지
-    const category = detectClothingCategory(clothingImageData);
-    console.log('🎯 감지된 의류 카테고리:', category);
-
-    // 스마트 프롬프트 생성
-    const enhancedPrompt = generateSmartPrompt(category, prompt);
-    console.log('✨ 최종 프롬프트:', enhancedPrompt);
-
-    // 전체 의상 모드 처리 (조합된 이미지)
-    if (category === 'full_outfit') {
-      console.log('👔 전체 의상 모드: 상의와 하의를 순차적으로 처리합니다');
-      
-      // 1단계: 상의 변경
-      console.log('📝 1단계: 상의 변경 중...');
-      const upperResult = await callSingleIDMVTON(
-        bodyImageUploadData.url, 
-        clothingImageUploadData.url, 
-        'upper_body', 
-        `upper body clothing, top wear, ${enhancedPrompt}`
-      );
-      
-      if (!upperResult) {
-        throw new Error('상의 변경 실패');
-      }
-      
-      console.log('✅ 1단계 완료: 상의 변경 성공');
-      
-      // 2단계: 하의 변경 (상의 변경된 이미지 사용)
-      console.log('📝 2단계: 하의 변경 중...');
-      
-      // 상의 변경된 결과 이미지를 다시 업로드
-      const updatedBodyImageRes = await fetch(`${baseUrl}/upload`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageUrl: upperResult })
-      });
-      const updatedBodyImageData = await updatedBodyImageRes.json();
-      
-      if (!updatedBodyImageData.url) {
-        console.warn('⚠️ 중간 결과 업로드 실패, 상의만 변경합니다');
-        return upperResult;
-      }
-      
-      const lowerResult = await callSingleIDMVTON(
-        updatedBodyImageData.url, 
-        clothingImageUploadData.url, 
-        'lower_body', 
-        `lower body clothing, bottom wear, ${enhancedPrompt}`
-      );
-      
-      console.log('✅ 2단계 완료: 전체 의상 변경 성공');
-      return lowerResult || upperResult;
-      
-    } else {
-      // 단일 카테고리 모드
-      return await callSingleIDMVTON(
-        bodyImageUploadData.url, 
-        clothingImageUploadData.url, 
-        category, 
-        enhancedPrompt
-      );
-    }
-
-  } catch (error) {
-    console.error('❌ IDM-VTON API 오류:', error);
-    throw error;
-  }
-}
-
-// 단일 IDM-VTON API 호출 함수 (내부 사용)
-async function callSingleIDMVTON(bodyImageUrl, clothingImageUrl, category, prompt) {
-  const baseUrl = window.location.protocol + '//' + window.location.host;
-  
-  console.log(`🚀 IDM-VTON API 호출 - 카테고리: ${category}`);
-  
-  const replicateResponse = await fetch(`${baseUrl}/replicate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      version: 'c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4', // 정확한 IDM-VTON 모델 버전 해시
-      input: {
-        human_img: bodyImageUrl,
-        garm_img: clothingImageUrl,
-        garment_des: prompt || "clothing",
-        category: category === 'full_outfit' ? 'upper_body' : category, // full_outfit은 처리 단계에서 분리됨
-        is_checked: true,
-        is_checked_crop: false,
-        denoise_steps: 30,
-        seed: Math.floor(Math.random() * 1000000)
-      }
-    })
-  });
-
-  const replicateData = await replicateResponse.json();
-  console.log(`📊 IDM-VTON API 응답 (${category}):`, replicateData);
-
-  if (!replicateData.id) {
-    throw new Error(`IDM-VTON API 호출 실패 (${category}): ` + (replicateData.detail || 'Unknown error'));
-  }
-
-  // 결과 polling
-  return await pollForIDMVTONResult(replicateData.id);
-}
-
-// 의류 카테고리 자동 감지 함수 (간단한 휴리스틱)
-function detectClothingCategory(imageData) {
-  // 1. 사용자가 직접 선택한 카테고리 우선 사용
-  const selectedCategory = document.getElementById('clothingCategory')?.value;
-  if (selectedCategory) {
-    console.log('👤 사용자 선택 카테고리:', selectedCategory);
-    return selectedCategory;
-  }
-  
-  // 2. 프롬프트 기반 자동 감지 (폴백)
-  const clothesPrompt = document.getElementById('clothesPrompt')?.value?.toLowerCase() || '';
-  
-  if (clothesPrompt.includes('pants') || clothesPrompt.includes('바지') || 
-      clothesPrompt.includes('skirt') || clothesPrompt.includes('스커트') ||
-      clothesPrompt.includes('shorts') || clothesPrompt.includes('반바지') ||
-      clothesPrompt.includes('jeans') || clothesPrompt.includes('청바지')) {
-    console.log('🤖 자동 감지: lower_body');
-    return 'lower_body';
-  } else if (clothesPrompt.includes('dress') || clothesPrompt.includes('원피스') ||
-             clothesPrompt.includes('gown') || clothesPrompt.includes('드레스') ||
-             clothesPrompt.includes('maxi') || clothesPrompt.includes('midi')) {
-    console.log('🤖 자동 감지: dresses');
-    return 'dresses';
-  } else if (clothesPrompt.includes('outfit') || clothesPrompt.includes('전체') ||
-             clothesPrompt.includes('세트') || clothesPrompt.includes('코디')) {
-    console.log('🤖 자동 감지: full_outfit');
-    return 'full_outfit';
-  } else {
-    console.log('🤖 자동 감지: upper_body (기본값)');
-    return 'upper_body'; // 기본값: 상의
-  }
-}
-
-// IDM-VTON 결과 polling 함수
-async function pollForIDMVTONResult(predictionId, maxAttempts = 60, intervalMs = 2000) {
-  const baseUrl = window.location.protocol + '//' + window.location.host;
-  
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      console.log(`🔄 IDM-VTON 결과 확인 중... (${attempt}/${maxAttempts})`);
-      
-      const response = await fetch(`${baseUrl}/replicate/${predictionId}`);
-      const data = await response.json();
-      
-      console.log('📊 IDM-VTON 상태:', data);
-      
-      if (data.status === 'succeeded') {
-        console.log('✅ IDM-VTON 완료!', data.output);
-        console.log('🔍 IDM-VTON 결과 타입:', typeof data.output, Array.isArray(data.output));
-        // IDM-VTON 결과가 배열로 오는 경우 첫 번째 이미지 URL 반환
-        if (Array.isArray(data.output) && data.output.length > 0) {
-          console.log('✅ 배열에서 첫 번째 결과 반환:', data.output[0]);
-          return data.output[0];
-        } else if (typeof data.output === 'string') {
-          console.log('✅ 문자열 결과 반환:', data.output);
-          return data.output;
-        } else {
-          console.error('❌ 예상치 못한 결과 형식:', data.output);
-          throw new Error('IDM-VTON 결과 형식이 올바르지 않습니다: ' + JSON.stringify(data.output));
-        }
-      } else if (data.status === 'failed') {
-        console.error('❌ IDM-VTON 실패:', data.error);
-        throw new Error('IDM-VTON 생성 실패: ' + (data.error || 'Unknown error'));
-      } else if (data.status === 'canceled') {
-        throw new Error('IDM-VTON 작업이 취소되었습니다');
-      } else {
-        console.log(`⏳ IDM-VTON 진행 중... 상태: ${data.status}`);
-      }
-      
-      // 아직 진행 중이면 대기
-      if (attempt < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, intervalMs));
-      }
-    } catch (error) {
-      console.error(`❌ IDM-VTON 결과 확인 오류 (시도 ${attempt}):`, error);
-      if (attempt === maxAttempts) throw error;
-      await new Promise(resolve => setTimeout(resolve, intervalMs));
-    }
-  }
-  
-  throw new Error('IDM-VTON 결과 대기 시간 초과 (2분)');
 }

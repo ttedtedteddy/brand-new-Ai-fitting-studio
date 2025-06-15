@@ -31,24 +31,31 @@ app.post('/upload', async (req, res) => {
   const startTime = Date.now();
   
   try {
-    const { image } = req.body;
+    const { image, imageUrl } = req.body;
     
-    if (!image) {
-      return res.status(400).json({ error: '이미지 데이터가 없습니다.' });
+    if (!image && !imageUrl) {
+      return res.status(400).json({ error: '이미지 데이터 또는 이미지 URL이 필요합니다.' });
     }
 
-    // 이미지 크기 계산 (대략적인 크기)
-    const imageSizeKB = Math.round((image.length * 3) / 4 / 1024);
-    console.log(`📊 업로드 시작 - 이미지 크기: ${imageSizeKB}KB`);
+    let uploadInput;
+    let imageSizeKB = 0;
 
-    // base64 데이터를 data URI로 변환
-    const dataUri = `data:image/png;base64,${image}`;
+    if (imageUrl) {
+      // URL에서 이미지 다운로드 후 업로드
+      console.log(`🔗 URL에서 이미지 다운로드: ${imageUrl}`);
+      uploadInput = imageUrl;
+    } else {
+      // Base64 이미지 업로드
+      imageSizeKB = Math.round((image.length * 3) / 4 / 1024);
+      console.log(`📊 업로드 시작 - 이미지 크기: ${imageSizeKB}KB`);
+      uploadInput = `data:image/png;base64,${image}`;
+    }
     
     // Cloudinary 업로드 시작 시간
     const uploadStartTime = Date.now();
     
     // Cloudinary에 업로드
-    const uploadRes = await cloudinary.uploader.upload(dataUri, {
+    const uploadRes = await cloudinary.uploader.upload(uploadInput, {
       folder: 'ai-styling',
       resource_type: 'image'
     });
@@ -61,7 +68,9 @@ app.post('/upload', async (req, res) => {
     console.log(`⚡ Cloudinary 업로드 완료:`);
     console.log(`   - 업로드 시간: ${uploadDuration}ms`);
     console.log(`   - 총 처리 시간: ${totalDuration}ms`);
-    console.log(`   - 업로드 속도: ${(imageSizeKB / (uploadDuration / 1000)).toFixed(2)} KB/s`);
+    if (imageSizeKB > 0) {
+      console.log(`   - 업로드 속도: ${(imageSizeKB / (uploadDuration / 1000)).toFixed(2)} KB/s`);
+    }
     console.log(`   - 파일 URL: ${uploadRes.secure_url}`);
 
     if (uploadRes && uploadRes.secure_url) {
@@ -72,7 +81,7 @@ app.post('/upload', async (req, res) => {
           uploadTime: uploadDuration,
           totalTime: totalDuration,
           imageSizeKB: imageSizeKB,
-          uploadSpeedKBps: Math.round(imageSizeKB / (uploadDuration / 1000))
+          uploadSpeedKBps: imageSizeKB > 0 ? Math.round(imageSizeKB / (uploadDuration / 1000)) : 0
         }
       });
     } else {
@@ -102,6 +111,21 @@ app.post('/replicate', async (req, res) => {
       });
     }
 
+    const { version, input } = req.body;
+    
+    // IDM-VTON 모델 버전 확인
+    const isIDMVTON = version === 'c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4';
+    
+    if (isIDMVTON) {
+      console.log('IDM-VTON 모델 감지됨 - 가상 피팅 처리 시작');
+      console.log('입력 데이터:', {
+        human_img: input.human_img ? '전신사진' : '전신사진 없음',
+        garm_img: input.garm_img ? '옷사진' : '옷사진 없음',
+        category: input.category,
+        garment_des: input.garment_des
+      });
+    }
+
     // 2초 대기 (안정성을 위해)
     await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -111,16 +135,90 @@ app.post('/replicate', async (req, res) => {
         'Authorization': `Token ${REPLICATE_API_TOKEN}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(req.body)
+      body: JSON.stringify({
+        version,
+        input
+      })
     });
 
     const data = await response.json();
-    console.log('Replicate 예측 생성:', JSON.stringify(data, null, 2));
+    
+    if (isIDMVTON) {
+      console.log('IDM-VTON 예측 생성:', JSON.stringify(data, null, 2));
+    } else {
+      console.log('Replicate 예측 생성:', JSON.stringify(data, null, 2));
+    }
+    
     res.json(data);
   } catch (error) {
-    console.error('Replicate API 오류:', error);
+    console.error('❌ Replicate API 오류:', error);
     res.status(500).json({ 
       error: 'AI 이미지 생성 중 오류가 발생했습니다.',
+      details: error.message 
+    });
+  }
+});
+
+// IDM-VTON 전용 엔드포인트 (최적화된 가상 피팅)
+app.post('/idm-vton', async (req, res) => {
+  try {
+    if (!REPLICATE_API_TOKEN || REPLICATE_API_TOKEN === 'your-replicate-api-token-here') {
+      return res.status(500).json({ 
+        error: 'Replicate API 토큰이 설정되지 않았습니다.',
+        details: 'REPLICATE_API_TOKEN 환경변수를 설정해주세요.'
+      });
+    }
+
+    const { human_img, garm_img, category, garment_des, denoise_steps = 30, seed } = req.body;
+    
+    console.log('IDM-VTON 가상 피팅 요청:');
+    console.log(`   - 전신사진: ${human_img ? '있음' : '없음'}`);
+    console.log(`   - 옷사진: ${garm_img ? '있음' : '없음'}`);
+    console.log(`   - 카테고리: ${category}`);
+    console.log(`   - 설명: ${garment_des}`);
+    console.log(`   - 노이즈 제거 단계: ${denoise_steps}`);
+    console.log(`   - 시드: ${seed}`);
+
+    if (!human_img || !garm_img) {
+      return res.status(400).json({
+        error: '전신사진과 옷사진이 모두 필요합니다.',
+        details: {
+          human_img: !!human_img,
+          garm_img: !!garm_img
+        }
+      });
+    }
+
+    // IDM-VTON 모델 호출
+    const response = await fetch('https://api.replicate.com/v1/predictions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${REPLICATE_API_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        version: 'c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4',
+        input: {
+          human_img,
+          garm_img,
+          garment_des: garment_des || "clothing",
+          category: category || "upper_body",
+          is_checked: true,
+          is_checked_crop: false,
+          denoise_steps,
+          seed: seed || Math.floor(Math.random() * 1000000)
+        }
+      })
+    });
+
+    const data = await response.json();
+    console.log('IDM-VTON 예측 결과:', JSON.stringify(data, null, 2));
+    
+    res.json(data);
+  } catch (error) {
+    console.error('❌ IDM-VTON API 오류:', error);
+    res.status(500).json({ 
+      error: 'IDM-VTON 가상 피팅 중 오류가 발생했습니다.',
       details: error.message 
     });
   }
@@ -143,10 +241,19 @@ app.get('/replicate/:id', async (req, res) => {
     });
 
     const data = await response.json();
-    console.log('Replicate 결과 폴링:', JSON.stringify(data, null, 2));
+    
+    // IDM-VTON 결과인지 확인
+    const isIDMVTON = data.version === 'c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4';
+    
+    if (isIDMVTON) {
+      console.log('IDM-VTON 결과 폴링:', JSON.stringify(data, null, 2));
+    } else {
+      console.log('Replicate 결과 폴링:', JSON.stringify(data, null, 2));
+    }
+    
     res.json(data);
   } catch (error) {
-    console.error('Replicate 폴링 오류:', error);
+    console.error('❌ Replicate 폴링 오류:', error);
     res.status(500).json({ 
       error: '결과 확인 중 오류가 발생했습니다.',
       details: error.message 
@@ -171,17 +278,18 @@ app.get('/gallery', (req, res) => {
 
 // 서버 시작
 app.listen(PORT, () => {
-  console.log('🚀 AI Fitting Studio 서버가 포트', PORT, '에서 실행 중입니다.');
-  console.log('📱 브라우저에서 http://localhost:' + PORT + ' 를 열어보세요.');
+  console.log('AI Fitting Studio 서버가 포트', PORT, '에서 실행 중입니다.');
+  console.log('브라우저에서 http://localhost:' + PORT + ' 를 열어보세요.');
   
   if (!REPLICATE_API_TOKEN || REPLICATE_API_TOKEN === 'your-replicate-api-token-here') {
-    console.log('⚠️  REPLICATE_API_TOKEN 환경변수를 설정해주세요.');
+    console.log('REPLICATE_API_TOKEN 환경변수를 설정해주세요.');
     console.log('   1. env.example 파일을 .env로 복사하세요');
     console.log('   2. .env 파일에서 REPLICATE_API_TOKEN을 실제 토큰으로 변경하세요');
     console.log('   3. Replicate 토큰은 https://replicate.com/account/api-tokens 에서 발급받을 수 있습니다');
   } else {
-    console.log('✅ Replicate API 토큰이 설정되었습니다.');
+    console.log('Replicate API 토큰이 설정되었습니다.');
   }
   
-  console.log('✅ Cloudinary가 설정되었습니다.');
+  console.log('Cloudinary가 설정되었습니다.');
+  console.log('IDM-VTON 가상 피팅 기능이 활성화되었습니다.');
 }); 
