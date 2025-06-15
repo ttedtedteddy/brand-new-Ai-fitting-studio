@@ -237,7 +237,6 @@ function optimizeImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8) {
 
 // 파일 크기 체크 및 최적화 함수
 async function processImageFile(file) {
-  const maxSizeKB = 5000; // 5MB 제한
   const fileSizeKB = Math.round(file.size / 1024);
   
   console.log(`📁 파일 처리 시작: ${file.name} (${fileSizeKB}KB)`);
@@ -247,38 +246,37 @@ async function processImageFile(file) {
     throw new Error('이미지 파일만 업로드 가능합니다.');
   }
   
-  // 파일 크기가 너무 크거나 최적화가 필요한 경우
-  if (fileSizeKB > maxSizeKB || fileSizeKB > 1000) {
-    console.log('🔄 이미지 최적화 시작...');
-    
-    // 파일 크기에 따라 품질 조정
-    let quality = 0.8;
-    let maxWidth = 1920;
-    let maxHeight = 1920;
-    
-    if (fileSizeKB > 10000) { // 10MB 이상
-      quality = 0.6;
-      maxWidth = 1600;
-      maxHeight = 1600;
-    } else if (fileSizeKB > 5000) { // 5MB 이상
-      quality = 0.7;
-      maxWidth = 1800;
-      maxHeight = 1800;
-    }
-    
-    const optimizedFile = await optimizeImage(file, maxWidth, maxHeight, quality);
-    
-    // 최적화 후에도 너무 크면 더 압축
-    if (optimizedFile.size > maxSizeKB * 1024) {
-      console.log('🔄 추가 압축 진행...');
-      return await optimizeImage(file, 1600, 1600, 0.6);
-    }
-    
-    return optimizedFile;
-  }
+  // 해상도 체크
+  const imageSize = await getImageDimensions(file);
+  console.log(`📐 원본 해상도: ${imageSize.width}x${imageSize.height}`);
   
-  console.log('✅ 최적화 불필요 - 원본 사용');
-  return file;
+  // 모든 이미지를 1024x1024로 압축 (업로드 즉시)
+  console.log('🔄 이미지 압축 시작 - 최대 1024x1024로 축소...');
+  
+  const optimizedFile = await optimizeImage(file, 1024, 1024, 0.8);
+  
+  const optimizedSizeKB = Math.round(optimizedFile.size / 1024);
+  console.log(`✅ 압축 완료: ${fileSizeKB}KB → ${optimizedSizeKB}KB`);
+  
+  return optimizedFile;
+}
+
+// 이미지 크기 확인 함수 추가
+function getImageDimensions(file) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    
+    img.onload = function() {
+      URL.revokeObjectURL(url);
+      resolve({
+        width: this.width,
+        height: this.height
+      });
+    };
+    
+    img.src = url;
+  });
 }
 
 // 기존 handleImageFile 함수 수정
