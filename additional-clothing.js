@@ -1,8 +1,63 @@
 // 추가 의류 합성 기능 - AI Fitting Studio
 console.log('추가 의류 합성 기능 로드됨');
 
-// 기존 showClothesResultImage 함수를 확장
+// 구글 렌즈 기능 개선 - 추가 의류 합성 결과 우선 사용
+function enhanceGoogleLensFunction() {
+  const clothesGoogleLensBtn = document.getElementById('clothesGoogleLensBtn');
+  if (clothesGoogleLensBtn) {
+    // 기존 이벤트 리스너 제거
+    const newBtn = clothesGoogleLensBtn.cloneNode(true);
+    clothesGoogleLensBtn.parentNode.replaceChild(newBtn, clothesGoogleLensBtn);
+    
+    // 새로운 이벤트 리스너 추가
+    newBtn.addEventListener('click', () => {
+      // 추가 의류 합성 결과가 있는지 먼저 확인
+      const additionalClothingResultImage = document.getElementById('additionalClothingResultImage');
+      const clothesResultImage = document.getElementById('clothesResultImage');
+      
+      let targetImage = null;
+      let imageDescription = '';
+      
+      // 추가 의류 합성 결과가 있고 표시되어 있으면 그것을 우선 사용
+      if (additionalClothingResultImage && additionalClothingResultImage.src && 
+          additionalClothingResultImage.style.display !== 'none') {
+        targetImage = additionalClothingResultImage;
+        imageDescription = '추가 의류 합성 결과';
+      } 
+      // 그렇지 않으면 기본 가상 피팅 결과 사용
+      else if (clothesResultImage && clothesResultImage.src && 
+               clothesResultImage.style.display !== 'none') {
+        targetImage = clothesResultImage;
+        imageDescription = '가상 피팅 결과';
+      }
+      
+      if (!targetImage || !targetImage.src) {
+        alert('검색할 이미지가 없습니다.');
+        return;
+      }
+      
+      try {
+        console.log(`구글 렌즈로 ${imageDescription} 이미지 검색:`, targetImage.src);
+        
+        // 구글 렌즈로 이미지 검색
+        const searchUrl = `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(targetImage.src)}`;
+        window.open(searchUrl, '_blank');
+      } catch (error) {
+        console.error('구글 렌즈 연동 오류:', error);
+        window.open('https://lens.google.com/', '_blank');
+        alert('구글 렌즈 페이지가 열렸습니다. 생성된 이미지를 수동으로 업로드해주세요.');
+      }
+    });
+    
+    console.log('구글 렌즈 기능이 개선되었습니다 - 추가 의류 합성 결과 우선 사용');
+  }
+}
+
+// DOM 로드 완료 후 구글 렌즈 기능 개선
 document.addEventListener('DOMContentLoaded', function() {
+  // 구글 렌즈 기능 개선
+  enhanceGoogleLensFunction();
+  
   // 기존 함수 백업
   const originalShowClothesResultImage = window.showClothesResultImage;
   
