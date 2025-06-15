@@ -1293,19 +1293,29 @@ div {
 
 /* 전체 의상 모드 표시 */
 .full-outfit-indicator {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
   color: white;
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.2rem;
   border-radius: 1rem;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  margin-top: 0.5rem;
-  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+  box-shadow: 0 3px 8px rgba(139, 92, 246, 0.3);
+  animation: fullOutfitGlow 2s ease-in-out infinite alternate;
 }
 
+@keyframes fullOutfitGlow {
+  0% { box-shadow: 0 3px 8px rgba(139, 92, 246, 0.3); }
+  100% { box-shadow: 0 5px 15px rgba(139, 92, 246, 0.5); }
+}
+
+.full-outfit-indicator::before {
+  content: "👔👖";
+  font-size: 1.1rem;
+}
 
 /* 카테고리 선택 개선 */
 #clothingCategory {
@@ -1764,5 +1774,108 @@ div {
     left: 10px;
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
+  }
+}
+
+/* 전체 의상 진행 상황 표시 스타일 */
+.full-outfit-progress {
+  display: none;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border: 2px solid #3b82f6;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.progress-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.progress-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(59, 130, 246, 0.2);
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: progressSpin 1s linear infinite;
+}
+
+@keyframes progressSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.progress-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e40af;
+  margin: 0;
+}
+
+.progress-description {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 0;
+  font-style: italic;
+}
+
+/* 모바일 반응형 - 전체 의상 진행 표시 */
+@media (max-width: 768px) {
+  .full-outfit-progress {
+    padding: 1.2rem;
+    margin: 0.8rem 0;
+  }
+  
+  .progress-spinner {
+    width: 35px;
+    height: 35px;
+    border-width: 3px;
+  }
+  
+  .progress-text {
+    font-size: 1rem;
+  }
+  
+  .progress-description {
+    font-size: 0.85rem;
+  }
+  
+  .full-outfit-indicator {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .full-outfit-progress {
+    padding: 1rem;
+    border-radius: 0.75rem;
+  }
+  
+  .progress-content {
+    gap: 0.8rem;
+  }
+  
+  .progress-spinner {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .progress-text {
+    font-size: 0.95rem;
+  }
+  
+  .progress-description {
+    font-size: 0.8rem;
+  }
+  
+  .full-outfit-indicator {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
   }
 } 

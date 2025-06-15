@@ -1260,85 +1260,52 @@ function updateGenerateButton() {
   console.log('버튼 상태 업데이트:', { hasBodyImage, hasClothingImage, canGenerate });
 }
 
-// IDM-VTON API 호출 함수 (정확한 cuuupid/idm-vton 모델 사용)
+// IDM-VTON API 호출 함수 (옷 이미지 모드)
 async function callIDMVTONAPI(bodyImageData, clothingImageData, prompt) {
-  // DataURL → base64 (헤더 제거)
-  const bodyImageBase64 = bodyImageData.replace(/^data:image\/[a-z]+;base64,/, '');
-  const clothingImageBase64 = clothingImageData.replace(/^data:image\/[a-z]+;base64,/, '');
-
-  // 현재 페이지의 호스트를 기반으로 API URL 생성
-  const baseUrl = window.location.protocol + '//' + window.location.host;
-  
   try {
-    // 1. 이미지 업로드 (base64 → URL)
-    const bodyImageUploadRes = await fetch(`${baseUrl}/upload`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: bodyImageBase64 })
-    });
-    const bodyImageUploadData = await bodyImageUploadRes.json();
-    if (!bodyImageUploadData.url) throw new Error('전신사진 업로드 실패');
-
-    const clothingImageUploadRes = await fetch(`${baseUrl}/upload`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: clothingImageBase64 })
-    });
-    const clothingImageUploadData = await clothingImageUploadRes.json();
-    if (!clothingImageUploadData.url) throw new Error('옷 사진 업로드 실패');
-
-    console.log('이미지 업로드 완료:', {
-      bodyImage: bodyImageUploadData.url,
-      clothingImage: clothingImageUploadData.url
-    });
-
-    // 의류 카테고리 자동 감지
+    console.log('IDM-VTON API 호출 시작');
+    console.log('전신사진 데이터:', bodyImageData ? '있음' : '없음');
+    console.log('옷 이미지 데이터:', clothingImageData ? '있음' : '없음');
+    
+    // Cloudinary에 이미지 업로드
+    const bodyImageUploadData = await uploadToCloudinary(bodyImageData);
+    const clothingImageUploadData = await uploadToCloudinary(clothingImageData);
+    
+    console.log('Cloudinary 업로드 완료');
+    console.log('전신사진 URL:', bodyImageUploadData.url);
+    console.log('옷 이미지 URL:', clothingImageUploadData.url);
+    
+    // 의류 카테고리 감지
     const category = detectClothingCategory(clothingImageData);
-    console.log('감지된 의류 카테고리:', category);
-
-    // 스마트 프롬프트 생성
+    console.log('감지된 카테고리:', category);
+    
+    // 프롬프트 향상
     const enhancedPrompt = generateSmartPrompt(category, prompt);
     console.log('최종 프롬프트:', enhancedPrompt);
 
-    // 전체 의상 모드 처리 (조합된 이미지)
+    // 전체 의상 모드 처리 개선
     if (category === 'full_outfit') {
-      console.log('전체 의상 모드: 상의와 하의를 순차적으로 처리합니다');
+      console.log('전체 의상 모드: 통합 처리 시작');
       
-      // 1단계: 상의 변경
-      console.log('상의 변경 중...');
-      const upperResult = await callSingleIDMVTON(
+      // 진행 상황 표시
+      showFullOutfitProgress('상의와 하의를 동시에 적용하는 중...');
+      
+      // 전체 의상을 한 번에 처리하는 향상된 프롬프트 사용
+      const fullOutfitPrompt = `complete outfit change, full body clothing transformation, both upper and lower body garments, ${enhancedPrompt}, coordinated fashion ensemble, matching top and bottom`;
+      
+      console.log('전체 의상 프롬프트:', fullOutfitPrompt);
+      
+      // 단일 API 호출로 전체 의상 변경
+      const result = await callSingleIDMVTON(
         bodyImageUploadData.url, 
         clothingImageUploadData.url, 
-        'upper_body', 
-        `upper body clothing, top wear, ${enhancedPrompt}`
+        'upper_body', // API는 upper_body로 호출하되 프롬프트로 전체 의상 지시
+        fullOutfitPrompt
       );
       
-      if (!upperResult) {
-        throw new Error('상의 변경 실패');
-      }
-      
-      console.log('상의 변경 완료: 전체 의상 변경 성공');
-      
-      // 2단계: 하의 변경 (상의 변경된 이미지 사용)
-      console.log('하의 변경 중...');
-      const lowerPrompt = generateSmartPrompt('lower_body', `lower body clothing, bottom wear, ${enhancedPrompt}`);
-      
-      // 상의 변경 결과를 바이너리 데이터로 변환
-      const upperResultResponse = await fetch(upperResult);
-      const upperResultBlob = await upperResultResponse.blob();
-      
-      // Blob을 base64로 변환
-      const upperResultBase64 = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(upperResultBlob);
-      });
-      
-      // 변환된 결과로 하의 변경
-      const finalResult = await callIDMVTONAPI(upperResultBase64, lowerClothingImageData, lowerPrompt);
-      
-      console.log('하의 변경 완료: 전체 의상 변경 성공');
-      return finalResult;
+      hideFullOutfitProgress();
+      console.log('전체 의상 변경 완료');
+      return result;
       
     } else {
       // 단일 카테고리 모드
@@ -1351,44 +1318,58 @@ async function callIDMVTONAPI(bodyImageData, clothingImageData, prompt) {
     }
 
   } catch (error) {
+    hideFullOutfitProgress();
     console.error('IDM-VTON API 오류:', error);
     throw error;
   }
 }
 
-// 단일 IDM-VTON API 호출 함수 (내부 사용)
-async function callSingleIDMVTON(bodyImageUrl, clothingImageUrl, category, prompt) {
-  const baseUrl = window.location.protocol + '//' + window.location.host;
-  
-  console.log(`IDM-VTON API 호출 - 카테고리: ${category}`);
-  
-  const replicateResponse = await fetch(`${baseUrl}/replicate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      version: 'c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4', // 정확한 IDM-VTON 모델 버전 해시
-      input: {
-        human_img: bodyImageUrl,
-        garm_img: clothingImageUrl,
-        garment_des: prompt || "clothing",
-        category: category === 'full_outfit' ? 'upper_body' : category, // full_outfit은 처리 단계에서 분리됨
-        is_checked: true,
-        is_checked_crop: false,
-        denoise_steps: 30,
-        seed: Math.floor(Math.random() * 1000000)
-      }
-    })
-  });
-
-  const replicateData = await replicateResponse.json();
-  console.log(`IDM-VTON API 응답 (${category}):`, replicateData);
-
-  if (!replicateData.id) {
-    throw new Error(`IDM-VTON API 호출 실패 (${category}): ` + (replicateData.detail || 'Unknown error'));
+// 전체 의상 진행 상황 표시 함수
+function showFullOutfitProgress(message) {
+  const generateBtn = document.getElementById('generateClothesBtn');
+  if (generateBtn) {
+    const originalText = generateBtn.querySelector('.button-text').textContent;
+    generateBtn.querySelector('.button-text').textContent = message;
+    generateBtn.setAttribute('data-original-text', originalText);
   }
+  
+  // 진행 상황 표시기 생성
+  let progressDiv = document.getElementById('fullOutfitProgress');
+  if (!progressDiv) {
+    progressDiv = document.createElement('div');
+    progressDiv.id = 'fullOutfitProgress';
+    progressDiv.className = 'full-outfit-progress';
+    progressDiv.innerHTML = `
+      <div class="progress-content">
+        <div class="progress-spinner"></div>
+        <div class="progress-text">${message}</div>
+        <div class="progress-description">전체 의상 변경은 시간이 더 걸릴 수 있습니다</div>
+      </div>
+    `;
+    
+    const generateContainer = document.querySelector('.generate-container');
+    if (generateContainer) {
+      generateContainer.appendChild(progressDiv);
+    }
+  } else {
+    progressDiv.querySelector('.progress-text').textContent = message;
+  }
+  
+  progressDiv.style.display = 'block';
+}
 
-  // 결과 polling
-  return await pollForIDMVTONResult(replicateData.id);
+// 전체 의상 진행 상황 숨기기 함수
+function hideFullOutfitProgress() {
+  const progressDiv = document.getElementById('fullOutfitProgress');
+  if (progressDiv) {
+    progressDiv.style.display = 'none';
+  }
+  
+  const generateBtn = document.getElementById('generateClothesBtn');
+  if (generateBtn && generateBtn.getAttribute('data-original-text')) {
+    generateBtn.querySelector('.button-text').textContent = generateBtn.getAttribute('data-original-text');
+    generateBtn.removeAttribute('data-original-text');
+  }
 }
 
 // 의류 카테고리 자동 감지 함수 (간단한 휴리스틱)
@@ -1572,6 +1553,7 @@ function showPageWithAnimation(hidePage, showPage) {
 function toggleDressLengthOption() {
   const categorySelect = document.getElementById('clothingCategory');
   const dressLengthSection = document.getElementById('dressLengthSection');
+  const fullOutfitInfo = document.getElementById('fullOutfitInfo');
   
   if (categorySelect && dressLengthSection) {
     if (categorySelect.value === 'dresses') {
@@ -1589,6 +1571,28 @@ function toggleDressLengthOption() {
     } else {
       // 기타 모드: 길이 선택 숨김
       dressLengthSection.style.display = 'none';
+    }
+  }
+  
+  // 전체 의상 모드 안내 표시/숨김
+  if (categorySelect && fullOutfitInfo) {
+    if (categorySelect.value === 'full_outfit') {
+      // 전체 의상 모드: 안내 메시지 표시
+      fullOutfitInfo.style.display = 'block';
+      
+      // 부드러운 애니메이션 효과
+      fullOutfitInfo.style.opacity = '0';
+      fullOutfitInfo.style.transform = 'translateY(-10px)';
+      setTimeout(() => {
+        fullOutfitInfo.style.transition = 'all 0.3s ease';
+        fullOutfitInfo.style.opacity = '1';
+        fullOutfitInfo.style.transform = 'translateY(0)';
+      }, 10);
+      
+      console.log('전체 의상 모드 선택됨 - 사용자 안내 표시');
+    } else {
+      // 기타 모드: 안내 메시지 숨김
+      fullOutfitInfo.style.display = 'none';
     }
   }
 }
@@ -1721,4 +1725,67 @@ function shareToKakao() {
     console.error('AI 스타일링 이미지 공유 오류:', error);
     alert('이미지 파일 공유 중 오류가 발생했습니다.\n이미지를 저장한 후 직접 공유해주세요.');
   }
+}
+
+// Cloudinary 업로드 함수
+async function uploadToCloudinary(imageData) {
+  try {
+    // DataURL → base64 (헤더 제거)
+    const imageBase64 = imageData.replace(/^data:image\/[a-z]+;base64,/, '');
+    
+    // 현재 페이지의 호스트를 기반으로 API URL 생성
+    const baseUrl = window.location.protocol + '//' + window.location.host;
+    
+    const uploadRes = await fetch(`${baseUrl}/upload`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: imageBase64 })
+    });
+    
+    const uploadData = await uploadRes.json();
+    if (!uploadData.url) {
+      throw new Error('이미지 업로드 실패');
+    }
+    
+    return uploadData;
+  } catch (error) {
+    console.error('Cloudinary 업로드 오류:', error);
+    throw error;
+  }
+}
+
+// 단일 IDM-VTON API 호출 함수 (내부 사용)
+async function callSingleIDMVTON(bodyImageUrl, clothingImageUrl, category, prompt) {
+  const baseUrl = window.location.protocol + '//' + window.location.host;
+  
+  console.log(`IDM-VTON API 호출 - 카테고리: ${category}`);
+  console.log(`프롬프트: ${prompt}`);
+  
+  const replicateResponse = await fetch(`${baseUrl}/replicate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      version: 'c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4', // 정확한 IDM-VTON 모델 버전 해시
+      input: {
+        human_img: bodyImageUrl,
+        garm_img: clothingImageUrl,
+        garment_des: prompt || "clothing",
+        category: category === 'full_outfit' ? 'upper_body' : category, // full_outfit은 처리 단계에서 분리됨
+        is_checked: true,
+        is_checked_crop: false,
+        denoise_steps: 30,
+        seed: Math.floor(Math.random() * 1000000)
+      }
+    })
+  });
+
+  const replicateData = await replicateResponse.json();
+  console.log(`IDM-VTON API 응답 (${category}):`, replicateData);
+
+  if (!replicateData.id) {
+    throw new Error(`IDM-VTON API 호출 실패 (${category}): ` + (replicateData.detail || 'Unknown error'));
+  }
+
+  // 결과 polling
+  return await pollForIDMVTONResult(replicateData.id);
 }
