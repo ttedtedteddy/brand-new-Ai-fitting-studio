@@ -125,9 +125,10 @@
             <option value="upper_body">상의 (셔츠, 블라우스, 재킷)</option>
             <option value="lower_body">하의 (바지, 스커트, 반바지)</option>
             <option value="dresses">원피스 (드레스, 원피스)</option>
+            <option value="full_outfit">전체 의상 (상의 + 하의 조합)</option>
           </select>
           <p style="font-size: 0.85rem; color: var(--gray-500); margin-top: 0.5rem;">
-            변경하고 싶은 의류 종류를 선택하세요. 결과 생성 후 다른 부위도 추가로 변경할 수 있습니다.
+            업로드한 옷의 종류를 선택하세요. "전체 의상"을 선택하면 상의와 하의를 동시에 변경합니다.
           </p>
         </div>
         
@@ -178,38 +179,6 @@
           </button>
           <button class="save-button" onclick="saveClothesImage()">
             이미지 저장
-          </button>
-        </div>
-        
-        <!-- 추가 변경 섹션 -->
-        <div id="additionalChangeSection" style="display: none; margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border: 2px solid #10b981; border-radius: 1rem;">
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-            <span style="font-size: 1.2rem;">✨</span>
-            <h3 id="additionalChangeTitle" style="margin: 0; color: #059669; font-size: 1.1rem;">생성된 이미지로 하의도 변경해볼까요?</h3>
-          </div>
-          
-          <p style="font-size: 0.9rem; color: #047857; margin-bottom: 1.5rem; line-height: 1.4;">
-            방금 생성된 이미지를 기반으로 다른 부위의 옷도 변경할 수 있습니다.
-          </p>
-          
-          <!-- 추가 옷 이미지 업로드 -->
-          <div style="margin-bottom: 1.5rem;">
-            <label id="additionalClothingLabel" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--gray-700);">
-              하의 사진 업로드
-            </label>
-            <div class="drag-drop-area" id="additionalClothingDropArea" style="width: 100%; height: 200px; max-width: 300px; margin: 0 auto; border: 2px dashed var(--gray-300); border-radius: 1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; background-size: cover; background-position: center; background-repeat: no-repeat;">
-              <div class="drag-drop-content" style="text-align: center; pointer-events: none;">
-                <div class="drag-drop-text">하의 사진을 드래그하세요</div>
-                <div class="drag-drop-subtext">또는 클릭해서 파일을 선택하세요</div>
-              </div>
-            </div>
-            <input type="file" id="additionalClothingUpload" accept="image/*" style="display: none;">
-          </div>
-          
-          <!-- 추가 변경 버튼 -->
-          <button id="generateAdditionalBtn" disabled style="width: 100%; padding: 1rem 2rem; background: #10b981; color: white; border: none; border-radius: 0.75rem; font-size: 1rem; font-weight: 600; cursor: not-allowed; transition: all 0.3s ease;">
-            <span class="button-text">추가 변경 생성</span>
-            <div class="loading-spinner" style="display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite;"></div>
           </button>
         </div>
       </div>
