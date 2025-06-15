@@ -931,7 +931,7 @@ async function saveClothesImage() {
         const fileHandle = await window.showSaveFilePicker({
           suggestedName: filename,
           types: [
-            {
+        {
               description: 'JPEG 이미지',
               accept: {
                 'image/jpeg': ['.jpg', '.jpeg'],
@@ -1056,7 +1056,7 @@ function setupClothesMode() {
     setupImageDragAndDrop(clothesDragDropArea, clothesImageUpload, (file) => {
       console.log('옷 이미지 업로드:', file.name);
       handleClothingImageFile(file);
-    });
+  });
   }
   
   // 전신사진 업로드 설정
@@ -1064,7 +1064,7 @@ function setupClothesMode() {
     setupImageDragAndDrop(bodyDragDropArea, bodyImageUpload, (file) => {
       console.log('전신사진 업로드:', file.name);
       handleBodyImageFile(file);
-    });
+  });
   }
   
   // 생성 버튼 이벤트
@@ -1090,7 +1090,7 @@ function setupClothesMode() {
       // 추가 프롬프트 가져오기
         const additionalPrompt = '';
         const category = clothingCategory?.value || 'upper_body';
-        
+      
         console.log('가상 피팅 설정:', {
           category,
           prompt: additionalPrompt,
@@ -1100,7 +1100,7 @@ function setupClothesMode() {
         
         // IDM-VTON API 호출
         const resultImageUrl = await callIDMVTONAPI(bodyImageData, clothingImageData, additionalPrompt);
-        
+      
         console.log('가상 피팅 완료:', resultImageUrl);
       
       // 결과 이미지 표시
@@ -1119,7 +1119,7 @@ function setupClothesMode() {
   
   // 구글 렌즈 기능 초기화
   setupClothesGoogleLens();
-  
+
   // 초기 버튼 상태 업데이트
     updateGenerateButton();
   
@@ -1136,7 +1136,7 @@ function setupImageDragAndDrop(dropArea, fileInput, handleFileCallback) {
   // 드래그 앤 드롭 영역 클릭 시 파일 선택
   dropArea.addEventListener('click', () => {
     fileInput.click();
-  });
+    });
   
   // 파일 선택 이벤트
   fileInput.addEventListener('change', (e) => {
@@ -1300,26 +1300,6 @@ async function callIDMVTONAPI(bodyImageData, clothingImageData, prompt) {
     const enhancedPrompt = generateSmartPrompt(category, prompt);
     console.log('최종 프롬프트:', enhancedPrompt);
 
-    // 하의의 경우 더 보수적인 모델 시도
-    if (category === 'lower_body') {
-      console.log('하의 감지: 보수적 모델 우선 시도');
-      try {
-        // 먼저 더 보수적인 설정으로 시도
-        const conservativeResult = await callConservativeVTON(
-          bodyImageUploadData.url, 
-          clothingImageUploadData.url, 
-          category, 
-          enhancedPrompt
-        );
-        if (conservativeResult) {
-          console.log('보수적 모델 성공');
-          return conservativeResult;
-        }
-      } catch (error) {
-        console.log('보수적 모델 실패, 기본 모델로 폴백:', error.message);
-      }
-    }
-
     // 전체 의상 모드 처리 (조합된 이미지)
     if (category === 'full_outfit') {
       console.log('전체 의상 모드: 상의와 하의를 순차적으로 처리합니다');
@@ -1376,39 +1356,35 @@ async function callIDMVTONAPI(bodyImageData, clothingImageData, prompt) {
   }
 }
 
-// 보수적 가상 피팅 모델 (하의 전용)
-async function callConservativeVTON(bodyImageUrl, clothingImageUrl, category, prompt) {
+// 단일 IDM-VTON API 호출 함수 (내부 사용)
+async function callSingleIDMVTON(bodyImageUrl, clothingImageUrl, category, prompt) {
   const baseUrl = window.location.protocol + '//' + window.location.host;
   
-  console.log('보수적 VTON 모델 호출 - 하의 전용');
-  
-  // 매우 보수적인 프롬프트
-  const conservativePrompt = "preserve exact clothing item, no color changes, no style modifications, identical appearance";
+  console.log(`IDM-VTON API 호출 - 카테고리: ${category}`);
   
   const replicateResponse = await fetch(`${baseUrl}/replicate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      // 대안 모델: OOTDiffusion (더 보수적)
-      version: 'c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4',
+      version: 'c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4', // 정확한 IDM-VTON 모델 버전 해시
       input: {
         human_img: bodyImageUrl,
         garm_img: clothingImageUrl,
-        garment_des: conservativePrompt,
-        category: category,
+        garment_des: prompt || "clothing",
+        category: category === 'full_outfit' ? 'upper_body' : category, // full_outfit은 처리 단계에서 분리됨
         is_checked: true,
-        is_checked_crop: true,
-        denoise_steps: 10, // 매우 낮은 노이즈 제거로 원본 보존
-        seed: 123 // 고정 시드
+        is_checked_crop: false,
+        denoise_steps: 30,
+        seed: Math.floor(Math.random() * 1000000)
       }
     })
   });
 
   const replicateData = await replicateResponse.json();
-  console.log('보수적 VTON API 응답:', replicateData);
+  console.log(`IDM-VTON API 응답 (${category}):`, replicateData);
 
   if (!replicateData.id) {
-    throw new Error('보수적 VTON API 호출 실패: ' + (replicateData.detail || 'Unknown error'));
+    throw new Error(`IDM-VTON API 호출 실패 (${category}): ` + (replicateData.detail || 'Unknown error'));
   }
 
   // 결과 polling
@@ -1627,7 +1603,7 @@ function generateSmartPrompt(category, userPrompt) {
     case 'full_outfit':
       // 전체 의상 모드: 상의와 하의 모두 언급
       if (!enhancedPrompt.includes('outfit') && !enhancedPrompt.includes('전체')) {
-        enhancedPrompt = `complete outfit, full clothing set, preserve original colors and style, ${enhancedPrompt}`;
+        enhancedPrompt = `complete outfit, full clothing set, ${enhancedPrompt}`;
       }
       console.log('전체 의상 모드 활성화');
       break;
@@ -1642,35 +1618,35 @@ function generateSmartPrompt(category, userPrompt) {
       
       const lengthDesc = lengthMap[dressLength] || lengthMap['midi'];
       if (!enhancedPrompt.includes('dress') && !enhancedPrompt.includes('원피스')) {
-        enhancedPrompt = `${lengthDesc}, elegant dress, keep original colors and design, ${enhancedPrompt}`;
+        enhancedPrompt = `${lengthDesc}, elegant dress, ${enhancedPrompt}`;
       } else {
-        enhancedPrompt = `${lengthDesc}, keep original colors and design, ${enhancedPrompt}`;
+        enhancedPrompt = `${lengthDesc}, ${enhancedPrompt}`;
       }
       console.log(`원피스 모드 - 길이: ${dressLength}`);
       break;
       
     case 'upper_body':
-      // 상의 모드: 상의 관련 키워드 강화, 원본 색상 보존
+      // 상의 모드: 상의 관련 키워드 강화
       if (!enhancedPrompt.includes('shirt') && !enhancedPrompt.includes('상의') && 
           !enhancedPrompt.includes('top') && !enhancedPrompt.includes('blouse')) {
-        enhancedPrompt = `upper body clothing, maintain original colors and patterns, preserve fabric texture, ${enhancedPrompt}`;
+        enhancedPrompt = `stylish top, fashionable upper wear, ${enhancedPrompt}`;
       }
       console.log('상의 모드');
       break;
       
     case 'lower_body':
-      // 하의 모드: 원본 색상과 스타일 보존 강조
+      // 하의 모드: 하의 관련 키워드 강화
       if (!enhancedPrompt.includes('pants') && !enhancedPrompt.includes('하의') && 
           !enhancedPrompt.includes('bottom') && !enhancedPrompt.includes('skirt')) {
-        enhancedPrompt = `lower body clothing, keep exact same colors as original, preserve original design and patterns, maintain fabric appearance, ${enhancedPrompt}`;
+        enhancedPrompt = `stylish bottoms, fashionable lower wear, ${enhancedPrompt}`;
       }
-      console.log('하의 모드 - 원본 색상 보존 강조');
+      console.log('하의 모드');
       break;
   }
   
-  // 공통 품질 향상 키워드 추가 (색상 보존 강조)
+  // 공통 품질 향상 키워드 추가
   if (!enhancedPrompt.includes('high quality') && !enhancedPrompt.includes('detailed')) {
-    enhancedPrompt = `${enhancedPrompt}, high quality, detailed, realistic, preserve original appearance`;
+    enhancedPrompt = `${enhancedPrompt}, high quality, detailed, realistic`;
   }
   
   console.log('향상된 프롬프트:', enhancedPrompt);
@@ -1745,63 +1721,4 @@ function shareToKakao() {
     console.error('AI 스타일링 이미지 공유 오류:', error);
     alert('이미지 파일 공유 중 오류가 발생했습니다.\n이미지를 저장한 후 직접 공유해주세요.');
   }
-}
-
-// 단일 IDM-VTON API 호출 함수 (내부 사용)
-async function callSingleIDMVTON(bodyImageUrl, clothingImageUrl, category, prompt) {
-  const baseUrl = window.location.protocol + '//' + window.location.host;
-  
-  console.log(`IDM-VTON API 호출 - 카테고리: ${category}`);
-  
-  // 카테고리별 특별 처리 - 매우 보수적인 접근
-  let finalPrompt = prompt || "clothing";
-  let isCheckedCrop = true; // 배경 처리를 위해 항상 크롭 활성화
-  let denoiseSteps = 30;
-  
-  if (category === 'lower_body') {
-    // 하의의 경우 극도로 보수적인 설정 사용
-    finalPrompt = "EXACT SAME pants, IDENTICAL black color, SAME wide leg style, SAME fabric texture, NO changes to color or style, preserve original design completely";
-    isCheckedCrop = true; // 크롭 기능 활성화로 더 정확한 피팅
-    denoiseSteps = 15; // 노이즈 제거 단계를 더 줄여서 원본 보존
-    console.log('하의 모드: 극도로 보수적 설정 적용');
-  } else if (category === 'upper_body') {
-    finalPrompt = "EXACT SAME top, IDENTICAL colors, SAME design, NO modifications";
-    isCheckedCrop = true;
-    denoiseSteps = 20;
-  } else if (category === 'dresses') {
-    finalPrompt = "EXACT SAME dress, IDENTICAL colors and patterns, SAME length, NO changes";
-    isCheckedCrop = true;
-    denoiseSteps = 20;
-  }
-  
-  console.log(`최종 프롬프트 (${category}):`, finalPrompt);
-  console.log(`설정 - 크롭: ${isCheckedCrop}, 노이즈 단계: ${denoiseSteps}`);
-  
-  const replicateResponse = await fetch(`${baseUrl}/replicate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      version: 'c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4', // 정확한 IDM-VTON 모델 버전 해시
-      input: {
-        human_img: bodyImageUrl,
-        garm_img: clothingImageUrl,
-        garment_des: finalPrompt,
-        category: category === 'full_outfit' ? 'upper_body' : category, // full_outfit은 처리 단계에서 분리됨
-        is_checked: true,
-        is_checked_crop: isCheckedCrop, // 배경 처리를 위해 크롭 활성화
-        denoise_steps: denoiseSteps,
-        seed: 42 // 고정된 시드로 일관성 확보
-      }
-    })
-  });
-
-  const replicateData = await replicateResponse.json();
-  console.log(`IDM-VTON API 응답 (${category}):`, replicateData);
-
-  if (!replicateData.id) {
-    throw new Error(`IDM-VTON API 호출 실패 (${category}): ` + (replicateData.detail || 'Unknown error'));
-  }
-
-  // 결과 polling
-  return await pollForIDMVTONResult(replicateData.id);
 }
