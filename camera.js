@@ -202,27 +202,17 @@ function usePhoto() {
             };
             reader.readAsDataURL(file);
         } else if (textModeDragDropArea && window.getComputedStyle(document.getElementById('mainApp')).display !== 'none') {
-            // 텍스트 모드: 드래그 드롭 영역에 이미지 설정
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                textModeDragDropArea.style.backgroundImage = `url(${e.target.result})`;
-                textModeDragDropArea.style.backgroundSize = 'cover';
-                textModeDragDropArea.style.backgroundPosition = 'center';
-                textModeDragDropArea.style.backgroundRepeat = 'no-repeat';
-                textModeDragDropArea.querySelector('.drag-drop-text').style.display = 'none';
-                textModeDragDropArea.querySelector('.drag-drop-subtext').style.display = 'none';
-                
-                // 전역 변수에 파일 저장
-                window.uploadedFile = file;
-                
-                // 텍스트 모드의 이미지 처리 함수 직접 호출
-                if (typeof handleImageFile === 'function') {
-                    handleImageFile(file);
-                } else {
-                    console.error('handleImageFile 함수를 찾을 수 없습니다.');
-                }
-            };
-            reader.readAsDataURL(file);
+            // 텍스트 모드: 바로 이미지 처리 함수 호출 (드래그 드롭 영역에 표시하지 않음)
+            
+            // 전역 변수에 파일 저장
+            window.uploadedFile = file;
+            
+            // 텍스트 모드의 이미지 처리 함수 직접 호출
+            if (typeof handleImageFile === 'function') {
+                handleImageFile(file);
+            } else {
+                console.error('handleImageFile 함수를 찾을 수 없습니다.');
+            }
         }
         
         // 모달 닫기
