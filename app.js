@@ -1610,7 +1610,7 @@ async function pollForIDMVTONResult(predictionId, maxAttempts = 60, intervalMs =
   throw new Error('IDM-VTON 결과 대기 시간 초과 (2분)');
 }
 
-// 옷 이미지 모드 결과 이미지 표시 함수 (CSS 패딩 방식으로 수정)
+// 옷 이미지 모드 결과 이미지 표시 함수 (원본 비율 강제 적용)
 function showClothesResultImage(src) {
   const clothesResultImage = document.getElementById('clothesResultImage');
   const clothesResultPlaceholder = document.getElementById('clothesResultPlaceholder');
@@ -1627,11 +1627,12 @@ function showClothesResultImage(src) {
     const resultRatio = this.naturalWidth / this.naturalHeight;
     console.log(`📐 결과 이미지 비율: ${resultRatio.toFixed(3)}`);
     
-    // 원본 전신사진 비율에 맞춰 CSS로 패딩 처리 (CORS 문제 해결)
+    // 원본 전신사진 비율에 맞춰 결과 이미지도 동일한 비율로 강제 표시
     if (originalBodyImageRatio) {
       console.log(`🎯 원본 비율: ${originalBodyImageRatio.toFixed(3)} vs 결과 비율: ${resultRatio.toFixed(3)}`);
+      console.log(`🔄 결과 이미지를 원본 비율 ${originalBodyImageRatio.toFixed(3)}로 강제 변환`);
       
-      // 컨테이너 div 생성
+      // 컨테이너 div 생성 또는 재사용
       let container = document.getElementById('result-container');
       if (!container) {
         container = document.createElement('div');
@@ -1640,54 +1641,35 @@ function showClothesResultImage(src) {
         container.appendChild(clothesResultImage);
       }
       
-      // 원본 비율에 맞춰 컨테이너 스타일 설정
-      if (originalBodyImageRatio < 1) {
-        // 원본이 세로 이미지인 경우 (일반적인 전신사진)
-        const containerWidth = 400;
-        const containerHeight = Math.floor(containerWidth / originalBodyImageRatio);
-        
-        container.style.width = `${containerWidth}px`;
-        container.style.height = `${containerHeight}px`;
-        container.style.backgroundColor = '#FFFFFF';
-        container.style.display = 'flex';
-        container.style.alignItems = 'center';
-        container.style.justifyContent = 'center';
-        container.style.margin = '0 auto';
-        container.style.borderRadius = '1rem';
-        container.style.boxShadow = 'var(--shadow-lg)';
-        container.style.border = '1px solid var(--gray-200)';
-        
-        // 이미지 스타일
-        clothesResultImage.style.maxWidth = '100%';
-        clothesResultImage.style.maxHeight = '100%';
-        clothesResultImage.style.objectFit = 'contain';
-        clothesResultImage.style.display = 'block';
-        
-        console.log(`✅ CSS 패딩 완료: ${containerWidth}x${containerHeight} (원본 비율 ${originalBodyImageRatio.toFixed(3)} 적용)`);
-      } else {
-        // 원본이 가로 이미지인 경우
-        const containerHeight = 400;
-        const containerWidth = Math.floor(containerHeight * originalBodyImageRatio);
-        
-        container.style.width = `${containerWidth}px`;
-        container.style.height = `${containerHeight}px`;
-        container.style.backgroundColor = '#FFFFFF';
-        container.style.display = 'flex';
-        container.style.alignItems = 'center';
-        container.style.justifyContent = 'center';
-        container.style.margin = '0 auto';
-        container.style.borderRadius = '1rem';
-        container.style.boxShadow = 'var(--shadow-lg)';
-        container.style.border = '1px solid var(--gray-200)';
-        
-        // 이미지 스타일
-        clothesResultImage.style.maxWidth = '100%';
-        clothesResultImage.style.maxHeight = '100%';
-        clothesResultImage.style.objectFit = 'contain';
-        clothesResultImage.style.display = 'block';
-        
-        console.log(`✅ CSS 패딩 완료: ${containerWidth}x${containerHeight} (원본 비율 ${originalBodyImageRatio.toFixed(3)} 적용)`);
-      }
+      // 원본 비율에 맞춰 컨테이너 크기 설정 (전신사진과 동일하게)
+      const containerWidth = 400; // 고정 너비
+      const containerHeight = Math.floor(containerWidth / originalBodyImageRatio);
+      
+      // 컨테이너 스타일 (흰색 배경 + 원본 비율)
+      container.style.width = `${containerWidth}px`;
+      container.style.height = `${containerHeight}px`;
+      container.style.backgroundColor = '#FFFFFF';
+      container.style.display = 'flex';
+      container.style.alignItems = 'center';
+      container.style.justifyContent = 'center';
+      container.style.margin = '0 auto';
+      container.style.borderRadius = '1rem';
+      container.style.boxShadow = 'var(--shadow-lg)';
+      container.style.border = '1px solid var(--gray-200)';
+      container.style.overflow = 'hidden';
+      
+      // 결과 이미지 스타일 (컨테이너 안에서 중앙 정렬)
+      clothesResultImage.style.maxWidth = '100%';
+      clothesResultImage.style.maxHeight = '100%';
+      clothesResultImage.style.objectFit = 'contain';
+      clothesResultImage.style.display = 'block';
+      clothesResultImage.style.margin = '0';
+      clothesResultImage.style.borderRadius = '0';
+      clothesResultImage.style.boxShadow = 'none';
+      clothesResultImage.style.border = 'none';
+      
+      console.log(`✅ 결과 이미지 원본 비율 적용 완료: ${containerWidth}x${containerHeight} (비율: ${originalBodyImageRatio.toFixed(3)})`);
+      console.log(`📱 전신사진과 동일한 비율로 위아래 흰색 패딩 추가됨`);
       
     } else {
       console.log('⚠️ 원본 비율 정보 없음 - 기본 표시');
@@ -1699,6 +1681,7 @@ function showClothesResultImage(src) {
       this.style.borderRadius = '1rem';
       this.style.boxShadow = 'var(--shadow-lg)';
       this.style.border = '1px solid var(--gray-200)';
+      this.style.margin = '0 auto';
     }
     
     if (clothesResultPlaceholder) {
