@@ -174,6 +174,7 @@ function retakePhoto() {
 function usePhoto() {
     const capturedPhoto = document.getElementById('capturedPhoto');
     const bodyDragDropArea = document.getElementById('bodyDragDropArea');
+    const textModeDragDropArea = document.getElementById('dragDropArea');
     
     // 캔버스에서 Blob 생성
     const canvas = document.getElementById('cameraCanvas');
@@ -181,21 +182,44 @@ function usePhoto() {
         // File 객체 생성
         const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
         
-        // 전신사진 업로드 영역에 이미지 설정
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            bodyDragDropArea.style.backgroundImage = `url(${e.target.result})`;
-            bodyDragDropArea.querySelector('.drag-drop-content').style.display = 'none';
-            
-            // 전역 변수에 파일 저장
-            window.bodyImageFile = file;
-            
-            // 생성 버튼 활성화 체크
-            if (typeof checkGenerateButtonState === 'function') {
-                checkGenerateButtonState();
-            }
-        };
-        reader.readAsDataURL(file);
+        // 현재 모드 확인 (옷 모드 vs 텍스트 모드)
+        if (bodyDragDropArea && window.getComputedStyle(document.getElementById('clothesModeApp')).display !== 'none') {
+            // 옷 모드: 전신사진 업로드 영역에 이미지 설정
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                bodyDragDropArea.style.backgroundImage = `url(${e.target.result})`;
+                bodyDragDropArea.querySelector('.drag-drop-content').style.display = 'none';
+                
+                // 전역 변수에 파일 저장
+                window.bodyImageFile = file;
+                
+                // 생성 버튼 활성화 체크
+                if (typeof checkGenerateButtonState === 'function') {
+                    checkGenerateButtonState();
+                }
+            };
+            reader.readAsDataURL(file);
+        } else if (textModeDragDropArea && window.getComputedStyle(document.getElementById('mainApp')).display !== 'none') {
+            // 텍스트 모드: 드래그 드롭 영역에 이미지 설정
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                textModeDragDropArea.style.backgroundImage = `url(${e.target.result})`;
+                textModeDragDropArea.style.backgroundSize = 'cover';
+                textModeDragDropArea.style.backgroundPosition = 'center';
+                textModeDragDropArea.style.backgroundRepeat = 'no-repeat';
+                textModeDragDropArea.querySelector('.drag-drop-text').style.display = 'none';
+                textModeDragDropArea.querySelector('.drag-drop-subtext').style.display = 'none';
+                
+                // 전역 변수에 파일 저장
+                window.uploadedFile = file;
+                
+                // 텍스트 모드의 이미지 처리 함수 호출
+                if (typeof handleImageUpload === 'function') {
+                    handleImageUpload(file);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
         
         // 모달 닫기
         closeCameraModal();
@@ -216,10 +240,16 @@ function showCameraError() {
 
 // 이벤트 리스너 등록
 document.addEventListener('DOMContentLoaded', function() {
-    // 카메라 촬영 버튼
+    // 카메라 촬영 버튼 (옷 모드)
     const takeCameraPhotoBtn = document.getElementById('takeCameraPhotoBtn');
     if (takeCameraPhotoBtn) {
         takeCameraPhotoBtn.addEventListener('click', openCameraModal);
+    }
+    
+    // 카메라 촬영 버튼 (텍스트 모드)
+    const takeTextModeCameraBtn = document.getElementById('takeTextModeCameraBtn');
+    if (takeTextModeCameraBtn) {
+        takeTextModeCameraBtn.addEventListener('click', openCameraModal);
     }
     
     // 카메라 모달 닫기 버튼

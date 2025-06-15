@@ -1969,6 +1969,22 @@ div {
   transform: translateY(0);
 }
 
+/* 텍스트 모드 카메라 촬영 버튼 스타일 */
+#takeTextModeCameraBtn {
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#takeTextModeCameraBtn:hover {
+  background: #000000 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+#takeTextModeCameraBtn:active {
+  transform: translateY(0);
+}
+
 /* 모바일 반응형 - 카메라 모달 */
 @media (max-width: 768px) {
   #cameraModal .modal-content {
@@ -2041,6 +2057,13 @@ div {
   }
   
   #takeCameraPhotoBtn {
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+  
+  #takeTextModeCameraBtn {
     width: 100%;
     margin-top: 0.5rem;
     padding: 1rem 1.5rem;

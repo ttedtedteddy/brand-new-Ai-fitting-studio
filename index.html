@@ -231,6 +231,14 @@
           <div class="drag-drop-subtext">또는 클릭하여 파일을 선택하세요</div>
         </div>
         <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+        
+        <!-- 카메라 촬영 버튼 -->
+        <div style="text-align: center; margin-top: 1rem;">
+          <button id="takeTextModeCameraBtn" style="background: var(--primary); color: var(--secondary); border: 1px solid var(--primary); padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;">
+            📷 카메라로 촬영하기
+          </button>
+        </div>
+        
         <div id="maskSection" style="display:none; margin-top:2rem;">
           <h3>마스킹 브러시</h3>
           <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
