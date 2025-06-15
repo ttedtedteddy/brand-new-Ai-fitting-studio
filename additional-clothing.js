@@ -415,14 +415,14 @@ function showAdditionalClothingResult(imageUrl, targetCategory) {
       
       <!-- 액션 버튼들 -->
       <div class="action-buttons" style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
-        <button class="share-button instagram" onclick="shareAdditionalClothingToInstagram()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; border: 1px solid var(--primary); border-radius: 0; font-size: 0.9rem; font-weight: 300; cursor: pointer; transition: all 0.3s ease; letter-spacing: 0.2em; text-transform: uppercase; text-decoration: none; background: var(--primary); color: var(--secondary);">
+        <button class="share-button instagram" onclick="shareAdditionalClothingToInstagram()" style="background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); color: white; border: none; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; border-radius: 0; font-size: 0.9rem; font-weight: 300; cursor: pointer; transition: all 0.3s ease; letter-spacing: 0.2em; text-transform: uppercase; text-decoration: none;">
           인스타그램 공유
         </button>
-        <button onclick="shareAdditionalClothingToKakao()" class="share-btn kakao-btn" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; border: 1px solid var(--primary); border-radius: 0; font-size: 0.9rem; font-weight: 300; cursor: pointer; transition: all 0.3s ease; letter-spacing: 0.2em; text-transform: uppercase; text-decoration: none; background: var(--secondary); color: var(--primary);">
+        <button onclick="shareAdditionalClothingToKakao()" class="share-btn kakao-btn" style="background: #FEE500; color: #000000; border: none; padding: 0.75rem 1.5rem; border-radius: 0; font-size: 0.9rem; font-weight: 300; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; min-width: 120px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; letter-spacing: 0.2em; text-transform: uppercase;">
           <span class="button-text">이미지 공유</span>
-          <div class="button-loading-spinner" style="display: none;"></div>
+          <div class="button-loading-spinner" style="display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; border: 2px solid rgba(60, 30, 30, 0.3); border-top: 2px solid #3C1E1E; border-radius: 50%; animation: spin 1s linear infinite;"></div>
         </button>
-        <button class="save-button" onclick="saveAdditionalClothingImage()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; border: 1px solid var(--primary); border-radius: 0; font-size: 0.9rem; font-weight: 300; cursor: pointer; transition: all 0.3s ease; letter-spacing: 0.2em; text-transform: uppercase; text-decoration: none; background: var(--primary); color: var(--secondary);">
+        <button class="save-button" onclick="saveAdditionalClothingImage()" style="background: var(--primary); color: var(--secondary); border: 1px solid var(--primary); display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; border-radius: 0; font-size: 0.9rem; font-weight: 300; cursor: pointer; transition: all 0.3s ease; letter-spacing: 0.2em; text-transform: uppercase; text-decoration: none;">
           이미지 저장
         </button>
       </div>
@@ -474,10 +474,70 @@ function shareAdditionalClothingToInstagram() {
 // 추가 의류 합성 결과 카카오톡 공유
 function shareAdditionalClothingToKakao() {
   const resultImage = document.getElementById('additionalClothingResultImage');
-  if (resultImage && resultImage.src) {
-    // 카카오톡 공유 로직 (기존 함수와 동일)
-    console.log('카카오톡 공유:', resultImage.src);
-    alert('카카오톡 공유 기능은 준비 중입니다.');
+  const shareBtn = event.target.closest('.share-btn.kakao-btn');
+  
+  if (!resultImage || !resultImage.src) {
+    alert('공유할 이미지가 없습니다.');
+    return;
+  }
+
+  // 로딩 상태 시작
+  shareBtn.classList.add('button-loading');
+  
+  try {
+    // Canvas를 사용해서 이미지를 blob으로 변환
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    img.crossOrigin = 'anonymous';
+    img.onload = function() {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      
+      canvas.toBlob(function(blob) {
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'ai-fitting-result.jpg', { type: 'image/jpeg' })] })) {
+          const file = new File([blob], 'ai-fitting-additional-result.jpg', { type: 'image/jpeg' });
+          navigator.share({
+            title: 'AI Fitting Studio - 추가 의류 합성 결과',
+            text: 'AI로 만든 나만의 스타일링!',
+            files: [file]
+          }).then(() => {
+            console.log('추가 의류 합성 결과 공유 성공');
+          }).catch((error) => {
+            console.error('추가 의류 합성 결과 공유 실패:', error);
+            fallbackShare();
+          }).finally(() => {
+            // 로딩 상태 해제
+            shareBtn.classList.remove('button-loading');
+          });
+        } else {
+          fallbackShare();
+        }
+      }, 'image/jpeg', 0.9);
+    };
+    
+    img.onerror = function() {
+      console.error('이미지 로드 실패');
+      fallbackShare();
+    };
+    
+    img.src = resultImage.src;
+    
+  } catch (error) {
+    console.error('이미지 공유 중 오류:', error);
+    fallbackShare();
+  }
+  
+  function fallbackShare() {
+    // 로딩 상태 해제
+    shareBtn.classList.remove('button-loading');
+    
+    // 대체 방법: 이미지 다운로드 안내
+    if (confirm('직접 공유가 지원되지 않습니다. 이미지를 저장한 후 수동으로 공유하시겠습니까?')) {
+      saveAdditionalClothingImage();
+    }
   }
 }
 
