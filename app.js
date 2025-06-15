@@ -1390,61 +1390,6 @@ function setupImageDragAndDrop(dropArea, fileInput, handleFileCallback) {
   });
 }
 
-// 전신사진 파일 처리 (개선된 버전)
-function handleBodyImageFile(file) {
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    bodyImageData = evt.target.result;
-    
-    // 업로드 영역 업데이트
-    const bodyDragDropArea = document.getElementById('bodyDragDropArea');
-    if (bodyDragDropArea) {
-      bodyDragDropArea.style.backgroundImage = `url(${evt.target.result})`;
-      bodyDragDropArea.style.backgroundSize = 'contain';
-      bodyDragDropArea.style.backgroundPosition = 'center';
-      bodyDragDropArea.style.backgroundRepeat = 'no-repeat';
-      bodyDragDropArea.classList.add('has-image');
-      
-      const content = bodyDragDropArea.querySelector('.drag-drop-content');
-      if (content) {
-        content.innerHTML = '<div>전신사진 업로드 완료</div>';
-      }
-    }
-    
-    updateGenerateButton();
-    console.log('전신사진 업로드 완료');
-  };
-  reader.readAsDataURL(file);
-}
-
-// 옷 이미지 파일 처리 (개선된 버전)
-function handleClothingImageFile(file) {
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    clothingImageData = evt.target.result;
-    
-    // 업로드 영역 업데이트
-    const clothesDragDropArea = document.getElementById('clothesDragDropArea');
-    if (clothesDragDropArea) {
-      clothesDragDropArea.style.backgroundImage = `url(${evt.target.result})`;
-      clothesDragDropArea.style.backgroundSize = 'contain';
-      clothesDragDropArea.style.backgroundPosition = 'center';
-      clothesDragDropArea.style.backgroundRepeat = 'no-repeat';
-      clothesDragDropArea.classList.add('has-image');
-      
-      const content = clothesDragDropArea.querySelector('.drag-drop-content');
-      if (content) {
-        content.innerHTML = '<div>옷 이미지 업로드 완료</div>';
-      }
-    }
-    
-    updateGenerateButton();
-    console.log('옷 이미지 업로드 완료');
-  };
-  reader.readAsDataURL(file);
-}
-
-// 생성 버튼 상태 업데이트
 function updateGenerateButton() {
   const generateClothesBtn = document.getElementById('generateClothesBtn');
   if (!generateClothesBtn) return;
