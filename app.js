@@ -1610,7 +1610,7 @@ async function pollForIDMVTONResult(predictionId, maxAttempts = 60, intervalMs =
   throw new Error('IDM-VTON 결과 대기 시간 초과 (2분)');
 }
 
-// 옷 이미지 모드 결과 이미지 표시 함수 (원본 비율 강제 적용)
+// 옷 이미지 모드 결과 이미지 표시 함수 (CSS 패딩 방식으로 수정)
 function showClothesResultImage(src) {
   const clothesResultImage = document.getElementById('clothesResultImage');
   const clothesResultPlaceholder = document.getElementById('clothesResultPlaceholder');
@@ -1627,62 +1627,67 @@ function showClothesResultImage(src) {
     const resultRatio = this.naturalWidth / this.naturalHeight;
     console.log(`📐 결과 이미지 비율: ${resultRatio.toFixed(3)}`);
     
-    // 원본 전신사진 비율에 맞춰 결과 이미지를 캔버스로 패딩 처리
+    // 원본 전신사진 비율에 맞춰 CSS로 패딩 처리 (CORS 문제 해결)
     if (originalBodyImageRatio) {
       console.log(`🎯 원본 비율: ${originalBodyImageRatio.toFixed(3)} vs 결과 비율: ${resultRatio.toFixed(3)}`);
       
-      // 캔버스를 사용해서 비율 맞추기
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      let canvasWidth, canvasHeight;
-      
-      if (originalBodyImageRatio < 1) {
-        // 원본이 세로 이미지인 경우 (일반적인 전신사진)
-        canvasHeight = 600; // 고정 높이
-        canvasWidth = Math.floor(canvasHeight * originalBodyImageRatio);
-      } else {
-        // 원본이 가로 이미지인 경우
-        canvasWidth = 600; // 고정 너비
-        canvasHeight = Math.floor(canvasWidth / originalBodyImageRatio);
+      // 컨테이너 div 생성
+      let container = document.getElementById('result-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'result-container';
+        clothesResultImage.parentNode.insertBefore(container, clothesResultImage);
+        container.appendChild(clothesResultImage);
       }
       
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
-      
-      // 흰색 배경으로 채우기
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-      
-      // 결과 이미지를 중앙에 맞춰서 그리기 (비율 유지)
-      const scale = Math.min(canvasWidth / this.naturalWidth, canvasHeight / this.naturalHeight);
-      const scaledWidth = this.naturalWidth * scale;
-      const scaledHeight = this.naturalHeight * scale;
-      const offsetX = (canvasWidth - scaledWidth) / 2;
-      const offsetY = (canvasHeight - scaledHeight) / 2;
-      
-      ctx.drawImage(this, offsetX, offsetY, scaledWidth, scaledHeight);
-      
-      // 캔버스를 이미지로 변환
-      const paddedImageUrl = canvas.toDataURL('image/jpeg', 0.9);
-      
-      // 새로운 이미지 요소 생성
-      const paddedImage = new Image();
-      paddedImage.onload = function() {
-        // 기존 이미지를 패딩된 이미지로 교체
-        clothesResultImage.src = paddedImageUrl;
+      // 원본 비율에 맞춰 컨테이너 스타일 설정
+      if (originalBodyImageRatio < 1) {
+        // 원본이 세로 이미지인 경우 (일반적인 전신사진)
+        const containerWidth = 400;
+        const containerHeight = Math.floor(containerWidth / originalBodyImageRatio);
+        
+        container.style.width = `${containerWidth}px`;
+        container.style.height = `${containerHeight}px`;
+        container.style.backgroundColor = '#FFFFFF';
+        container.style.display = 'flex';
+        container.style.alignItems = 'center';
+        container.style.justifyContent = 'center';
+        container.style.margin = '0 auto';
+        container.style.borderRadius = '1rem';
+        container.style.boxShadow = 'var(--shadow-lg)';
+        container.style.border = '1px solid var(--gray-200)';
+        
+        // 이미지 스타일
         clothesResultImage.style.maxWidth = '100%';
-        clothesResultImage.style.height = 'auto';
+        clothesResultImage.style.maxHeight = '100%';
         clothesResultImage.style.objectFit = 'contain';
         clothesResultImage.style.display = 'block';
-        clothesResultImage.style.borderRadius = '1rem';
-        clothesResultImage.style.boxShadow = 'var(--shadow-lg)';
-        clothesResultImage.style.border = '1px solid var(--gray-200)';
-        clothesResultImage.style.margin = '0 auto';
         
-        console.log(`✅ 결과 이미지 패딩 완료: ${canvasWidth}x${canvasHeight} (원본 비율 ${originalBodyImageRatio.toFixed(3)} 적용)`);
-      };
-      paddedImage.src = paddedImageUrl;
+        console.log(`✅ CSS 패딩 완료: ${containerWidth}x${containerHeight} (원본 비율 ${originalBodyImageRatio.toFixed(3)} 적용)`);
+      } else {
+        // 원본이 가로 이미지인 경우
+        const containerHeight = 400;
+        const containerWidth = Math.floor(containerHeight * originalBodyImageRatio);
+        
+        container.style.width = `${containerWidth}px`;
+        container.style.height = `${containerHeight}px`;
+        container.style.backgroundColor = '#FFFFFF';
+        container.style.display = 'flex';
+        container.style.alignItems = 'center';
+        container.style.justifyContent = 'center';
+        container.style.margin = '0 auto';
+        container.style.borderRadius = '1rem';
+        container.style.boxShadow = 'var(--shadow-lg)';
+        container.style.border = '1px solid var(--gray-200)';
+        
+        // 이미지 스타일
+        clothesResultImage.style.maxWidth = '100%';
+        clothesResultImage.style.maxHeight = '100%';
+        clothesResultImage.style.objectFit = 'contain';
+        clothesResultImage.style.display = 'block';
+        
+        console.log(`✅ CSS 패딩 완료: ${containerWidth}x${containerHeight} (원본 비율 ${originalBodyImageRatio.toFixed(3)} 적용)`);
+      }
       
     } else {
       console.log('⚠️ 원본 비율 정보 없음 - 기본 표시');
