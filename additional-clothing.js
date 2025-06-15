@@ -265,57 +265,53 @@ async function processAdditionalClothing(file, targetCategory) {
       throw new Error('callIDMVTONAPI 함수를 찾을 수 없습니다. app.js가 로드되었는지 확인해주세요.');
     }
     
-    // 추가 의류 이미지 최적화
-    console.log('🖼️ 이미지 최적화 중...');
+    // 1. 현재 결과 이미지(URL)를 base64로 변환
+    console.log('🖼️ 현재 결과 이미지를 base64로 변환 중...');
+    const currentResultBase64 = await convertImageUrlToBase64(clothesResultImage.src);
+    
+    // 2. 새로 업로드한 의류 이미지 최적화
+    console.log('👕 새 의류 이미지 최적화 중...');
     const processedFile = await window.optimizeImage(file, 1024, 1024, 0.8);
     
-    const reader = new FileReader();
-    reader.onload = async function(evt) {
-      try {
-        const additionalClothingData = evt.target.result;
-        
-        console.log('🚀 추가 의류 합성 API 호출 시작...');
-        
-        // 현재 결과 이미지를 전신사진으로, 새 의류를 옷 이미지로 사용
-        const resultImageUrl = await window.callIDMVTONAPI(
-          clothesResultImage.src, // 현재 결과를 전신사진으로 사용
-          additionalClothingData,  // 새 의류 이미지
-          `additional ${targetCategory} clothing, layered outfit` // 추가 의류 프롬프트
-        );
-        
-        console.log('✅ 추가 의류 합성 완료:', resultImageUrl);
-        
-        // 새로운 결과 표시
-        if (typeof window.showClothesResultImage === 'function') {
-          window.showClothesResultImage(resultImageUrl);
-        } else {
-          // 직접 이미지 표시
-          clothesResultImage.src = resultImageUrl;
-          clothesResultImage.style.display = 'block';
-        }
-        
-        // 성공 메시지
-        const categoryNames = {
-          'upper_body': '상의',
-          'lower_body': '하의', 
-          'accessories': '액세서리'
-        };
-        
-        alert(`${categoryNames[targetCategory]} 합성이 완료되었습니다! 🎉`);
-        
-        // 기존 추가 의류 섹션 제거 (새로운 섹션이 자동으로 생성됨)
-        const additionalSection = document.getElementById('additionalClothingSection');
-        if (additionalSection) {
-          additionalSection.remove();
-        }
-        
-      } catch (apiError) {
-        console.error('❌ API 호출 오류:', apiError);
-        throw apiError;
-      }
+    // 3. 새 의류 이미지를 base64로 변환
+    const newClothingBase64 = await convertFileToBase64(processedFile);
+    
+    console.log('🚀 추가 의류 합성 API 호출 시작...');
+    console.log('📸 전신사진: 현재 결과 이미지 (상의를 입은 사람)');
+    console.log('👖 의류 사진: 새로 업로드한', targetCategory === 'upper_body' ? '상의' : targetCategory === 'lower_body' ? '하의' : '액세서리');
+    
+    // 4. API 호출 - 현재 결과를 전신사진으로, 새 의류를 옷 이미지로 사용
+    const resultImageUrl = await window.callIDMVTONAPI(
+      currentResultBase64,  // 현재 결과를 전신사진으로 사용
+      newClothingBase64,    // 새 의류 이미지
+      `additional ${targetCategory} clothing, layered outfit` // 추가 의류 프롬프트
+    );
+    
+    console.log('✅ 추가 의류 합성 완료:', resultImageUrl);
+    
+    // 새로운 결과 표시
+    if (typeof window.showClothesResultImage === 'function') {
+      window.showClothesResultImage(resultImageUrl);
+    } else {
+      // 직접 이미지 표시
+      clothesResultImage.src = resultImageUrl;
+      clothesResultImage.style.display = 'block';
+    }
+    
+    // 성공 메시지
+    const categoryNames = {
+      'upper_body': '상의',
+      'lower_body': '하의', 
+      'accessories': '액세서리'
     };
     
-    reader.readAsDataURL(processedFile);
+    alert(`${categoryNames[targetCategory]} 합성이 완료되었습니다! 🎉`);
+    
+    // 기존 추가 의류 섹션 제거 (새로운 섹션이 자동으로 생성됨)
+    const additionalSection = document.getElementById('additionalClothingSection');
+    if (additionalSection) {
+      additionalSection.remove();
+    }
     
   } catch (error) {
     console.error('❌ 추가 의류 처리 오류:', error);
@@ -333,4 +329,45 @@ async function processAdditionalClothing(file, targetCategory) {
       if (loadingSpinner) loadingSpinner.style.display = 'none';
     }
   }
+}
+
+// 이미지 URL을 base64로 변환하는 헬퍼 함수
+async function convertImageUrlToBase64(imageUrl) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous'; // CORS 문제 해결
+    
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = img.width;
+      canvas.height = img.height;
+      
+      ctx.drawImage(img, 0, 0);
+      
+      const base64 = canvas.toDataURL('image/jpeg', 0.8);
+      resolve(base64);
+    };
+    
+    img.onerror = function() {
+      reject(new Error('이미지 로드 실패: ' + imageUrl));
+    };
+    
+    img.src = imageUrl;
+  });
+}
+
+// 파일을 base64로 변환하는 헬퍼 함수
+async function convertFileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      resolve(e.target.result);
+    };
+    reader.onerror = function() {
+      reject(new Error('파일 읽기 실패'));
+    };
+    reader.readAsDataURL(file);
+  });
 } 
