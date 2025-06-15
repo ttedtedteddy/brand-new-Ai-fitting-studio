@@ -8,7 +8,7 @@ const fetch = require('node-fetch');
 const cloudinary = require('cloudinary').v2;
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8787;
 
 // 미들웨어 설정
 app.use(cors());
@@ -204,7 +204,7 @@ app.post('/idm-vton', async (req, res) => {
           garment_des: garment_des || "clothing",
           category: category || "upper_body",
           is_checked: true,
-          is_checked_crop: false,
+          is_checked_crop: true,
           denoise_steps,
           seed: seed || Math.floor(Math.random() * 1000000)
         }

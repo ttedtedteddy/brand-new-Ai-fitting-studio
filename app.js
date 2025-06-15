@@ -1755,7 +1755,7 @@ async function callSingleIDMVTON(bodyImageUrl, clothingImageUrl, category, promp
   
   // 카테고리별 특별 처리 - 매우 보수적인 접근
   let finalPrompt = prompt || "clothing";
-  let isCheckedCrop = false;
+  let isCheckedCrop = true; // 배경 처리를 위해 항상 크롭 활성화
   let denoiseSteps = 30;
   
   if (category === 'lower_body') {
@@ -1788,7 +1788,7 @@ async function callSingleIDMVTON(bodyImageUrl, clothingImageUrl, category, promp
         garment_des: finalPrompt,
         category: category === 'full_outfit' ? 'upper_body' : category, // full_outfit은 처리 단계에서 분리됨
         is_checked: true,
-        is_checked_crop: isCheckedCrop,
+        is_checked_crop: isCheckedCrop, // 배경 처리를 위해 크롭 활성화
         denoise_steps: denoiseSteps,
         seed: 42 // 고정된 시드로 일관성 확보
       }
