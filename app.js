@@ -305,48 +305,48 @@ async function handleImageFile(file) {
     // 이미지 최적화 처리
     const processedFile = await processImageFile(file);
     
-    const reader = new FileReader();
-    reader.onload = function(evt) {
-      const tempImg = new window.Image();
-      tempImg.onload = function() {
-        // 원본 이미지 데이터 저장
-        originalImageData = {
-          width: tempImg.width,
-          height: tempImg.height,
-          src: evt.target.result
-        };
-        
-        // 캔버스 초기화
-        photoCtx.clearRect(0, 0, photoCanvas.width, photoCanvas.height);
-        maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
-        
-        // 이미지 비율 계산
-        const canvasW = photoCanvas.width;
-        const canvasH = photoCanvas.height;
-        const imgW = tempImg.width;
-        const imgH = tempImg.height;
-        const scale = Math.min(canvasW / imgW, canvasH / imgH);
-        const drawW = imgW * scale;
-        const drawH = imgH * scale;
-        const offsetX = (canvasW - drawW) / 2;
-        const offsetY = (canvasH - drawH) / 2;
-        
-        // 중앙에 맞춰 그리기
-        photoCanvas.style.display = 'block';
-        maskCanvas.style.display = 'block';
-        photoCtx.drawImage(tempImg, offsetX, offsetY, drawW, drawH);
-        
-        // 마스킹 섹션 자동으로 표시
-        maskSection.style.display = 'block';
-        
-        // 마스킹 섹션으로 스크롤
-        maskSection.scrollIntoView({ behavior: 'smooth' });
-        
-        // 결과 이미지 초기화
-        resetResultState();
-      }
-      tempImg.src = evt.target.result;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const tempImg = new window.Image();
+    tempImg.onload = function() {
+      // 원본 이미지 데이터 저장
+      originalImageData = {
+        width: tempImg.width,
+        height: tempImg.height,
+        src: evt.target.result
+      };
+      
+      // 캔버스 초기화
+      photoCtx.clearRect(0, 0, photoCanvas.width, photoCanvas.height);
+      maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
+      
+      // 이미지 비율 계산
+      const canvasW = photoCanvas.width;
+      const canvasH = photoCanvas.height;
+      const imgW = tempImg.width;
+      const imgH = tempImg.height;
+      const scale = Math.min(canvasW / imgW, canvasH / imgH);
+      const drawW = imgW * scale;
+      const drawH = imgH * scale;
+      const offsetX = (canvasW - drawW) / 2;
+      const offsetY = (canvasH - drawH) / 2;
+      
+      // 중앙에 맞춰 그리기
+      photoCanvas.style.display = 'block';
+      maskCanvas.style.display = 'block';
+      photoCtx.drawImage(tempImg, offsetX, offsetY, drawW, drawH);
+      
+      // 마스킹 섹션 자동으로 표시
+      maskSection.style.display = 'block';
+      
+      // 마스킹 섹션으로 스크롤
+      maskSection.scrollIntoView({ behavior: 'smooth' });
+      
+      // 결과 이미지 초기화
+      resetResultState();
     }
+    tempImg.src = evt.target.result;
+  }
     reader.readAsDataURL(processedFile);
     
   } catch (error) {
@@ -467,20 +467,20 @@ function showResultImage(imageUrl) {
   resultImage.src = imageUrl;
   resultImage.style.display = 'block';
   
-  if (resultPlaceholder) {
-    resultPlaceholder.style.display = 'none';
-  }
+    if (resultPlaceholder) {
+      resultPlaceholder.style.display = 'none';
+    }
   
   // 액션 버튼들 표시
-  if (actionButtons) {
-    actionButtons.style.display = 'flex';
-  }
+    if (actionButtons) {
+      actionButtons.style.display = 'flex';
+    }
   
-  // 구글 렌즈 섹션 표시
-  const googleLensSection = document.getElementById('googleLensSection');
-  if (googleLensSection) {
-    googleLensSection.style.display = 'block';
-  }
+    // 구글 렌즈 섹션 표시
+    const googleLensSection = document.getElementById('googleLensSection');
+    if (googleLensSection) {
+      googleLensSection.style.display = 'block';
+    }
 }
 
 // 결과 이미지 숨기기 함수
@@ -1349,7 +1349,7 @@ function setupImageDragAndDrop(dropArea, fileInput, handleFileCallback) {
       const file = files[0];
       if (file.type.startsWith('image/')) {
         handleFileCallback(file);
-      } else {
+    } else {
         alert('이미지 파일만 업로드 가능합니다.');
       }
     }
@@ -1610,7 +1610,7 @@ async function pollForIDMVTONResult(predictionId, maxAttempts = 60, intervalMs =
   throw new Error('IDM-VTON 결과 대기 시간 초과 (2분)');
 }
 
-// 옷 이미지 모드 결과 이미지 표시 함수 (세로 비율 강제 + 위아래 패딩)
+// 옷 이미지 모드 결과 이미지 표시 함수 (CSS 패딩 방식으로 수정)
 function showClothesResultImage(src) {
   const clothesResultImage = document.getElementById('clothesResultImage');
   const clothesResultPlaceholder = document.getElementById('clothesResultPlaceholder');
@@ -1627,11 +1627,11 @@ function showClothesResultImage(src) {
     const resultRatio = this.naturalWidth / this.naturalHeight;
     console.log(`📐 결과 이미지 비율: ${resultRatio.toFixed(3)}`);
     
-    // 전신사진이 세로 비율이면 결과물도 세로 비율로 강제 표시
+    // 원본 전신사진 비율에 맞춰 CSS로 패딩 처리 (CORS 문제 해결)
     if (originalBodyImageRatio) {
       console.log(`🎯 원본 비율: ${originalBodyImageRatio.toFixed(3)} vs 결과 비율: ${resultRatio.toFixed(3)}`);
       
-      // 컨테이너 div 생성 또는 재사용
+      // 컨테이너 div 생성
       let container = document.getElementById('result-container');
       if (!container) {
         container = document.createElement('div');
@@ -1640,60 +1640,54 @@ function showClothesResultImage(src) {
         container.appendChild(clothesResultImage);
       }
       
-      // 원본이 세로 비율이면 결과물도 세로 비율로 강제 설정
-      let containerWidth, containerHeight;
-      
-      if (originalBodyImageRatio <= 1) {
-        // 원본이 세로 비율인 경우 → 결과물도 세로 비율로 강제
-        console.log(`🔄 원본이 세로 비율이므로 결과물도 세로 비율로 강제 변환`);
-        containerWidth = 300; // 세로 이미지 기준 너비
-        containerHeight = 400; // 세로 이미지 기준 높이
+      // 원본 비율에 맞춰 컨테이너 스타일 설정
+      if (originalBodyImageRatio < 1) {
+        // 원본이 세로 이미지인 경우 (일반적인 전신사진)
+        const containerWidth = 400;
+        const containerHeight = Math.floor(containerWidth / originalBodyImageRatio);
+        
+        container.style.width = `${containerWidth}px`;
+        container.style.height = `${containerHeight}px`;
+        container.style.backgroundColor = '#FFFFFF';
+        container.style.display = 'flex';
+        container.style.alignItems = 'center';
+        container.style.justifyContent = 'center';
+        container.style.margin = '0 auto';
+        container.style.borderRadius = '1rem';
+        container.style.boxShadow = 'var(--shadow-lg)';
+        container.style.border = '1px solid var(--gray-200)';
+        
+        // 이미지 스타일
+        clothesResultImage.style.maxWidth = '100%';
+        clothesResultImage.style.maxHeight = '100%';
+        clothesResultImage.style.objectFit = 'contain';
+        clothesResultImage.style.display = 'block';
+        
+        console.log(`✅ CSS 패딩 완료: ${containerWidth}x${containerHeight} (원본 비율 ${originalBodyImageRatio.toFixed(3)} 적용)`);
       } else {
-        // 원본이 가로 비율인 경우 → 결과물도 가로 비율로
-        console.log(`🔄 원본이 가로 비율이므로 결과물도 가로 비율로 표시`);
-        containerWidth = 400;
-        containerHeight = Math.floor(400 / originalBodyImageRatio);
+        // 원본이 가로 이미지인 경우
+        const containerHeight = 400;
+        const containerWidth = Math.floor(containerHeight * originalBodyImageRatio);
+        
+        container.style.width = `${containerWidth}px`;
+        container.style.height = `${containerHeight}px`;
+        container.style.backgroundColor = '#FFFFFF';
+        container.style.display = 'flex';
+        container.style.alignItems = 'center';
+        container.style.justifyContent = 'center';
+        container.style.margin = '0 auto';
+        container.style.borderRadius = '1rem';
+        container.style.boxShadow = 'var(--shadow-lg)';
+        container.style.border = '1px solid var(--gray-200)';
+        
+        // 이미지 스타일
+        clothesResultImage.style.maxWidth = '100%';
+        clothesResultImage.style.maxHeight = '100%';
+        clothesResultImage.style.objectFit = 'contain';
+        clothesResultImage.style.display = 'block';
+        
+        console.log(`✅ CSS 패딩 완료: ${containerWidth}x${containerHeight} (원본 비율 ${originalBodyImageRatio.toFixed(3)} 적용)`);
       }
-      
-      // 컨테이너 스타일 (흰색 배경 + 세로 비율 강제)
-      container.style.width = `${containerWidth}px`;
-      container.style.height = `${containerHeight}px`;
-      container.style.backgroundColor = '#FFFFFF';
-      container.style.backgroundSize = 'contain';
-      container.style.backgroundPosition = 'center';
-      container.style.backgroundRepeat = 'no-repeat';
-      container.style.backgroundImage = `url(${src})`;
-      container.style.margin = '0 auto';
-      container.style.borderRadius = '1rem';
-      container.style.boxShadow = 'var(--shadow-lg)';
-      container.style.border = '1px solid var(--gray-200)';
-      container.style.overflow = 'hidden';
-      
-      // 결과 이미지는 숨김 (배경 이미지로 표시)
-      clothesResultImage.style.display = 'none';
-      
-      // 성공 메시지 오버레이 추가
-      let overlay = container.querySelector('.result-overlay');
-      if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.className = 'result-overlay';
-        overlay.innerHTML = '<div>✅ 가상 피팅 완료 (세로 비율 + 위아래 패딩)</div>';
-        overlay.style.position = 'absolute';
-        overlay.style.bottom = '10px';
-        overlay.style.left = '50%';
-        overlay.style.transform = 'translateX(-50%)';
-        overlay.style.background = 'rgba(0, 0, 0, 0.7)';
-        overlay.style.color = 'white';
-        overlay.style.padding = '0.5rem';
-        overlay.style.borderRadius = '0.5rem';
-        overlay.style.backdropFilter = 'blur(4px)';
-        overlay.style.fontSize = '0.9rem';
-        container.style.position = 'relative';
-        container.appendChild(overlay);
-      }
-      
-      console.log(`✅ 결과 이미지 세로 비율 강제 적용 완료: ${containerWidth}x${containerHeight}`);
-      console.log(`📱 세로 비율로 위아래 흰색 패딩 추가됨 (전신사진과 동일)`);
       
     } else {
       console.log('⚠️ 원본 비율 정보 없음 - 기본 표시');
@@ -1705,7 +1699,6 @@ function showClothesResultImage(src) {
       this.style.borderRadius = '1rem';
       this.style.boxShadow = 'var(--shadow-lg)';
       this.style.border = '1px solid var(--gray-200)';
-      this.style.margin = '0 auto';
     }
     
     if (clothesResultPlaceholder) {
