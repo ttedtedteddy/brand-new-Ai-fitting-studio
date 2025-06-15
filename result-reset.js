@@ -7,10 +7,10 @@ function enhancedResetClothesResultState() {
   
   const clothesResultPlaceholder = document.getElementById('clothesResultPlaceholder');
   if (clothesResultPlaceholder) {
-    // 원래 텍스트와 모든 스타일 완전 복원
+    // 원래 텍스트와 모든 스타일 완전 복원 (정확한 원본 스타일)
     clothesResultPlaceholder.innerHTML = '가상 피팅 결과가 여기에 표시됩니다';
     clothesResultPlaceholder.style.cssText = 'width: 100%; max-width: 512px; height: 300px; margin: 0 auto; border: 2px dashed var(--gray-300); border-radius: 1rem; display: flex; align-items: center; justify-content: center; color: var(--gray-400); font-size: 1rem;';
-    console.log('✅ placeholder 스타일 완전 복원 완료');
+    console.log('✅ placeholder 스타일 완전 복원 완료 (높이 300px 포함)');
   }
   
   const clothesResultImage = document.getElementById('clothesResultImage');
@@ -38,7 +38,7 @@ function enhancedResetClothesResultState() {
     console.log('✅ 구글 렌즈 섹션 숨김 완료');
   }
   
-  console.log('✅ 강화된 옷 모드 결과물 초기화 완료');
+  console.log('✅ 강화된 옷 모드 결과물 초기화 완료 - 원본 크기로 복원');
 }
 
 // 기존 함수들을 래핑하여 결과물 초기화 기능 추가
