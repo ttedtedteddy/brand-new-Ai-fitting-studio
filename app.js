@@ -1362,6 +1362,28 @@ async function callSingleIDMVTON(bodyImageUrl, clothingImageUrl, category, promp
   
   console.log(`IDM-VTON API 호출 - 카테고리: ${category}`);
   
+  // 카테고리별 특별 처리
+  let finalPrompt = prompt || "clothing";
+  let isCheckedCrop = false;
+  let denoiseSteps = 30;
+  
+  if (category === 'lower_body') {
+    // 하의의 경우 더 보수적인 설정 사용
+    finalPrompt = "exact same clothing item, identical colors, same design, same fabric, same style";
+    isCheckedCrop = true; // 크롭 기능 활성화로 더 정확한 피팅
+    denoiseSteps = 20; // 노이즈 제거 단계 줄여서 원본 보존
+    console.log('하의 모드: 보수적 설정 적용');
+  } else if (category === 'upper_body') {
+    finalPrompt = "same clothing item, preserve original colors and design";
+    denoiseSteps = 25;
+  } else if (category === 'dresses') {
+    finalPrompt = "same dress, identical colors and patterns, preserve original design";
+    denoiseSteps = 25;
+  }
+  
+  console.log(`최종 프롬프트 (${category}):`, finalPrompt);
+  console.log(`설정 - 크롭: ${isCheckedCrop}, 노이즈 단계: ${denoiseSteps}`);
+  
   const replicateResponse = await fetch(`${baseUrl}/replicate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1370,11 +1392,11 @@ async function callSingleIDMVTON(bodyImageUrl, clothingImageUrl, category, promp
       input: {
         human_img: bodyImageUrl,
         garm_img: clothingImageUrl,
-        garment_des: prompt || "clothing",
+        garment_des: finalPrompt,
         category: category === 'full_outfit' ? 'upper_body' : category, // full_outfit은 처리 단계에서 분리됨
         is_checked: true,
-        is_checked_crop: false,
-        denoise_steps: 30,
+        is_checked_crop: isCheckedCrop,
+        denoise_steps: denoiseSteps,
         seed: Math.floor(Math.random() * 1000000)
       }
     })
