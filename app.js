@@ -1610,7 +1610,7 @@ async function pollForIDMVTONResult(predictionId, maxAttempts = 60, intervalMs =
   throw new Error('IDM-VTON 결과 대기 시간 초과 (2분)');
 }
 
-// 옷 이미지 모드 결과 이미지 표시 함수 (전신사진과 동일한 패딩 방식)
+// 옷 이미지 모드 결과 이미지 표시 함수 (세로 비율 강제 + 위아래 패딩)
 function showClothesResultImage(src) {
   const clothesResultImage = document.getElementById('clothesResultImage');
   const clothesResultPlaceholder = document.getElementById('clothesResultPlaceholder');
@@ -1627,10 +1627,9 @@ function showClothesResultImage(src) {
     const resultRatio = this.naturalWidth / this.naturalHeight;
     console.log(`📐 결과 이미지 비율: ${resultRatio.toFixed(3)}`);
     
-    // 전신사진과 똑같은 패딩 방식 적용
+    // 전신사진이 세로 비율이면 결과물도 세로 비율로 강제 표시
     if (originalBodyImageRatio) {
       console.log(`🎯 원본 비율: ${originalBodyImageRatio.toFixed(3)} vs 결과 비율: ${resultRatio.toFixed(3)}`);
-      console.log(`🔄 전신사진과 동일한 패딩 방식으로 결과 이미지 표시`);
       
       // 컨테이너 div 생성 또는 재사용
       let container = document.getElementById('result-container');
@@ -1641,20 +1640,22 @@ function showClothesResultImage(src) {
         container.appendChild(clothesResultImage);
       }
       
-      // 전신사진과 동일한 크기 계산 방식
+      // 원본이 세로 비율이면 결과물도 세로 비율로 강제 설정
       let containerWidth, containerHeight;
       
-      if (originalBodyImageRatio > 1) {
-        // 가로가 더 긴 경우 (전신사진과 동일)
+      if (originalBodyImageRatio <= 1) {
+        // 원본이 세로 비율인 경우 → 결과물도 세로 비율로 강제
+        console.log(`🔄 원본이 세로 비율이므로 결과물도 세로 비율로 강제 변환`);
+        containerWidth = 300; // 세로 이미지 기준 너비
+        containerHeight = 400; // 세로 이미지 기준 높이
+      } else {
+        // 원본이 가로 비율인 경우 → 결과물도 가로 비율로
+        console.log(`🔄 원본이 가로 비율이므로 결과물도 가로 비율로 표시`);
         containerWidth = 400;
         containerHeight = Math.floor(400 / originalBodyImageRatio);
-      } else {
-        // 세로가 더 긴 경우 (전신사진과 동일)
-        containerWidth = Math.floor(300 * originalBodyImageRatio);
-        containerHeight = 400;
       }
       
-      // 컨테이너 스타일 (전신사진과 동일한 방식)
+      // 컨테이너 스타일 (흰색 배경 + 세로 비율 강제)
       container.style.width = `${containerWidth}px`;
       container.style.height = `${containerHeight}px`;
       container.style.backgroundColor = '#FFFFFF';
@@ -1676,7 +1677,7 @@ function showClothesResultImage(src) {
       if (!overlay) {
         overlay = document.createElement('div');
         overlay.className = 'result-overlay';
-        overlay.innerHTML = '<div>✅ 가상 피팅 완료 (원본 비율 유지)</div>';
+        overlay.innerHTML = '<div>✅ 가상 피팅 완료 (세로 비율 + 위아래 패딩)</div>';
         overlay.style.position = 'absolute';
         overlay.style.bottom = '10px';
         overlay.style.left = '50%';
@@ -1691,8 +1692,8 @@ function showClothesResultImage(src) {
         container.appendChild(overlay);
       }
       
-      console.log(`✅ 전신사진과 동일한 패딩 적용 완료: ${containerWidth}x${containerHeight} (비율: ${originalBodyImageRatio.toFixed(3)})`);
-      console.log(`📱 원본 비율 ${originalBodyImageRatio > 1 ? '가로' : '세로'} 이미지로 위아래 흰색 패딩 추가됨`);
+      console.log(`✅ 결과 이미지 세로 비율 강제 적용 완료: ${containerWidth}x${containerHeight}`);
+      console.log(`📱 세로 비율로 위아래 흰색 패딩 추가됨 (전신사진과 동일)`);
       
     } else {
       console.log('⚠️ 원본 비율 정보 없음 - 기본 표시');
