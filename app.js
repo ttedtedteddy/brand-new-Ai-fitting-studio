@@ -1671,7 +1671,7 @@ async function pollForIDMVTONResult(predictionId, maxAttempts = 60, intervalMs =
   throw new Error('IDM-VTON 결과 대기 시간 초과 (2분)');
 }
 
-// 옷 이미지 모드 결과 이미지 표시 함수 (원본 비율 적용)
+// 옷 이미지 모드 결과 이미지 표시 함수 (원본 비율 강제 적용)
 function showClothesResultImage(src) {
   const clothesResultImage = document.getElementById('clothesResultImage');
   const clothesResultPlaceholder = document.getElementById('clothesResultPlaceholder');
@@ -1685,36 +1685,76 @@ function showClothesResultImage(src) {
   
   clothesResultImage.onload = function() {
     console.log(`🖼️ 결과 이미지 로드 완료: ${this.naturalWidth}x${this.naturalHeight}`);
+    const resultRatio = this.naturalWidth / this.naturalHeight;
+    console.log(`📐 결과 이미지 비율: ${resultRatio.toFixed(3)}`);
     
-    // 기본 이미지 스타일 설정
-    this.style.maxWidth = '100%';
-    this.style.height = 'auto';
-    this.style.objectFit = 'contain';
-    this.style.display = 'block';
-    this.style.borderRadius = '1rem';
-    this.style.boxShadow = 'var(--shadow-lg)';
-    this.style.border = '1px solid var(--gray-200)';
-    
-    // 원본 전신사진 비율에 맞춰 결과 이미지 표시
+    // 원본 전신사진 비율에 맞춰 결과 이미지를 캔버스로 패딩 처리
     if (originalBodyImageRatio) {
-      console.log(`🎯 결과 이미지를 원본 비율로 조정: ${originalBodyImageRatio.toFixed(3)}`);
+      console.log(`🎯 원본 비율: ${originalBodyImageRatio.toFixed(3)} vs 결과 비율: ${resultRatio.toFixed(3)}`);
       
-      if (originalBodyImageRatio > 1) {
-        // 원본이 가로가 더 긴 경우
-        this.style.width = '500px';
-        this.style.height = `${500 / originalBodyImageRatio}px`;
+      // 캔버스를 사용해서 비율 맞추기
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      let canvasWidth, canvasHeight;
+      
+      if (originalBodyImageRatio < 1) {
+        // 원본이 세로 이미지인 경우 (일반적인 전신사진)
+        canvasHeight = 600; // 고정 높이
+        canvasWidth = Math.floor(canvasHeight * originalBodyImageRatio);
       } else {
-        // 원본이 세로가 더 긴 경우 (일반적인 전신사진)
-        this.style.width = `${400 * originalBodyImageRatio}px`;
-        this.style.height = '400px';
+        // 원본이 가로 이미지인 경우
+        canvasWidth = 600; // 고정 너비
+        canvasHeight = Math.floor(canvasWidth / originalBodyImageRatio);
       }
       
-      this.style.margin = '0 auto';
-      this.style.objectFit = 'cover'; // 비율에 맞춰 크롭
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
       
-      console.log('✅ 결과 이미지 원본 비율로 표시 완료');
+      // 흰색 배경으로 채우기
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+      
+      // 결과 이미지를 중앙에 맞춰서 그리기 (비율 유지)
+      const scale = Math.min(canvasWidth / this.naturalWidth, canvasHeight / this.naturalHeight);
+      const scaledWidth = this.naturalWidth * scale;
+      const scaledHeight = this.naturalHeight * scale;
+      const offsetX = (canvasWidth - scaledWidth) / 2;
+      const offsetY = (canvasHeight - scaledHeight) / 2;
+      
+      ctx.drawImage(this, offsetX, offsetY, scaledWidth, scaledHeight);
+      
+      // 캔버스를 이미지로 변환
+      const paddedImageUrl = canvas.toDataURL('image/jpeg', 0.9);
+      
+      // 새로운 이미지 요소 생성
+      const paddedImage = new Image();
+      paddedImage.onload = function() {
+        // 기존 이미지를 패딩된 이미지로 교체
+        clothesResultImage.src = paddedImageUrl;
+        clothesResultImage.style.maxWidth = '100%';
+        clothesResultImage.style.height = 'auto';
+        clothesResultImage.style.objectFit = 'contain';
+        clothesResultImage.style.display = 'block';
+        clothesResultImage.style.borderRadius = '1rem';
+        clothesResultImage.style.boxShadow = 'var(--shadow-lg)';
+        clothesResultImage.style.border = '1px solid var(--gray-200)';
+        clothesResultImage.style.margin = '0 auto';
+        
+        console.log(`✅ 결과 이미지 패딩 완료: ${canvasWidth}x${canvasHeight} (원본 비율 ${originalBodyImageRatio.toFixed(3)} 적용)`);
+      };
+      paddedImage.src = paddedImageUrl;
+      
     } else {
       console.log('⚠️ 원본 비율 정보 없음 - 기본 표시');
+      // 기본 스타일 적용
+      this.style.maxWidth = '100%';
+      this.style.height = 'auto';
+      this.style.objectFit = 'contain';
+      this.style.display = 'block';
+      this.style.borderRadius = '1rem';
+      this.style.boxShadow = 'var(--shadow-lg)';
+      this.style.border = '1px solid var(--gray-200)';
     }
     
     if (clothesResultPlaceholder) {
