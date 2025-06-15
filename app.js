@@ -194,21 +194,29 @@ function optimizeImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8) {
     
     img.onload = function() {
       // 원본 크기
-      let { width, height } = img;
+      const originalWidth = img.width;
+      const originalHeight = img.height;
+      const originalRatio = originalWidth / originalHeight;
       
-      // 최대 크기 제한 적용
-      if (width > maxWidth || height > maxHeight) {
-        const ratio = Math.min(maxWidth / width, maxHeight / height);
-        width = Math.floor(width * ratio);
-        height = Math.floor(height * ratio);
+      // 비율을 유지하면서 최대 크기 제한 적용
+      let newWidth = originalWidth;
+      let newHeight = originalHeight;
+      
+      if (newWidth > maxWidth || newHeight > maxHeight) {
+        const ratio = Math.min(maxWidth / newWidth, maxHeight / newHeight);
+        newWidth = Math.floor(newWidth * ratio);
+        newHeight = Math.floor(newHeight * ratio);
       }
       
+      // 최종 비율 확인
+      const finalRatio = newWidth / newHeight;
+      
       // 캔버스 크기 설정
-      canvas.width = width;
-      canvas.height = height;
+      canvas.width = newWidth;
+      canvas.height = newHeight;
       
       // 이미지 그리기
-      ctx.drawImage(img, 0, 0, width, height);
+      ctx.drawImage(img, 0, 0, newWidth, newHeight);
       
       // 압축된 이미지를 Blob으로 변환
       canvas.toBlob((blob) => {
@@ -219,7 +227,8 @@ function optimizeImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8) {
         console.log(`   - 원본 크기: ${originalSizeKB}KB`);
         console.log(`   - 압축 후: ${compressedSizeKB}KB`);
         console.log(`   - 압축률: ${Math.round((1 - blob.size / file.size) * 100)}%`);
-        console.log(`   - 해상도: ${img.width}x${img.height} → ${width}x${height}`);
+        console.log(`   - 해상도: ${originalWidth}x${originalHeight} → ${newWidth}x${newHeight}`);
+        console.log(`   - 비율 유지: ${originalRatio.toFixed(3)} → ${finalRatio.toFixed(3)} ✅`);
         
         // File 객체로 변환
         const optimizedFile = new File([blob], file.name, {
