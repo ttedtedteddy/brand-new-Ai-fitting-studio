@@ -1979,8 +1979,15 @@ div {
   }
   
   #cameraVideo {
-    max-width: 100%;
-    height: auto;
+    max-width: 280px;
+    height: 380px;
+    object-fit: cover;
+  }
+  
+  #capturedPhoto {
+    max-width: 280px !important;
+    height: 380px !important;
+    object-fit: cover;
   }
   
   #cameraControls {
@@ -2019,6 +2026,18 @@ div {
   
   #closeCameraBtn {
     font-size: 1.2rem;
+  }
+  
+  #cameraVideo {
+    max-width: 250px;
+    height: 350px;
+    object-fit: cover;
+  }
+  
+  #capturedPhoto {
+    max-width: 250px !important;
+    height: 350px !important;
+    object-fit: cover;
   }
   
   #takeCameraPhotoBtn {

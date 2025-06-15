@@ -122,13 +122,29 @@ function capturePhoto() {
     const preview = document.getElementById('capturedPhotoPreview');
     const controls = document.getElementById('cameraControls');
     
-    // 캔버스 크기를 비디오 크기에 맞춤
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    // 전신사진에 맞는 3:4 비율로 캔버스 크기 설정
+    const aspectRatio = 3 / 4; // 가로:세로 = 3:4
+    let canvasWidth, canvasHeight;
     
-    // 비디오 프레임을 캔버스에 그리기
+    if (video.videoWidth / video.videoHeight > aspectRatio) {
+        // 비디오가 더 넓은 경우, 높이를 기준으로 조정
+        canvasHeight = video.videoHeight;
+        canvasWidth = canvasHeight * aspectRatio;
+    } else {
+        // 비디오가 더 높은 경우, 너비를 기준으로 조정
+        canvasWidth = video.videoWidth;
+        canvasHeight = canvasWidth / aspectRatio;
+    }
+    
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    
+    // 비디오 프레임을 캔버스 중앙에 크롭해서 그리기
     const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const sourceX = (video.videoWidth - canvasWidth) / 2;
+    const sourceY = (video.videoHeight - canvasHeight) / 2;
+    
+    ctx.drawImage(video, sourceX, sourceY, canvasWidth, canvasHeight, 0, 0, canvasWidth, canvasHeight);
     
     // 캔버스를 이미지로 변환
     const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
