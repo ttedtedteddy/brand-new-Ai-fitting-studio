@@ -187,6 +187,8 @@ function setupDragAndDrop() {
 
 // 이미지 최적화 함수 추가 (IDM-VTON 3:4 비율 최적화)
 function optimizeImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8, forceAspectRatio = null) {
+  console.log(`🔧 디버그: optimizeImage 함수 시작 - forceAspectRatio: "${forceAspectRatio}"`);
+  
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -197,6 +199,8 @@ function optimizeImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8, f
       const originalWidth = img.width;
       const originalHeight = img.height;
       const originalRatio = originalWidth / originalHeight;
+      
+      console.log(`🔧 디버그: 원본 이미지 크기 - ${originalWidth}x${originalHeight}, 비율: ${originalRatio.toFixed(3)}`);
       
       let newWidth = originalWidth;
       let newHeight = originalHeight;
@@ -231,6 +235,7 @@ function optimizeImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8, f
         console.log(`📐 3:4 비율 조정: ${originalWidth}x${originalHeight} → ${newWidth}x${newHeight}`);
         
       } else {
+        console.log(`🔧 디버그: 3:4 비율 조정 건너뜀 - forceAspectRatio가 "${forceAspectRatio}"임`);
         // 기존 비율 유지 로직
         if (newWidth > maxWidth || newHeight > maxHeight) {
           const ratio = Math.min(maxWidth / newWidth, maxHeight / newHeight);
@@ -389,9 +394,12 @@ async function handleImageFile(file) {
 async function handleBodyImageFile(file) {
   try {
     console.log('🏃 전신사진 최적화 시작 (IDM-VTON 3:4 비율)...');
+    console.log('🔧 디버그: optimizeImage 호출 전 - forceAspectRatio: "3:4"');
     
     // IDM-VTON용 3:4 비율로 최적화
     const processedFile = await optimizeImage(file, 768, 1024, 0.8, '3:4');
+    
+    console.log('🔧 디버그: optimizeImage 호출 완료');
     
     const reader = new FileReader();
     reader.onload = function(evt) {
