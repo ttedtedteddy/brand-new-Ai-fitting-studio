@@ -111,8 +111,8 @@
       </div>
 
       <div class="generate-container" style="margin-top: 2rem;">
-        <h2>가상 피팅 생성</h2>
-        <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem;">
+        <h2 style="text-align: center;">가상 피팅 생성</h2>
+        <p style="color: var(--gray-600); margin-bottom: 1.5rem; font-size: 0.95rem; text-align: center;">
           AI가 자동으로 전신사진에 옷을 입혀드립니다
         </p>
         
@@ -147,10 +147,13 @@
           </p>
         </div>
         
-        <button id="generateClothesBtn" disabled style="width: 100%; padding: 1.2rem 2rem; background: #000000; color: white; border: none; border-radius: 0.75rem; font-size: 1.1rem; font-weight: 700; cursor: not-allowed; transition: all 0.3s ease; position: relative; overflow: hidden;">
-          <span class="button-text">가상 피팅 생성</span>
-          <div class="loading-spinner" style="display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-        </button>
+        <!-- 가상 피팅 생성 버튼 (가운데 정렬) -->
+        <div style="text-align: center; margin-top: 1.5rem;">
+          <button id="generateClothesBtn" disabled style="width: 100%; max-width: 400px; padding: 1.2rem 2rem; background: #000000; color: white; border: none; border-radius: 0.75rem; font-size: 1.1rem; font-weight: 700; cursor: not-allowed; transition: all 0.3s ease; position: relative; overflow: hidden;">
+            <span class="button-text">가상 피팅 생성</span>
+            <div class="loading-spinner" style="display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+          </button>
+        </div>
         <p style="text-align: center; color: var(--gray-500); margin-top: 1rem; font-size: 0.9rem;">
           전신사진과 옷 사진을 모두 업로드해주세요
         </p>
