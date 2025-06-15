@@ -185,8 +185,8 @@ function setupDragAndDrop() {
   });
 }
 
-// 이미지 최적화 함수 추가
-function optimizeImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8) {
+// 이미지 최적화 함수 추가 (IDM-VTON 3:4 비율 최적화)
+function optimizeImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8, forceAspectRatio = null) {
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -198,14 +198,45 @@ function optimizeImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8) {
       const originalHeight = img.height;
       const originalRatio = originalWidth / originalHeight;
       
-      // 비율을 유지하면서 최대 크기 제한 적용
       let newWidth = originalWidth;
       let newHeight = originalHeight;
       
-      if (newWidth > maxWidth || newHeight > maxHeight) {
-        const ratio = Math.min(maxWidth / newWidth, maxHeight / newHeight);
-        newWidth = Math.floor(newWidth * ratio);
-        newHeight = Math.floor(newHeight * ratio);
+      // IDM-VTON용 3:4 비율 강제 적용
+      if (forceAspectRatio === '3:4') {
+        console.log('🎯 IDM-VTON 최적화: 3:4 비율로 조정');
+        
+        // 3:4 비율 (768:1024)
+        const targetRatio = 3 / 4;
+        
+        if (originalRatio > targetRatio) {
+          // 가로가 더 긴 경우: 세로를 기준으로 조정
+          newHeight = Math.min(originalHeight, maxHeight);
+          newWidth = Math.floor(newHeight * targetRatio);
+        } else {
+          // 세로가 더 긴 경우: 가로를 기준으로 조정
+          newWidth = Math.min(originalWidth, maxWidth);
+          newHeight = Math.floor(newWidth / targetRatio);
+        }
+        
+        // 최대 크기 제한 적용
+        if (newWidth > maxWidth) {
+          newWidth = maxWidth;
+          newHeight = Math.floor(newWidth / targetRatio);
+        }
+        if (newHeight > maxHeight) {
+          newHeight = maxHeight;
+          newWidth = Math.floor(newHeight * targetRatio);
+        }
+        
+        console.log(`📐 3:4 비율 조정: ${originalWidth}x${originalHeight} → ${newWidth}x${newHeight}`);
+        
+      } else {
+        // 기존 비율 유지 로직
+        if (newWidth > maxWidth || newHeight > maxHeight) {
+          const ratio = Math.min(maxWidth / newWidth, maxHeight / newHeight);
+          newWidth = Math.floor(newWidth * ratio);
+          newHeight = Math.floor(newHeight * ratio);
+        }
       }
       
       // 최종 비율 확인
@@ -215,8 +246,18 @@ function optimizeImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8) {
       canvas.width = newWidth;
       canvas.height = newHeight;
       
-      // 이미지 그리기
-      ctx.drawImage(img, 0, 0, newWidth, newHeight);
+      // 배경을 흰색으로 설정 (패딩 영역)
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, newWidth, newHeight);
+      
+      // 이미지를 중앙에 맞춰 그리기 (비율 유지하면서 패딩 추가)
+      const scale = Math.min(newWidth / originalWidth, newHeight / originalHeight);
+      const scaledWidth = originalWidth * scale;
+      const scaledHeight = originalHeight * scale;
+      const offsetX = (newWidth - scaledWidth) / 2;
+      const offsetY = (newHeight - scaledHeight) / 2;
+      
+      ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
       
       // 압축된 이미지를 Blob으로 변환
       canvas.toBlob((blob) => {
@@ -228,7 +269,7 @@ function optimizeImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8) {
         console.log(`   - 압축 후: ${compressedSizeKB}KB`);
         console.log(`   - 압축률: ${Math.round((1 - blob.size / file.size) * 100)}%`);
         console.log(`   - 해상도: ${originalWidth}x${originalHeight} → ${newWidth}x${newHeight}`);
-        console.log(`   - 비율 유지: ${originalRatio.toFixed(3)} → ${finalRatio.toFixed(3)} ✅`);
+        console.log(`   - 비율: ${originalRatio.toFixed(3)} → ${finalRatio.toFixed(3)} ${forceAspectRatio ? '(강제 조정)' : '(유지)'}`);
         
         // File 객체로 변환
         const optimizedFile = new File([blob], file.name, {
@@ -344,13 +385,13 @@ async function handleImageFile(file) {
   }
 }
 
-// 전신사진 파일 처리 함수 수정
+// 전신사진 파일 처리 함수 수정 (3:4 비율 최적화)
 async function handleBodyImageFile(file) {
   try {
-    console.log('🏃 전신사진 최적화 시작...');
+    console.log('🏃 전신사진 최적화 시작 (IDM-VTON 3:4 비율)...');
     
-    // 이미지 최적화 처리
-    const processedFile = await processImageFile(file);
+    // IDM-VTON용 3:4 비율로 최적화
+    const processedFile = await optimizeImage(file, 768, 1024, 0.8, '3:4');
     
     const reader = new FileReader();
     reader.onload = function(evt) {
@@ -367,12 +408,12 @@ async function handleBodyImageFile(file) {
         
         const content = bodyDragDropArea.querySelector('.drag-drop-content');
         if (content) {
-          content.innerHTML = '<div>✅ 전신사진 업로드 완료</div>';
+          content.innerHTML = '<div>✅ 전신사진 업로드 완료 (3:4 비율 최적화)</div>';
         }
       }
       
       updateGenerateButton();
-      console.log('✅ 전신사진 최적화 및 업로드 완료');
+      console.log('✅ 전신사진 3:4 비율 최적화 완료');
     };
     reader.readAsDataURL(processedFile);
     
@@ -382,13 +423,13 @@ async function handleBodyImageFile(file) {
   }
 }
 
-// 옷 이미지 파일 처리 함수 수정
+// 옷 이미지 파일 처리 함수 수정 (3:4 비율 최적화)
 async function handleClothingImageFile(file) {
   try {
-    console.log('👕 옷 이미지 최적화 시작...');
+    console.log('👕 옷 이미지 최적화 시작 (IDM-VTON 3:4 비율)...');
     
-    // 이미지 최적화 처리
-    const processedFile = await processImageFile(file);
+    // IDM-VTON용 3:4 비율로 최적화
+    const processedFile = await optimizeImage(file, 768, 1024, 0.8, '3:4');
     
     const reader = new FileReader();
     reader.onload = function(evt) {
@@ -405,12 +446,12 @@ async function handleClothingImageFile(file) {
         
         const content = clothesDragDropArea.querySelector('.drag-drop-content');
         if (content) {
-          content.innerHTML = '<div>옷 이미지 업로드 완료</div>';
+          content.innerHTML = '<div>✅ 옷 이미지 업로드 완료 (3:4 비율 최적화)</div>';
         }
       }
       
       updateGenerateButton();
-      console.log('✅ 옷 이미지 최적화 및 업로드 완료');
+      console.log('✅ 옷 이미지 3:4 비율 최적화 완료');
     };
     reader.readAsDataURL(processedFile);
     
@@ -1526,6 +1567,10 @@ async function callSingleIDMVTON(bodyImageUrl, clothingImageUrl, category, promp
   
   console.log(`IDM-VTON API 호출 - 카테고리: ${category}`);
   
+  // IDM-VTON은 768x1024 (3:4 비율)로 고정 출력하므로
+  // 입력 이미지를 미리 3:4 비율로 조정하여 비율 왜곡 방지
+  console.log('🎯 IDM-VTON 최적 비율 조정: 3:4 비율로 전처리');
+  
   const replicateResponse = await fetch(`${baseUrl}/replicate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1537,7 +1582,7 @@ async function callSingleIDMVTON(bodyImageUrl, clothingImageUrl, category, promp
         garment_des: prompt || "clothing",
         category: category === 'full_outfit' ? 'upper_body' : category, // full_outfit은 처리 단계에서 분리됨
         is_checked: true,
-        is_checked_crop: false,
+        is_checked_crop: false, // 크롭 비활성화로 원본 비율 최대한 유지
         denoise_steps: 30,
         seed: Math.floor(Math.random() * 1000000)
       }
