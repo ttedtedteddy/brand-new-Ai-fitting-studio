@@ -420,16 +420,16 @@ async function handleBodyImageFile(file) {
 // 옷 이미지 파일 처리 함수 수정 (3:4 비율 최적화)
 async function handleClothingImageFile(file) {
   try {
-    console.log('👕 옷 이미지 최적화 시작 (IDM-VTON 3:4 비율)...');
+    console.log('👕 옷 이미지 최적화 시작...');
     
-    // IDM-VTON용 3:4 비율로 최적화
-    const processedFile = await optimizeImage(file, 768, 1024, 0.8, '3:4');
+    // 이미지 최적화 (원본 비율 유지)
+    const processedFile = await optimizeImage(file, 1024, 1024, 0.8);
     
     const reader = new FileReader();
     reader.onload = function(evt) {
       clothingImageData = evt.target.result;
       
-      // 업로드 영역 업데이트 - 3:4 비율로 표시
+      // 업로드 영역 업데이트
       const clothesDragDropArea = document.getElementById('clothesDragDropArea');
       if (clothesDragDropArea) {
         clothesDragDropArea.style.backgroundImage = `url(${evt.target.result})`;
@@ -438,15 +438,9 @@ async function handleClothingImageFile(file) {
         clothesDragDropArea.style.backgroundRepeat = 'no-repeat';
         clothesDragDropArea.classList.add('has-image');
         
-        // 3:4 비율 강제 적용 (미리보기)
-        clothesDragDropArea.style.aspectRatio = '3/4';
-        clothesDragDropArea.style.width = '300px';
-        clothesDragDropArea.style.height = '400px';
-        clothesDragDropArea.style.margin = '0 auto';
-        
         const content = clothesDragDropArea.querySelector('.drag-drop-content');
         if (content) {
-          content.innerHTML = '<div>✅ 옷 이미지 업로드 완료 (3:4 비율 최적화)</div>';
+          content.innerHTML = '<div>✅ 옷 이미지 업로드 완료</div>';
           content.style.background = 'rgba(0, 0, 0, 0.7)';
           content.style.color = 'white';
           content.style.padding = '0.5rem';
@@ -454,11 +448,11 @@ async function handleClothingImageFile(file) {
           content.style.backdropFilter = 'blur(4px)';
         }
         
-        console.log('📱 옷 이미지 미리보기 3:4 비율로 표시 완료');
+        console.log('📱 옷 이미지 업로드 완료');
       }
       
       updateGenerateButton();
-      console.log('✅ 옷 이미지 3:4 비율 최적화 완료');
+      console.log('✅ 옷 이미지 처리 완료');
     };
     reader.readAsDataURL(processedFile);
     
