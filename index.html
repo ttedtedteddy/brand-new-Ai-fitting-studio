@@ -91,6 +91,13 @@
             </div>
           </div>
           <input type="file" id="bodyImageUpload" accept="image/*" style="display: none;">
+          
+          <!-- 카메라 촬영 버튼 -->
+          <div style="text-align: center; margin-top: 1rem;">
+            <button id="takeCameraPhotoBtn" style="background: var(--primary); color: var(--secondary); border: 1px solid var(--primary); padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;">
+              📷 카메라로 촬영하기
+            </button>
+          </div>
         </div>
         
         <!-- 옷 사진 업로드를 두 번째로 배치 -->
@@ -311,7 +318,49 @@
     </div>
   </div>
 
+  <!-- 카메라 촬영 모달 -->
+  <div id="cameraModal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 90vw; max-height: 90vh; padding: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 style="margin: 0; color: var(--primary);">카메라로 촬영하기</h2>
+        <button id="closeCameraBtn" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--gray-600);">×</button>
+      </div>
+      
+      <div id="cameraContainer" style="position: relative; text-align: center;">
+        <video id="cameraVideo" autoplay playsinline style="width: 100%; max-width: 400px; border-radius: 0.5rem; background: #000;"></video>
+        <canvas id="cameraCanvas" style="display: none;"></canvas>
+        
+        <div id="cameraControls" style="margin-top: 1rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+          <button id="switchCameraBtn" style="background: var(--gray-600); color: white; border: none; padding: 0.75rem 1rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem;">
+            🔄 카메라 전환
+          </button>
+          <button id="capturePhotoBtn" style="background: var(--primary); color: white; border: none; padding: 0.75rem 2rem; border-radius: 0.5rem; cursor: pointer; font-size: 1rem; font-weight: 600;">
+            📸 촬영하기
+          </button>
+        </div>
+        
+        <div id="capturedPhotoPreview" style="display: none; margin-top: 1rem;">
+          <img id="capturedPhoto" style="width: 100%; max-width: 400px; border-radius: 0.5rem; border: 2px solid var(--primary);">
+          <div style="margin-top: 1rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <button id="retakePhotoBtn" style="background: var(--gray-600); color: white; border: none; padding: 0.75rem 1rem; border-radius: 0.5rem; cursor: pointer;">
+              🔄 다시 촬영
+            </button>
+            <button id="usePhotoBtn" style="background: var(--primary); color: white; border: none; padding: 0.75rem 2rem; border-radius: 0.5rem; cursor: pointer; font-weight: 600;">
+              ✅ 이 사진 사용
+            </button>
+          </div>
+        </div>
+        
+        <div id="cameraError" style="display: none; color: #dc2626; margin-top: 1rem; padding: 1rem; background: #fef2f2; border-radius: 0.5rem; border: 1px solid #fecaca;">
+          <p style="margin: 0; font-weight: 600;">카메라 접근 오류</p>
+          <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">카메라에 접근할 수 없습니다. 브라우저 설정에서 카메라 권한을 허용해주세요.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js?v=2.0.1"></script>
   <script src="additional-clothing.js?v=1.0.0"></script>
+  <script src="camera.js?v=1.0.0"></script>
 </body>
 </html> 
