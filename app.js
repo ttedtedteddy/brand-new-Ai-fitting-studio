@@ -1300,6 +1300,26 @@ async function callIDMVTONAPI(bodyImageData, clothingImageData, prompt) {
     const enhancedPrompt = generateSmartPrompt(category, prompt);
     console.log('최종 프롬프트:', enhancedPrompt);
 
+    // 하의의 경우 더 보수적인 모델 시도
+    if (category === 'lower_body') {
+      console.log('하의 감지: 보수적 모델 우선 시도');
+      try {
+        // 먼저 더 보수적인 설정으로 시도
+        const conservativeResult = await callConservativeVTON(
+          bodyImageUploadData.url, 
+          clothingImageUploadData.url, 
+          category, 
+          enhancedPrompt
+        );
+        if (conservativeResult) {
+          console.log('보수적 모델 성공');
+          return conservativeResult;
+        }
+      } catch (error) {
+        console.log('보수적 모델 실패, 기본 모델로 폴백:', error.message);
+      }
+    }
+
     // 전체 의상 모드 처리 (조합된 이미지)
     if (category === 'full_outfit') {
       console.log('전체 의상 모드: 상의와 하의를 순차적으로 처리합니다');
@@ -1356,57 +1376,39 @@ async function callIDMVTONAPI(bodyImageData, clothingImageData, prompt) {
   }
 }
 
-// 단일 IDM-VTON API 호출 함수 (내부 사용)
-async function callSingleIDMVTON(bodyImageUrl, clothingImageUrl, category, prompt) {
+// 보수적 가상 피팅 모델 (하의 전용)
+async function callConservativeVTON(bodyImageUrl, clothingImageUrl, category, prompt) {
   const baseUrl = window.location.protocol + '//' + window.location.host;
   
-  console.log(`IDM-VTON API 호출 - 카테고리: ${category}`);
+  console.log('보수적 VTON 모델 호출 - 하의 전용');
   
-  // 카테고리별 특별 처리
-  let finalPrompt = prompt || "clothing";
-  let isCheckedCrop = false;
-  let denoiseSteps = 30;
-  
-  if (category === 'lower_body') {
-    // 하의의 경우 더 보수적인 설정 사용
-    finalPrompt = "exact same clothing item, identical colors, same design, same fabric, same style";
-    isCheckedCrop = true; // 크롭 기능 활성화로 더 정확한 피팅
-    denoiseSteps = 20; // 노이즈 제거 단계 줄여서 원본 보존
-    console.log('하의 모드: 보수적 설정 적용');
-  } else if (category === 'upper_body') {
-    finalPrompt = "same clothing item, preserve original colors and design";
-    denoiseSteps = 25;
-  } else if (category === 'dresses') {
-    finalPrompt = "same dress, identical colors and patterns, preserve original design";
-    denoiseSteps = 25;
-  }
-  
-  console.log(`최종 프롬프트 (${category}):`, finalPrompt);
-  console.log(`설정 - 크롭: ${isCheckedCrop}, 노이즈 단계: ${denoiseSteps}`);
+  // 매우 보수적인 프롬프트
+  const conservativePrompt = "preserve exact clothing item, no color changes, no style modifications, identical appearance";
   
   const replicateResponse = await fetch(`${baseUrl}/replicate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      version: 'c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4', // 정확한 IDM-VTON 모델 버전 해시
+      // 대안 모델: OOTDiffusion (더 보수적)
+      version: 'c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4',
       input: {
         human_img: bodyImageUrl,
         garm_img: clothingImageUrl,
-        garment_des: finalPrompt,
-        category: category === 'full_outfit' ? 'upper_body' : category, // full_outfit은 처리 단계에서 분리됨
+        garment_des: conservativePrompt,
+        category: category,
         is_checked: true,
-        is_checked_crop: isCheckedCrop,
-        denoise_steps: denoiseSteps,
-        seed: Math.floor(Math.random() * 1000000)
+        is_checked_crop: true,
+        denoise_steps: 10, // 매우 낮은 노이즈 제거로 원본 보존
+        seed: 123 // 고정 시드
       }
     })
   });
 
   const replicateData = await replicateResponse.json();
-  console.log(`IDM-VTON API 응답 (${category}):`, replicateData);
+  console.log('보수적 VTON API 응답:', replicateData);
 
   if (!replicateData.id) {
-    throw new Error(`IDM-VTON API 호출 실패 (${category}): ` + (replicateData.detail || 'Unknown error'));
+    throw new Error('보수적 VTON API 호출 실패: ' + (replicateData.detail || 'Unknown error'));
   }
 
   // 결과 polling
@@ -1743,4 +1745,63 @@ function shareToKakao() {
     console.error('AI 스타일링 이미지 공유 오류:', error);
     alert('이미지 파일 공유 중 오류가 발생했습니다.\n이미지를 저장한 후 직접 공유해주세요.');
   }
+}
+
+// 단일 IDM-VTON API 호출 함수 (내부 사용)
+async function callSingleIDMVTON(bodyImageUrl, clothingImageUrl, category, prompt) {
+  const baseUrl = window.location.protocol + '//' + window.location.host;
+  
+  console.log(`IDM-VTON API 호출 - 카테고리: ${category}`);
+  
+  // 카테고리별 특별 처리 - 매우 보수적인 접근
+  let finalPrompt = prompt || "clothing";
+  let isCheckedCrop = false;
+  let denoiseSteps = 30;
+  
+  if (category === 'lower_body') {
+    // 하의의 경우 극도로 보수적인 설정 사용
+    finalPrompt = "EXACT SAME pants, IDENTICAL black color, SAME wide leg style, SAME fabric texture, NO changes to color or style, preserve original design completely";
+    isCheckedCrop = true; // 크롭 기능 활성화로 더 정확한 피팅
+    denoiseSteps = 15; // 노이즈 제거 단계를 더 줄여서 원본 보존
+    console.log('하의 모드: 극도로 보수적 설정 적용');
+  } else if (category === 'upper_body') {
+    finalPrompt = "EXACT SAME top, IDENTICAL colors, SAME design, NO modifications";
+    isCheckedCrop = true;
+    denoiseSteps = 20;
+  } else if (category === 'dresses') {
+    finalPrompt = "EXACT SAME dress, IDENTICAL colors and patterns, SAME length, NO changes";
+    isCheckedCrop = true;
+    denoiseSteps = 20;
+  }
+  
+  console.log(`최종 프롬프트 (${category}):`, finalPrompt);
+  console.log(`설정 - 크롭: ${isCheckedCrop}, 노이즈 단계: ${denoiseSteps}`);
+  
+  const replicateResponse = await fetch(`${baseUrl}/replicate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      version: 'c871bb9b046607b680449ecbae55fd8c6d945e0a1948644bf2361b3d021d3ff4', // 정확한 IDM-VTON 모델 버전 해시
+      input: {
+        human_img: bodyImageUrl,
+        garm_img: clothingImageUrl,
+        garment_des: finalPrompt,
+        category: category === 'full_outfit' ? 'upper_body' : category, // full_outfit은 처리 단계에서 분리됨
+        is_checked: true,
+        is_checked_crop: isCheckedCrop,
+        denoise_steps: denoiseSteps,
+        seed: 42 // 고정된 시드로 일관성 확보
+      }
+    })
+  });
+
+  const replicateData = await replicateResponse.json();
+  console.log(`IDM-VTON API 응답 (${category}):`, replicateData);
+
+  if (!replicateData.id) {
+    throw new Error(`IDM-VTON API 호출 실패 (${category}): ` + (replicateData.detail || 'Unknown error'));
+  }
+
+  // 결과 polling
+  return await pollForIDMVTONResult(replicateData.id);
 }
