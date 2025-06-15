@@ -15,10 +15,15 @@ function enhancedResetClothesResultState() {
   
   const clothesResultImage = document.getElementById('clothesResultImage');
   if (clothesResultImage) {
+    // onerror 이벤트 제거 (에러 메시지 방지)
+    clothesResultImage.onerror = null;
+    clothesResultImage.onload = null;
+    
+    // 이미지 숨기기 및 src 초기화
     clothesResultImage.style.display = 'none';
-    clothesResultImage.src = ''; // src도 초기화
-    clothesResultImage.style.cssText = 'display: none;'; // 모든 스타일 초기화
-    console.log('✅ 결과 이미지 완전 초기화 완료');
+    clothesResultImage.removeAttribute('src');
+    clothesResultImage.style.cssText = 'display: none;';
+    console.log('✅ 결과 이미지 완전 초기화 완료 (에러 이벤트 제거)');
   }
   
   const clothesActionButtons = document.getElementById('clothesActionButtons');
