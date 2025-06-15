@@ -464,23 +464,48 @@ async function handleClothingImageFile(file) {
 
 // 결과 이미지 표시 함수
 function showResultImage(imageUrl) {
+  console.log('🖼️ showResultImage 호출됨, URL:', imageUrl);
+  
+  if (!resultImage) {
+    console.error('❌ resultImage 요소가 없습니다');
+    return;
+  }
+  
+  if (!imageUrl) {
+    console.error('❌ 이미지 URL이 없습니다');
+    return;
+  }
+  
+  console.log('📸 이미지 src 설정 중...');
   resultImage.src = imageUrl;
   resultImage.style.display = 'block';
+  console.log('✅ 이미지 표시 설정 완료');
   
-    if (resultPlaceholder) {
-      resultPlaceholder.style.display = 'none';
-    }
+  if (resultPlaceholder) {
+    console.log('🔄 placeholder 숨기기...');
+    resultPlaceholder.style.display = 'none';
+  } else {
+    console.warn('⚠️ resultPlaceholder 요소가 없습니다');
+  }
   
   // 액션 버튼들 표시
-    if (actionButtons) {
-      actionButtons.style.display = 'flex';
-    }
+  if (actionButtons) {
+    console.log('🔘 액션 버튼 표시...');
+    actionButtons.style.display = 'flex';
+  } else {
+    console.warn('⚠️ actionButtons 요소가 없습니다');
+  }
   
-    // 구글 렌즈 섹션 표시
-    const googleLensSection = document.getElementById('googleLensSection');
-    if (googleLensSection) {
-      googleLensSection.style.display = 'block';
-    }
+  // 구글 렌즈 섹션 표시
+  const googleLensSection = document.getElementById('googleLensSection');
+  if (googleLensSection) {
+    console.log('🔍 구글 렌즈 섹션 표시...');
+    googleLensSection.style.display = 'block';
+  } else {
+    console.warn('⚠️ googleLensSection 요소가 없습니다');
+  }
+  
+  console.log('✅ showResultImage 완료');
 }
 
 // 결과 이미지 숨기기 함수
@@ -692,34 +717,78 @@ function convertOrangeMaskToWhite(canvas) {
 
 // AI 스타일링 생성 버튼
 generateBtn.addEventListener('click', async () => {
+  console.log('🎨 텍스트 모드 생성 시작...');
+  
+  // DOM 요소 확인
+  if (!photoCanvas || !maskCanvas || !resultImage || !resultPlaceholder) {
+    console.error('❌ 필수 DOM 요소가 없습니다:', {
+      photoCanvas: !!photoCanvas,
+      maskCanvas: !!maskCanvas,
+      resultImage: !!resultImage,
+      resultPlaceholder: !!resultPlaceholder
+    });
+    alert('페이지 요소를 찾을 수 없습니다. 페이지를 새로고침해주세요.');
+    return;
+  }
+  
   // 원본 이미지와 마스크 이미지 추출
-  const imageData = photoCanvas.toDataURL('image/png');
-  // 주황색 마스크를 흰색으로 변환
-  const maskData = convertOrangeMaskToWhite(maskCanvas);
+  let imageData, maskData;
+  try {
+    imageData = photoCanvas.toDataURL('image/png');
+    console.log('📸 원본 이미지 추출 완료');
+  } catch (error) {
+    console.error('❌ 원본 이미지 추출 실패:', error);
+    alert('원본 이미지를 처리할 수 없습니다. 이미지를 다시 업로드해주세요.');
+    return;
+  }
+  
+  try {
+    // 주황색 마스크를 흰색으로 변환
+    maskData = convertOrangeMaskToWhite(maskCanvas);
+    console.log('🎭 마스크 이미지 변환 완료');
+  } catch (error) {
+    console.error('❌ 마스크 이미지 변환 실패:', error);
+    alert('마스크를 처리할 수 없습니다. 마스킹을 다시 해주세요.');
+    return;
+  }
+  
   const prompt = promptInput.value;
 
   if (!prompt.trim()) {
     alert('프롬프트를 입력해주세요.');
     return;
   }
+  
+  console.log('📝 프롬프트:', prompt);
 
   // 로딩 상태 표시
+  console.log('⏳ 로딩 상태 표시...');
   showLoadingState();
   showButtonLoading(generateBtn, true);
 
   try {
+    console.log('🚀 API 호출 시작...');
     const outputUrl = await callReplicateAPI(imageData, maskData, prompt);
+    console.log('✅ API 호출 완료, 결과 URL:', outputUrl);
+    
     if (outputUrl) {
+      console.log('🖼️ 결과 이미지 표시 시작...');
       showResultImage(outputUrl);
+      console.log('✅ 결과 이미지 표시 완료');
     } else {
+      console.error('❌ 결과 URL이 없습니다');
       resetResultState();
       alert('AI 스타일링 생성 실패: 결과 이미지가 없습니다.');
     }
   } catch (err) {
+    console.error('❌ API 호출 오류:', err);
     resetResultState();
     alert('AI 스타일링 생성 실패: ' + err.message);
   }
+  
+  console.log('🔄 버튼 로딩 상태 해제...');
   showButtonLoading(generateBtn, false);
+  console.log('🎨 텍스트 모드 생성 완료');
 });
 
 // 결과 이미지 로드 완료 시 이벤트
