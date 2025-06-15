@@ -1,6 +1,6 @@
 /* Modern Color Palette */
 :root {
-  --primary: #2563eb;
+  --primary: #000000;
   --secondary: #ffffff;
   --accent: #333333;
   --gray-50: #fafafa;
@@ -139,12 +139,12 @@ input[type="file"] {
 
 .drag-drop-area:hover {
   border-color: var(--primary);
-  background-color: rgba(37, 99, 235, 0.05);
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .drag-drop-area.drag-over {
   border-color: var(--primary);
-  background-color: rgba(37, 99, 235, 0.1);
+  background-color: rgba(0, 0, 0, 0.1);
   transform: scale(1.02);
 }
 

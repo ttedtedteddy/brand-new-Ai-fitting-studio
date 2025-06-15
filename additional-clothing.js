@@ -57,18 +57,15 @@ function showAdditionalClothingSection() {
   // 카테고리에 따른 제안 텍스트와 타겟 카테고리 결정
   let suggestionText = '';
   let targetCategory = '';
-  let emoji = '';
   
   switch (currentCategory) {
     case 'upper_body':
       suggestionText = '하의도 추가해서 완벽한 코디를 완성해보세요!';
       targetCategory = 'lower_body';
-      emoji = '👖';
       break;
     case 'lower_body':
       suggestionText = '상의도 추가해서 완벽한 코디를 완성해보세요!';
       targetCategory = 'upper_body';
-      emoji = '👕';
       break;
     default:
       console.warn('⚠️ 알 수 없는 카테고리:', currentCategory);
@@ -80,7 +77,7 @@ function showAdditionalClothingSection() {
     <div id="additionalClothingSection" style="max-width: 600px; margin: 2rem auto; background: var(--white); border-radius: 1rem; box-shadow: var(--shadow-lg); padding: 2rem; border: 1px solid var(--gray-200); animation: fadeInUp 0.5s ease-out;">
       <div style="text-align: center; margin-bottom: 1.5rem;">
         <h3 style="color: var(--gray-800); margin-bottom: 0.5rem; font-size: 1.3rem;">
-          ${emoji} 추가 의류 합성
+          추가 의류 합성
         </h3>
         <p style="color: var(--gray-600); font-size: 0.95rem;">
           ${suggestionText}
@@ -89,9 +86,8 @@ function showAdditionalClothingSection() {
       
       <!-- 추가 의류 업로드 영역 -->
       <div class="upload-section" style="margin-bottom: 1.5rem;">
-        <div class="drag-drop-area" id="additionalClothingDragDrop" style="width: 100%; height: 200px; border: 2px dashed var(--primary); border-radius: 1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; background: rgba(37, 99, 235, 0.05);">
+        <div class="drag-drop-area" id="additionalClothingDragDrop" style="width: 100%; height: 200px; border: 2px dashed var(--primary); border-radius: 1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; background: rgba(0, 0, 0, 0.05);">
           <div class="drag-drop-content" style="text-align: center; pointer-events: none;">
-            <div style="font-size: 2rem; margin-bottom: 0.5rem;">${emoji}</div>
             <div class="drag-drop-text" style="font-weight: 600; color: var(--primary); margin-bottom: 0.25rem;">
               ${targetCategory === 'upper_body' ? '상의' : targetCategory === 'lower_body' ? '하의' : '액세서리'} 사진을 드래그하세요
             </div>
@@ -114,7 +110,7 @@ function showAdditionalClothingSection() {
       <!-- 합성 버튼 -->
       <div style="text-align: center;">
         <button id="processAdditionalClothingBtn" disabled style="width: 100%; max-width: 300px; padding: 1rem 1.5rem; background: var(--primary); color: white; border: none; border-radius: 0.75rem; font-size: 1rem; font-weight: 600; cursor: not-allowed; transition: all 0.3s ease; position: relative; overflow: hidden;">
-          <span class="button-text">${emoji} 추가 의류 합성하기</span>
+          <span class="button-text">추가 의류 합성하기</span>
           <div class="loading-spinner" style="display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite;"></div>
         </button>
         <p style="color: var(--gray-500); font-size: 0.85rem; margin-top: 0.5rem;">
@@ -157,19 +153,19 @@ function setupAdditionalClothingEvents(targetCategory) {
   dragDropArea.addEventListener('dragover', (e) => {
     e.preventDefault();
     dragDropArea.style.borderColor = 'var(--primary)';
-    dragDropArea.style.backgroundColor = 'rgba(37, 99, 235, 0.1)';
+    dragDropArea.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
   });
   
   dragDropArea.addEventListener('dragleave', (e) => {
     e.preventDefault();
     dragDropArea.style.borderColor = 'var(--primary)';
-    dragDropArea.style.backgroundColor = 'rgba(37, 99, 235, 0.05)';
+    dragDropArea.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
   });
   
   dragDropArea.addEventListener('drop', (e) => {
     e.preventDefault();
     dragDropArea.style.borderColor = 'var(--primary)';
-    dragDropArea.style.backgroundColor = 'rgba(37, 99, 235, 0.05)';
+    dragDropArea.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
     
     const files = e.dataTransfer.files;
     if (files.length > 0) {
@@ -317,7 +313,7 @@ async function processAdditionalClothing(file, targetCategory) {
         'accessories': '액세서리'
       };
       
-      alert(`${categoryNames[targetCategory]} 합성이 완료되었습니다! 🎉`);
+      alert(`${categoryNames[targetCategory]} 합성이 완료되었습니다!`);
       
       // 기존 추가 의류 섹션 제거하지 않음 (사용자가 계속 사용할 수 있도록)
       
@@ -328,8 +324,8 @@ async function processAdditionalClothing(file, targetCategory) {
   } catch (error) {
     console.error('❌ 추가 의류 처리 오류:', error);
     alert('추가 의류 합성 중 오류가 발생했습니다: ' + error.message);
-    
-    // 로딩 상태 해제
+  } finally {
+    // 로딩 상태 해제 (성공/실패 관계없이 항상 실행)
     const processBtn = document.getElementById('processAdditionalClothingBtn');
     if (processBtn) {
       const buttonText = processBtn.querySelector('.button-text');
@@ -400,18 +396,12 @@ function showAdditionalClothingResult(imageUrl, targetCategory) {
     'accessories': '액세서리'
   };
   
-  const categoryEmojis = {
-    'upper_body': '👕',
-    'lower_body': '👖',
-    'accessories': '✨'
-  };
-  
   // 추가 의류 합성 결과 섹션 HTML 생성
   const resultHTML = `
     <div id="additionalClothingResultSection" style="max-width: 600px; margin: 2rem auto; background: var(--white); border-radius: 1rem; box-shadow: var(--shadow-lg); padding: 2rem; border: 1px solid var(--gray-200); animation: fadeInUp 0.5s ease-out;">
       <div style="text-align: center; margin-bottom: 1.5rem;">
         <h3 style="color: var(--gray-800); margin-bottom: 0.5rem; font-size: 1.3rem;">
-          ${categoryEmojis[targetCategory]} ${categoryNames[targetCategory]} 합성 결과
+          ${categoryNames[targetCategory]} 합성 결과
         </h3>
         <p style="color: var(--gray-600); font-size: 0.95rem;">
           추가 의류가 성공적으로 합성되었습니다!
@@ -424,15 +414,15 @@ function showAdditionalClothingResult(imageUrl, targetCategory) {
       </div>
       
       <!-- 액션 버튼들 -->
-      <div class="action-buttons" style="display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap;">
-        <button class="share-button instagram" onclick="shareAdditionalClothingToInstagram()" style="background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); color: white; border: none; padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+      <div class="action-buttons" style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap;">
+        <button class="share-button instagram" onclick="shareAdditionalClothingToInstagram()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; border: 1px solid var(--primary); border-radius: 0; font-size: 0.9rem; font-weight: 300; cursor: pointer; transition: all 0.3s ease; letter-spacing: 0.2em; text-transform: uppercase; text-decoration: none; background: var(--primary); color: var(--secondary);">
           인스타그램 공유
         </button>
-        <button onclick="shareAdditionalClothingToKakao()" class="share-btn kakao-btn" style="background: #FEE500; color: #000000; border: none; padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+        <button onclick="shareAdditionalClothingToKakao()" class="share-btn kakao-btn" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; border: 1px solid var(--primary); border-radius: 0; font-size: 0.9rem; font-weight: 300; cursor: pointer; transition: all 0.3s ease; letter-spacing: 0.2em; text-transform: uppercase; text-decoration: none; background: var(--secondary); color: var(--primary);">
           <span class="button-text">이미지 공유</span>
           <div class="button-loading-spinner" style="display: none;"></div>
         </button>
-        <button class="save-button" onclick="saveAdditionalClothingImage()" style="background: var(--primary); color: white; border: none; padding: 0.75rem 1.25rem; border-radius: 0.5rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+        <button class="save-button" onclick="saveAdditionalClothingImage()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; border: 1px solid var(--primary); border-radius: 0; font-size: 0.9rem; font-weight: 300; cursor: pointer; transition: all 0.3s ease; letter-spacing: 0.2em; text-transform: uppercase; text-decoration: none; background: var(--primary); color: var(--secondary);">
           이미지 저장
         </button>
       </div>
