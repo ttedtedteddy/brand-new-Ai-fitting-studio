@@ -643,9 +643,9 @@ div {
   position: fixed;
   top: 20px;
   left: 20px;
-  background: var(--primary);
-  border: 1px solid var(--primary);
-  color: var(--secondary);
+  background: #ffffff;
+  border: 1px solid #000000;
+  color: #000000;
   padding: 0.75rem 1.5rem;
   border-radius: 0;
   font-weight: 300;
@@ -661,9 +661,9 @@ div {
 }
 
 .back-btn:hover {
-  background: var(--secondary);
-  color: var(--primary);
-  border-color: var(--primary);
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
 }
 
 /* Clear Mask Button */
