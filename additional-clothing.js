@@ -442,32 +442,22 @@ function showAdditionalClothingResult(imageUrl, targetCategory) {
 // 추가 의류 합성 결과 인스타그램 공유
 function shareAdditionalClothingToInstagram() {
   const resultImage = document.getElementById('additionalClothingResultImage');
-  if (resultImage && resultImage.src) {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    
-    img.crossOrigin = 'anonymous';
-    img.onload = function() {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
-      
-      canvas.toBlob(function(blob) {
-        if (navigator.share) {
-          const file = new File([blob], 'ai-fitting-result.jpg', { type: 'image/jpeg' });
-          navigator.share({
-            title: 'AI Fitting Studio - 추가 의류 합성 결과',
-            text: 'AI로 만든 나만의 스타일링!',
-            files: [file]
-          }).catch(console.error);
-        } else {
-          alert('이 브라우저에서는 직접 공유가 지원되지 않습니다. 이미지를 저장한 후 인스타그램에 업로드해주세요.');
-        }
-      }, 'image/jpeg', 0.9);
-    };
-    
-    img.src = resultImage.src;
+  if (!resultImage || !resultImage.src) {
+    alert('공유할 이미지가 없습니다.');
+    return;
+  }
+  
+  // 모바일에서는 인스타그램 앱으로, 데스크톱에서는 웹으로
+  if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+    // 모바일: 이미지를 다운로드하고 인스타그램 앱 열기
+    saveAdditionalClothingImage();
+    setTimeout(() => {
+      window.open('instagram://camera', '_blank');
+    }, 1000);
+  } else {
+    // 데스크톱: 인스타그램 웹사이트 열기
+    window.open('https://www.instagram.com/', '_blank');
+    alert('이미지를 저장한 후 인스타그램에 업로드해주세요.');
   }
 }
 
@@ -541,37 +531,115 @@ function shareAdditionalClothingToKakao() {
   }
 }
 
-// 추가 의류 합성 결과 이미지 저장
+// 추가 의류 합성 결과 이미지 저장 (기존과 동일한 폴더 다이얼로그 방식)
 async function saveAdditionalClothingImage() {
   const resultImage = document.getElementById('additionalClothingResultImage');
-  if (resultImage && resultImage.src) {
-    try {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      
-      img.crossOrigin = 'anonymous';
-      img.onload = function() {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
+  if (!resultImage || !resultImage.src) {
+    alert('저장할 이미지가 없습니다.');
+    return;
+  }
+  
+  try {
+    console.log('추가 의류 합성 이미지 저장 시작...');
+    console.log('이미지 URL:', resultImage.src);
+    
+    // 파일명 생성 (타임스탬프 포함)
+    const now = new Date();
+    const timestamp = now.getFullYear() + 
+                     String(now.getMonth() + 1).padStart(2, '0') + 
+                     String(now.getDate()).padStart(2, '0') + '_' +
+                     String(now.getHours()).padStart(2, '0') + 
+                     String(now.getMinutes()).padStart(2, '0') + 
+                     String(now.getSeconds()).padStart(2, '0');
+    const filename = `AI추가의류합성_결과_${timestamp}.jpg`;
+    
+    console.log('파일명:', filename);
+    
+    // File System Access API 사용하여 저장 다이얼로그 표시
+    if ('showSaveFilePicker' in window) {
+      try {
+        console.log('파일 저장 다이얼로그 표시...');
         
-        canvas.toBlob(function(blob) {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `ai-fitting-additional-${Date.now()}.jpg`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }, 'image/jpeg', 0.9);
-      };
+        // 이미지를 fetch로 가져와서 blob으로 변환
+        const response = await fetch(resultImage.src);
+        const blob = await response.blob();
+        
+        console.log('이미지 blob 생성 완료, 크기:', blob.size);
+        
+        // 저장 다이얼로그 표시
+        const fileHandle = await window.showSaveFilePicker({
+          suggestedName: filename,
+          types: [
+            {
+              description: 'JPEG 이미지',
+              accept: {
+                'image/jpeg': ['.jpg', '.jpeg'],
+              },
+            },
+            {
+              description: 'PNG 이미지',
+              accept: {
+                'image/png': ['.png'],
+              },
+            },
+          ],
+        });
+        
+        console.log('파일 핸들 생성 완료:', fileHandle.name);
+        
+        // 파일 쓰기
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        
+        console.log('파일 저장 완료');
+        alert(`이미지가 성공적으로 저장되었습니다!\n파일명: ${fileHandle.name}`);
+        return;
+        
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          console.log('사용자가 저장을 취소했습니다.');
+          return;
+        }
+        console.error('File System Access API 오류:', error);
+        // 에러 시 폴백 방식 사용
+      }
+    }
+    
+    // 폴백: 기본 다운로드 방식
+    console.log('기본 다운로드 방식 사용');
+    const link = document.createElement('a');
+    link.href = resultImage.src;
+    link.download = filename;
+    link.target = '_blank';
+    link.style.display = 'none';
+    
+    document.body.appendChild(link);
+    link.click();
+    
+    setTimeout(() => {
+      document.body.removeChild(link);
+    }, 100);
+    
+    alert(`이미지가 다운로드 폴더에 저장되었습니다!\n파일명: ${filename}`);
+    console.log('추가 의류 합성 이미지 저장 완료:', filename);
+    
+  } catch (error) {
+    console.error('추가 의류 합성 이미지 저장 오류:', error);
+    
+    // 간단한 우클릭 저장 안내
+    alert('자동 저장에 실패했습니다.\n\n해결 방법:\n1. 결과 이미지에서 우클릭\n2. "이미지를 다른 이름으로 저장" 선택\n3. 원하는 위치에 저장');
+    
+    // 이미지에 포커스를 주어 우클릭하기 쉽게 만들기
+    if (resultImage) {
+      resultImage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      resultImage.style.border = '3px solid #ff6b6b';
+      resultImage.style.borderRadius = '8px';
       
-      img.src = resultImage.src;
-    } catch (error) {
-      console.error('이미지 저장 오류:', error);
-      alert('이미지 저장 중 오류가 발생했습니다.');
+      setTimeout(() => {
+        resultImage.style.border = '';
+        resultImage.style.borderRadius = '';
+      }, 3000);
     }
   }
 } 
