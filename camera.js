@@ -193,9 +193,11 @@ function usePhoto() {
                 // 전역 변수에 파일 저장
                 window.bodyImageFile = file;
                 
-                // 생성 버튼 활성화 체크
-                if (typeof checkGenerateButtonState === 'function') {
-                    checkGenerateButtonState();
+                // 옷 모드의 전신사진 처리 함수 직접 호출
+                if (typeof handleBodyImageFile === 'function') {
+                    handleBodyImageFile(file);
+                } else {
+                    console.error('handleBodyImageFile 함수를 찾을 수 없습니다.');
                 }
             };
             reader.readAsDataURL(file);
@@ -213,9 +215,11 @@ function usePhoto() {
                 // 전역 변수에 파일 저장
                 window.uploadedFile = file;
                 
-                // 텍스트 모드의 이미지 처리 함수 호출
-                if (typeof handleImageUpload === 'function') {
-                    handleImageUpload(file);
+                // 텍스트 모드의 이미지 처리 함수 직접 호출
+                if (typeof handleImageFile === 'function') {
+                    handleImageFile(file);
+                } else {
+                    console.error('handleImageFile 함수를 찾을 수 없습니다.');
                 }
             };
             reader.readAsDataURL(file);
