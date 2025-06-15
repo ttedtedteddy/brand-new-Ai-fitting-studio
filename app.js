@@ -137,8 +137,9 @@ let originalImageData = null; // 원본 이미지 데이터 저장
 let currentMode = 'text'; // 'text' 또는 'image'
 let bodyImageData = null; // 전신사진 데이터 (옷 이미지 모드용)
 let clothingImageData = null; // 옷 이미지 데이터 (옷 이미지 모드용)
-let upperClothingImageData = null; // 상의 이미지 데이터 (상하의 각각 업로드용)
-let lowerClothingImageData = null; // 하의 이미지 데이터 (상하의 각각 업로드용)
+let additionalClothingImageData = null; // 추가 변경용 옷 이미지 데이터
+let lastGeneratedCategory = null; // 마지막으로 생성한 카테고리
+let lastGeneratedImageUrl = null; // 마지막으로 생성된 이미지 URL
 
 // 드래그 앤 드롭 기능 구현
 function setupDragAndDrop() {
@@ -1120,6 +1121,9 @@ function setupClothesMode() {
   // 구글 렌즈 기능 초기화
   setupClothesGoogleLens();
   
+  // 추가 변경 기능 초기화
+  setupAdditionalChangeFeature();
+  
   // 초기 버튼 상태 업데이트
   updateGenerateButton();
   
@@ -1283,96 +1287,28 @@ async function callIDMVTONAPI(bodyImageData, clothingImageData, prompt) {
     const enhancedPrompt = generateSmartPrompt(category, prompt);
     console.log('최종 프롬프트:', enhancedPrompt);
 
-    // 전체 의상 모드 처리 개선
-    if (category === 'full_outfit') {
-      console.log('전체 의상 모드: 통합 처리 시작');
-      
-      // 진행 상황 표시
-      showFullOutfitProgress('상의와 하의를 동시에 적용하는 중...');
-      
-      // 전체 의상을 한 번에 처리하는 향상된 프롬프트 사용
-      const fullOutfitPrompt = `complete outfit change, full body clothing transformation, both upper and lower body garments, ${enhancedPrompt}, coordinated fashion ensemble, matching top and bottom`;
-      
-      console.log('전체 의상 프롬프트:', fullOutfitPrompt);
-      
-      // 단일 API 호출로 전체 의상 변경
-      const result = await callSingleIDMVTON(
-        bodyImageUploadData.url, 
-        clothingImageUploadData.url, 
-        'upper_body', // API는 upper_body로 호출하되 프롬프트로 전체 의상 지시
-        fullOutfitPrompt
-      );
-      
-      hideFullOutfitProgress();
-      console.log('전체 의상 변경 완료');
-      return result;
-      
-    } else {
-      // 단일 카테고리 모드
-      return await callSingleIDMVTON(
-        bodyImageUploadData.url, 
-        clothingImageUploadData.url, 
-        category, 
-        enhancedPrompt
-      );
-    }
+    // 단일 카테고리 처리
+    const result = await callSingleIDMVTON(
+      bodyImageUploadData.url, 
+      clothingImageUploadData.url, 
+      category, 
+      enhancedPrompt
+    );
+    
+    // 마지막 생성 정보 저장
+    lastGeneratedCategory = category;
+    lastGeneratedImageUrl = result;
+    
+    console.log('가상 피팅 완료');
+    return result;
 
   } catch (error) {
-    hideFullOutfitProgress();
     console.error('IDM-VTON API 오류:', error);
     throw error;
   }
 }
 
 // 전체 의상 진행 상황 표시 함수
-function showFullOutfitProgress(message) {
-  const generateBtn = document.getElementById('generateClothesBtn');
-  if (generateBtn) {
-    const originalText = generateBtn.querySelector('.button-text').textContent;
-    generateBtn.querySelector('.button-text').textContent = message;
-    generateBtn.setAttribute('data-original-text', originalText);
-  }
-  
-  // 진행 상황 표시기 생성
-  let progressDiv = document.getElementById('fullOutfitProgress');
-  if (!progressDiv) {
-    progressDiv = document.createElement('div');
-    progressDiv.id = 'fullOutfitProgress';
-    progressDiv.className = 'full-outfit-progress';
-    progressDiv.innerHTML = `
-      <div class="progress-content">
-        <div class="progress-spinner"></div>
-        <div class="progress-text">${message}</div>
-        <div class="progress-description">전체 의상 변경은 시간이 더 걸릴 수 있습니다</div>
-      </div>
-    `;
-    
-    const generateContainer = document.querySelector('.generate-container');
-    if (generateContainer) {
-      generateContainer.appendChild(progressDiv);
-    }
-  } else {
-    progressDiv.querySelector('.progress-text').textContent = message;
-  }
-  
-  progressDiv.style.display = 'block';
-}
-
-// 전체 의상 진행 상황 숨기기 함수
-function hideFullOutfitProgress() {
-  const progressDiv = document.getElementById('fullOutfitProgress');
-  if (progressDiv) {
-    progressDiv.style.display = 'none';
-  }
-  
-  const generateBtn = document.getElementById('generateClothesBtn');
-  if (generateBtn && generateBtn.getAttribute('data-original-text')) {
-    generateBtn.querySelector('.button-text').textContent = generateBtn.getAttribute('data-original-text');
-    generateBtn.removeAttribute('data-original-text');
-  }
-}
-
-// 의류 카테고리 자동 감지 함수 (간단한 휴리스틱)
 function detectClothingCategory(imageData) {
   // 1. 사용자가 직접 선택한 카테고리 우선 사용
   const selectedCategory = document.getElementById('clothingCategory')?.value;
@@ -1468,6 +1404,11 @@ function showClothesResultImage(src) {
       clothesGoogleLensSection.style.display = 'block';
     }
     
+    // 추가 변경 섹션 표시 (마지막 생성 카테고리 기반)
+    if (lastGeneratedCategory) {
+      showAdditionalChangeSection(lastGeneratedCategory);
+    }
+    
     console.log('가상 피팅 결과 이미지 표시 완료');
   };
   
@@ -1553,7 +1494,6 @@ function showPageWithAnimation(hidePage, showPage) {
 function toggleDressLengthOption() {
   const categorySelect = document.getElementById('clothingCategory');
   const dressLengthSection = document.getElementById('dressLengthSection');
-  const fullOutfitInfo = document.getElementById('fullOutfitInfo');
   
   if (categorySelect && dressLengthSection) {
     if (categorySelect.value === 'dresses') {
@@ -1573,28 +1513,6 @@ function toggleDressLengthOption() {
       dressLengthSection.style.display = 'none';
     }
   }
-  
-  // 전체 의상 모드 안내 표시/숨김
-  if (categorySelect && fullOutfitInfo) {
-    if (categorySelect.value === 'full_outfit') {
-      // 전체 의상 모드: 안내 메시지 표시
-      fullOutfitInfo.style.display = 'block';
-      
-      // 부드러운 애니메이션 효과
-      fullOutfitInfo.style.opacity = '0';
-      fullOutfitInfo.style.transform = 'translateY(-10px)';
-      setTimeout(() => {
-        fullOutfitInfo.style.transition = 'all 0.3s ease';
-        fullOutfitInfo.style.opacity = '1';
-        fullOutfitInfo.style.transform = 'translateY(0)';
-      }, 10);
-      
-      console.log('전체 의상 모드 선택됨 - 사용자 안내 표시');
-    } else {
-      // 기타 모드: 안내 메시지 숨김
-      fullOutfitInfo.style.display = 'none';
-    }
-  }
 }
 
 // 스마트 프롬프트 생성 함수
@@ -1604,14 +1522,6 @@ function generateSmartPrompt(category, userPrompt) {
   
   // 카테고리별 프롬프트 강화
   switch (category) {
-    case 'full_outfit':
-      // 전체 의상 모드: 상의와 하의 모두 언급
-      if (!enhancedPrompt.includes('outfit') && !enhancedPrompt.includes('전체')) {
-        enhancedPrompt = `complete outfit, full clothing set, ${enhancedPrompt}`;
-      }
-      console.log('전체 의상 모드 활성화');
-      break;
-      
     case 'dresses':
       // 원피스 모드: 길이 정보 추가
       const lengthMap = {
@@ -1770,7 +1680,7 @@ async function callSingleIDMVTON(bodyImageUrl, clothingImageUrl, category, promp
         human_img: bodyImageUrl,
         garm_img: clothingImageUrl,
         garment_des: prompt || "clothing",
-        category: category === 'full_outfit' ? 'upper_body' : category, // full_outfit은 처리 단계에서 분리됨
+        category: category, // 카테고리 그대로 사용
         is_checked: true,
         is_checked_crop: false,
         denoise_steps: 30,
@@ -1788,4 +1698,239 @@ async function callSingleIDMVTON(bodyImageUrl, clothingImageUrl, category, promp
 
   // 결과 polling
   return await pollForIDMVTONResult(replicateData.id);
+}
+
+// 추가 변경 섹션 표시 함수
+function showAdditionalChangeSection(generatedCategory) {
+  const additionalChangeSection = document.getElementById('additionalChangeSection');
+  const additionalChangeTitle = document.getElementById('additionalChangeTitle');
+  const additionalClothingLabel = document.getElementById('additionalClothingLabel');
+  const additionalClothingDropArea = document.getElementById('additionalClothingDropArea');
+  
+  if (!additionalChangeSection) return;
+  
+  // 카테고리에 따라 제안할 추가 변경 결정
+  let suggestedCategory, titleText, labelText, placeholderText;
+  
+  if (generatedCategory === 'upper_body') {
+    suggestedCategory = 'lower_body';
+    titleText = '생성된 이미지로 하의도 변경해볼까요?';
+    labelText = '하의 사진 업로드';
+    placeholderText = '하의 사진을 드래그하세요';
+  } else if (generatedCategory === 'lower_body') {
+    suggestedCategory = 'upper_body';
+    titleText = '생성된 이미지로 상의도 변경해볼까요?';
+    labelText = '상의 사진 업로드';
+    placeholderText = '상의 사진을 드래그하세요';
+  } else if (generatedCategory === 'dresses') {
+    // 원피스의 경우 액세서리나 아우터 제안
+    suggestedCategory = 'upper_body';
+    titleText = '생성된 이미지에 아우터를 추가해볼까요?';
+    labelText = '아우터 사진 업로드';
+    placeholderText = '아우터 사진을 드래그하세요';
+  }
+  
+  // UI 업데이트
+  if (additionalChangeTitle) additionalChangeTitle.textContent = titleText;
+  if (additionalClothingLabel) additionalClothingLabel.textContent = labelText;
+  
+  // 드롭 영역 텍스트 업데이트
+  const dropContent = additionalClothingDropArea?.querySelector('.drag-drop-content');
+  if (dropContent) {
+    dropContent.innerHTML = `
+      <div class="drag-drop-text">${placeholderText}</div>
+      <div class="drag-drop-subtext">또는 클릭해서 파일을 선택하세요</div>
+    `;
+  }
+  
+  // 추가 변경 카테고리 저장
+  additionalChangeSection.setAttribute('data-category', suggestedCategory);
+  
+  // 섹션 표시
+  additionalChangeSection.style.display = 'block';
+  
+  // 부드러운 애니메이션
+  additionalChangeSection.style.opacity = '0';
+  additionalChangeSection.style.transform = 'translateY(20px)';
+  setTimeout(() => {
+    additionalChangeSection.style.transition = 'all 0.5s ease-out';
+    additionalChangeSection.style.opacity = '1';
+    additionalChangeSection.style.transform = 'translateY(0)';
+  }, 100);
+  
+  console.log(`추가 변경 섹션 표시: ${generatedCategory} → ${suggestedCategory}`);
+}
+
+// 추가 변경 섹션 숨기기 함수
+function hideAdditionalChangeSection() {
+  const additionalChangeSection = document.getElementById('additionalChangeSection');
+  if (additionalChangeSection) {
+    additionalChangeSection.style.display = 'none';
+  }
+  
+  // 추가 이미지 데이터 초기화
+  additionalClothingImageData = null;
+  updateAdditionalGenerateButton();
+}
+
+// 추가 변경 버튼 상태 업데이트
+function updateAdditionalGenerateButton() {
+  const generateAdditionalBtn = document.getElementById('generateAdditionalBtn');
+  if (!generateAdditionalBtn) return;
+  
+  const hasAdditionalImage = !!additionalClothingImageData;
+  
+  if (hasAdditionalImage) {
+    generateAdditionalBtn.disabled = false;
+    generateAdditionalBtn.style.background = '#10b981';
+    generateAdditionalBtn.style.cursor = 'pointer';
+  } else {
+    generateAdditionalBtn.disabled = true;
+    generateAdditionalBtn.style.background = '#9ca3af';
+    generateAdditionalBtn.style.cursor = 'not-allowed';
+  }
+}
+
+// 추가 옷 이미지 파일 처리
+function handleAdditionalClothingImageFile(file) {
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    additionalClothingImageData = evt.target.result;
+    
+    // 업로드 영역 업데이트
+    const additionalClothingDropArea = document.getElementById('additionalClothingDropArea');
+    if (additionalClothingDropArea) {
+      additionalClothingDropArea.style.backgroundImage = `url(${evt.target.result})`;
+      additionalClothingDropArea.style.backgroundSize = 'contain';
+      additionalClothingDropArea.style.backgroundPosition = 'center';
+      additionalClothingDropArea.style.backgroundRepeat = 'no-repeat';
+      additionalClothingDropArea.classList.add('has-image');
+      
+      const content = additionalClothingDropArea.querySelector('.drag-drop-content');
+      if (content) {
+        content.innerHTML = '<div>추가 옷 이미지 업로드 완료</div>';
+      }
+    }
+    
+    updateAdditionalGenerateButton();
+    console.log('추가 옷 이미지 업로드 완료');
+  };
+  reader.readAsDataURL(file);
+}
+
+// 추가 변경 API 호출 함수
+async function callAdditionalChangeAPI(baseImageUrl, additionalClothingImageData, category) {
+  try {
+    console.log('추가 변경 API 호출 시작');
+    console.log('기본 이미지 URL:', baseImageUrl);
+    console.log('추가 옷 이미지 데이터:', additionalClothingImageData ? '있음' : '없음');
+    console.log('변경 카테고리:', category);
+    
+    // 추가 옷 이미지를 Cloudinary에 업로드
+    const additionalClothingUploadData = await uploadToCloudinary(additionalClothingImageData);
+    
+    console.log('추가 옷 이미지 업로드 완료:', additionalClothingUploadData.url);
+    
+    // 프롬프트 생성
+    const enhancedPrompt = generateSmartPrompt(category, '');
+    console.log('추가 변경 프롬프트:', enhancedPrompt);
+    
+    // IDM-VTON API 호출 (기본 이미지를 전신사진으로, 추가 옷을 변경할 옷으로 사용)
+    const result = await callSingleIDMVTON(
+      baseImageUrl,
+      additionalClothingUploadData.url,
+      category,
+      enhancedPrompt
+    );
+    
+    console.log('추가 변경 완료');
+    return result;
+    
+  } catch (error) {
+    console.error('추가 변경 API 오류:', error);
+    throw error;
+  }
+}
+
+// 추가 변경 기능 초기화 함수
+function setupAdditionalChangeFeature() {
+  console.log('추가 변경 기능 초기화 시작...');
+  
+  // 추가 옷 이미지 업로드 설정
+  const additionalClothingDropArea = document.getElementById('additionalClothingDropArea');
+  const additionalClothingUpload = document.getElementById('additionalClothingUpload');
+  const generateAdditionalBtn = document.getElementById('generateAdditionalBtn');
+  
+  if (additionalClothingDropArea && additionalClothingUpload) {
+    setupImageDragAndDrop(additionalClothingDropArea, additionalClothingUpload, (file) => {
+      console.log('추가 옷 이미지 업로드:', file.name);
+      handleAdditionalClothingImageFile(file);
+    });
+  }
+  
+  // 추가 생성 버튼 이벤트
+  if (generateAdditionalBtn) {
+    generateAdditionalBtn.addEventListener('click', async function() {
+      console.log('추가 변경 생성 시작...');
+      
+      // 유효성 검사
+      if (!additionalClothingImageData) {
+        alert('추가로 변경할 옷 사진을 업로드해주세요.');
+        return;
+      }
+      
+      if (!lastGeneratedImageUrl) {
+        alert('기본 이미지가 없습니다. 먼저 가상 피팅을 생성해주세요.');
+        return;
+      }
+      
+      // 추가 변경 카테고리 가져오기
+      const additionalChangeSection = document.getElementById('additionalChangeSection');
+      const targetCategory = additionalChangeSection?.getAttribute('data-category');
+      
+      if (!targetCategory) {
+        alert('변경할 카테고리 정보가 없습니다.');
+        return;
+      }
+      
+      // 로딩 상태 시작
+      showButtonLoading(generateAdditionalBtn, true);
+      
+      try {
+        console.log('추가 변경 설정:', {
+          baseImage: lastGeneratedImageUrl,
+          targetCategory,
+          additionalClothing: additionalClothingImageData ? '있음' : '없음'
+        });
+        
+        // 추가 변경 API 호출
+        const resultImageUrl = await callAdditionalChangeAPI(
+          lastGeneratedImageUrl,
+          additionalClothingImageData,
+          targetCategory
+        );
+        
+        console.log('추가 변경 완료:', resultImageUrl);
+        
+        // 결과 이미지 업데이트
+        showClothesResultImage(resultImageUrl);
+        
+        // 마지막 생성 정보 업데이트
+        lastGeneratedCategory = targetCategory;
+        lastGeneratedImageUrl = resultImageUrl;
+        
+        // 추가 변경 섹션 숨기기 (새로운 결과에 대한 추가 변경을 위해)
+        hideAdditionalChangeSection();
+        
+      } catch (error) {
+        console.error('추가 변경 오류:', error);
+        alert('추가 변경 생성 중 오류가 발생했습니다: ' + error.message);
+      } finally {
+        // 로딩 상태 종료
+        showButtonLoading(generateAdditionalBtn, false);
+      }
+    });
+  }
+  
+  console.log('추가 변경 기능 초기화 완료');
 }
