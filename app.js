@@ -185,98 +185,253 @@ function setupDragAndDrop() {
   });
 }
 
-// 이미지 파일 처리 함수
-function handleImageFile(file) {
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    const tempImg = new window.Image();
-    tempImg.onload = function() {
-      // 원본 이미지 데이터 저장
-      originalImageData = {
-        width: tempImg.width,
-        height: tempImg.height,
-        src: evt.target.result
-      };
+// 이미지 최적화 함수 추가
+function optimizeImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8) {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    img.onload = function() {
+      // 원본 크기
+      let { width, height } = img;
       
-      // 캔버스 초기화
-      photoCtx.clearRect(0, 0, photoCanvas.width, photoCanvas.height);
-      maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
+      // 최대 크기 제한 적용
+      if (width > maxWidth || height > maxHeight) {
+        const ratio = Math.min(maxWidth / width, maxHeight / height);
+        width = Math.floor(width * ratio);
+        height = Math.floor(height * ratio);
+      }
       
-      // 이미지 비율 계산
-      const canvasW = photoCanvas.width;
-      const canvasH = photoCanvas.height;
-      const imgW = tempImg.width;
-      const imgH = tempImg.height;
-      const scale = Math.min(canvasW / imgW, canvasH / imgH);
-      const drawW = imgW * scale;
-      const drawH = imgH * scale;
-      const offsetX = (canvasW - drawW) / 2;
-      const offsetY = (canvasH - drawH) / 2;
+      // 캔버스 크기 설정
+      canvas.width = width;
+      canvas.height = height;
       
-      // 중앙에 맞춰 그리기
-      photoCanvas.style.display = 'block';
-      maskCanvas.style.display = 'block';
-      photoCtx.drawImage(tempImg, offsetX, offsetY, drawW, drawH);
+      // 이미지 그리기
+      ctx.drawImage(img, 0, 0, width, height);
       
-      // 마스킹 섹션 자동으로 표시
-      maskSection.style.display = 'block';
-      
-      // 마스킹 섹션으로 스크롤
-      maskSection.scrollIntoView({ behavior: 'smooth' });
-      
-      // 결과 이미지 초기화
-      resetResultState();
-    }
-    tempImg.src = evt.target.result;
-  }
-  reader.readAsDataURL(file);
+      // 압축된 이미지를 Blob으로 변환
+      canvas.toBlob((blob) => {
+        const originalSizeKB = Math.round(file.size / 1024);
+        const compressedSizeKB = Math.round(blob.size / 1024);
+        
+        console.log(`📊 이미지 최적화 완료:`);
+        console.log(`   - 원본 크기: ${originalSizeKB}KB`);
+        console.log(`   - 압축 후: ${compressedSizeKB}KB`);
+        console.log(`   - 압축률: ${Math.round((1 - blob.size / file.size) * 100)}%`);
+        console.log(`   - 해상도: ${img.width}x${img.height} → ${width}x${height}`);
+        
+        // File 객체로 변환
+        const optimizedFile = new File([blob], file.name, {
+          type: 'image/jpeg',
+          lastModified: Date.now()
+        });
+        
+        resolve(optimizedFile);
+      }, 'image/jpeg', quality);
+    };
+    
+    img.src = URL.createObjectURL(file);
+  });
 }
 
-// 이미지 업로드 시 마스킹 섹션 보이기 및 캔버스에 이미지 표시
-imageUpload.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  handleImageFile(file);
-});
-
-// 결과 이미지 표시 함수
-function showResultImage(src) {
-  const resultPlaceholder = document.getElementById('resultPlaceholder');
-  const actionButtons = document.querySelector('.action-buttons');
-  const resultSection = document.getElementById('resultSection');
+// 파일 크기 체크 및 최적화 함수
+async function processImageFile(file) {
+  const maxSizeKB = 5000; // 5MB 제한
+  const fileSizeKB = Math.round(file.size / 1024);
   
-  // 결과 섹션 표시
-  if (resultSection) {
-    resultSection.style.display = 'block';
+  console.log(`📁 파일 처리 시작: ${file.name} (${fileSizeKB}KB)`);
+  
+  // 이미지 파일인지 확인
+  if (!file.type.startsWith('image/')) {
+    throw new Error('이미지 파일만 업로드 가능합니다.');
   }
   
-  resultImage.onload = function() {
-    const maxWidth = 512;
-    const maxHeight = 768;
-    const imgWidth = this.naturalWidth;
-    const imgHeight = this.naturalHeight;
-    const scale = Math.min(maxWidth / imgWidth, maxHeight / imgHeight, 1);
-    const displayWidth = imgWidth * scale;
-    const displayHeight = imgHeight * scale;
-    this.style.width = displayWidth + 'px';
-    this.style.height = displayHeight + 'px';
-    this.style.maxWidth = '100%';
-    this.style.height = 'auto';
-    this.style.objectFit = 'contain';
-    this.style.display = 'block';
-    if (resultPlaceholder) {
-      resultPlaceholder.style.display = 'none';
+  // 파일 크기가 너무 크거나 최적화가 필요한 경우
+  if (fileSizeKB > maxSizeKB || fileSizeKB > 1000) {
+    console.log('🔄 이미지 최적화 시작...');
+    
+    // 파일 크기에 따라 품질 조정
+    let quality = 0.8;
+    let maxWidth = 1920;
+    let maxHeight = 1920;
+    
+    if (fileSizeKB > 10000) { // 10MB 이상
+      quality = 0.6;
+      maxWidth = 1600;
+      maxHeight = 1600;
+    } else if (fileSizeKB > 5000) { // 5MB 이상
+      quality = 0.7;
+      maxWidth = 1800;
+      maxHeight = 1800;
     }
-    if (actionButtons) {
-      actionButtons.style.display = 'flex';
+    
+    const optimizedFile = await optimizeImage(file, maxWidth, maxHeight, quality);
+    
+    // 최적화 후에도 너무 크면 더 압축
+    if (optimizedFile.size > maxSizeKB * 1024) {
+      console.log('🔄 추가 압축 진행...');
+      return await optimizeImage(file, 1600, 1600, 0.6);
     }
-    // 구글 렌즈 섹션 표시
-    const googleLensSection = document.getElementById('googleLensSection');
-    if (googleLensSection) {
-      googleLensSection.style.display = 'block';
+    
+    return optimizedFile;
+  }
+  
+  console.log('✅ 최적화 불필요 - 원본 사용');
+  return file;
+}
+
+// 기존 handleImageFile 함수 수정
+async function handleImageFile(file) {
+  try {
+    // 이미지 최적화 처리
+    const processedFile = await processImageFile(file);
+    
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      const tempImg = new window.Image();
+      tempImg.onload = function() {
+        // 원본 이미지 데이터 저장
+        originalImageData = {
+          width: tempImg.width,
+          height: tempImg.height,
+          src: evt.target.result
+        };
+        
+        // 캔버스 초기화
+        photoCtx.clearRect(0, 0, photoCanvas.width, photoCanvas.height);
+        maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
+        
+        // 이미지 비율 계산
+        const canvasW = photoCanvas.width;
+        const canvasH = photoCanvas.height;
+        const imgW = tempImg.width;
+        const imgH = tempImg.height;
+        const scale = Math.min(canvasW / imgW, canvasH / imgH);
+        const drawW = imgW * scale;
+        const drawH = imgH * scale;
+        const offsetX = (canvasW - drawW) / 2;
+        const offsetY = (canvasH - drawH) / 2;
+        
+        // 중앙에 맞춰 그리기
+        photoCanvas.style.display = 'block';
+        maskCanvas.style.display = 'block';
+        photoCtx.drawImage(tempImg, offsetX, offsetY, drawW, drawH);
+        
+        // 마스킹 섹션 자동으로 표시
+        maskSection.style.display = 'block';
+        
+        // 마스킹 섹션으로 스크롤
+        maskSection.scrollIntoView({ behavior: 'smooth' });
+        
+        // 결과 이미지 초기화
+        resetResultState();
+      }
+      tempImg.src = evt.target.result;
     }
-  };
-  resultImage.src = src;
+    reader.readAsDataURL(processedFile);
+    
+  } catch (error) {
+    console.error('이미지 처리 오류:', error);
+    alert(`이미지 처리 중 오류가 발생했습니다: ${error.message}`);
+  }
+}
+
+// 전신사진 파일 처리 함수 수정
+async function handleBodyImageFile(file) {
+  try {
+    console.log('🏃 전신사진 최적화 시작...');
+    
+    // 이미지 최적화 처리
+    const processedFile = await processImageFile(file);
+    
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      bodyImageData = evt.target.result;
+      
+      // 업로드 영역 업데이트
+      const bodyDragDropArea = document.getElementById('bodyDragDropArea');
+      if (bodyDragDropArea) {
+        bodyDragDropArea.style.backgroundImage = `url(${evt.target.result})`;
+        bodyDragDropArea.style.backgroundSize = 'contain';
+        bodyDragDropArea.style.backgroundPosition = 'center';
+        bodyDragDropArea.style.backgroundRepeat = 'no-repeat';
+        bodyDragDropArea.classList.add('has-image');
+        
+        const content = bodyDragDropArea.querySelector('.drag-drop-content');
+        if (content) {
+          content.innerHTML = '<div>✅ 전신사진 업로드 완료</div>';
+        }
+      }
+      
+      updateGenerateButton();
+      console.log('✅ 전신사진 최적화 및 업로드 완료');
+    };
+    reader.readAsDataURL(processedFile);
+    
+  } catch (error) {
+    console.error('전신사진 처리 오류:', error);
+    alert(`전신사진 처리 중 오류가 발생했습니다: ${error.message}`);
+  }
+}
+
+// 옷 이미지 파일 처리 함수 수정
+async function handleClothingImageFile(file) {
+  try {
+    console.log('👕 옷 이미지 최적화 시작...');
+    
+    // 이미지 최적화 처리
+    const processedFile = await processImageFile(file);
+    
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      clothingImageData = evt.target.result;
+      
+      // 업로드 영역 업데이트
+      const clothesDragDropArea = document.getElementById('clothesDragDropArea');
+      if (clothesDragDropArea) {
+        clothesDragDropArea.style.backgroundImage = `url(${evt.target.result})`;
+        clothesDragDropArea.style.backgroundSize = 'contain';
+        clothesDragDropArea.style.backgroundPosition = 'center';
+        clothesDragDropArea.style.backgroundRepeat = 'no-repeat';
+        clothesDragDropArea.classList.add('has-image');
+        
+        const content = clothesDragDropArea.querySelector('.drag-drop-content');
+        if (content) {
+          content.innerHTML = '<div>옷 이미지 업로드 완료</div>';
+        }
+      }
+      
+      updateGenerateButton();
+      console.log('✅ 옷 이미지 최적화 및 업로드 완료');
+    };
+    reader.readAsDataURL(processedFile);
+    
+  } catch (error) {
+    console.error('옷 이미지 처리 오류:', error);
+    alert(`옷 이미지 처리 중 오류가 발생했습니다: ${error.message}`);
+  }
+}
+
+// 결과 이미지 표시 함수
+function showResultImage(imageUrl) {
+  resultImage.src = imageUrl;
+  resultImage.style.display = 'block';
+  
+  if (resultPlaceholder) {
+    resultPlaceholder.style.display = 'none';
+  }
+  
+  // 액션 버튼들 표시
+  if (actionButtons) {
+    actionButtons.style.display = 'flex';
+  }
+  
+  // 구글 렌즈 섹션 표시
+  const googleLensSection = document.getElementById('googleLensSection');
+  if (googleLensSection) {
+    googleLensSection.style.display = 'block';
+  }
 }
 
 // 결과 이미지 숨기기 함수
@@ -1136,7 +1291,7 @@ function setupImageDragAndDrop(dropArea, fileInput, handleFileCallback) {
   // 드래그 앤 드롭 영역 클릭 시 파일 선택
   dropArea.addEventListener('click', () => {
     fileInput.click();
-    });
+  });
   
   // 파일 선택 이벤트
   fileInput.addEventListener('change', (e) => {
@@ -1145,7 +1300,7 @@ function setupImageDragAndDrop(dropArea, fileInput, handleFileCallback) {
       const file = files[0];
       if (file.type.startsWith('image/')) {
         handleFileCallback(file);
-    } else {
+      } else {
         alert('이미지 파일만 업로드 가능합니다.');
       }
     }
@@ -1239,25 +1394,27 @@ function updateGenerateButton() {
   const generateClothesBtn = document.getElementById('generateClothesBtn');
   if (!generateClothesBtn) return;
   
-  const hasBodyImage = !!bodyImageData;
-  const hasClothingImage = !!clothingImageData;
-  const canGenerate = hasBodyImage && hasClothingImage;
+  const hasBodyImage = bodyImageData !== null;
+  const hasClothingImage = clothingImageData !== null;
   
-  if (canGenerate) {
+  if (hasBodyImage && hasClothingImage) {
     generateClothesBtn.disabled = false;
-    generateClothesBtn.style.background = 'var(--primary)';
+    generateClothesBtn.style.background = '#000000';
     generateClothesBtn.style.cursor = 'pointer';
-    const buttonText = generateClothesBtn.querySelector('.button-text');
-    if (buttonText) buttonText.textContent = '가상 피팅 생성';
+    generateClothesBtn.querySelector('.button-text').textContent = '가상 피팅 생성';
   } else {
     generateClothesBtn.disabled = true;
-    generateClothesBtn.style.background = 'var(--gray-400)';
+    generateClothesBtn.style.background = '#cccccc';
     generateClothesBtn.style.cursor = 'not-allowed';
-    const buttonText = generateClothesBtn.querySelector('.button-text');
-    if (buttonText) buttonText.textContent = '가상 피팅 생성';
+    
+    if (!hasBodyImage && !hasClothingImage) {
+      generateClothesBtn.querySelector('.button-text').textContent = '전신사진과 옷 사진을 업로드해주세요';
+    } else if (!hasBodyImage) {
+      generateClothesBtn.querySelector('.button-text').textContent = '전신사진을 업로드해주세요';
+    } else if (!hasClothingImage) {
+      generateClothesBtn.querySelector('.button-text').textContent = '옷 사진을 업로드해주세요';
+    }
   }
-  
-  console.log('버튼 상태 업데이트:', { hasBodyImage, hasClothingImage, canGenerate });
 }
 
 // IDM-VTON API 호출 함수 (정확한 cuuupid/idm-vton 모델 사용)
@@ -1722,3 +1879,10 @@ function shareToKakao() {
     alert('이미지 파일 공유 중 오류가 발생했습니다.\n이미지를 저장한 후 직접 공유해주세요.');
   }
 }
+
+// 이미지 업로드 시 마스킹 섹션 보이기 및 캔버스에 이미지 표시
+imageUpload.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  handleImageFile(file);
+});
