@@ -185,10 +185,19 @@ function setupAdditionalClothingEvents(targetCategory) {
   
   // 합성 버튼 이벤트
   processBtn.addEventListener('click', () => {
-    if (fileInput.files.length > 0) {
-      processAdditionalClothing(fileInput.files[0], targetCategory);
+    console.log('🔥 추가 의류 합성 버튼 클릭됨');
+    
+    // 파일이 선택되었는지 확인
+    if (!fileInput.files || fileInput.files.length === 0) {
+      alert('먼저 추가할 의류 사진을 업로드해주세요!');
+      return;
     }
+    
+    console.log('📁 선택된 파일:', fileInput.files[0].name);
+    processAdditionalClothing(fileInput.files[0], targetCategory);
   });
+  
+  console.log('✅ 추가 의류 이벤트 리스너 설정 완료');
 }
 
 // 추가 의류 파일 처리
@@ -224,7 +233,7 @@ function handleAdditionalClothingFile(file, targetCategory) {
 // 추가 의류 처리 함수
 async function processAdditionalClothing(file, targetCategory) {
   try {
-    console.log('추가 의류 처리 시작:', targetCategory);
+    console.log('🔥 추가 의류 처리 시작:', targetCategory);
     
     // 현재 결과 이미지를 새로운 전신사진으로 사용
     const clothesResultImage = document.getElementById('clothesResultImage');
@@ -243,57 +252,85 @@ async function processAdditionalClothing(file, targetCategory) {
     buttonText.style.display = 'none';
     loadingSpinner.style.display = 'block';
     
+    console.log('🔧 함수 존재 여부 확인...');
+    console.log('optimizeImage 함수:', typeof window.optimizeImage);
+    console.log('callIDMVTONAPI 함수:', typeof window.callIDMVTONAPI);
+    
+    // 함수 존재 여부 확인
+    if (typeof window.optimizeImage !== 'function') {
+      throw new Error('optimizeImage 함수를 찾을 수 없습니다. app.js가 로드되었는지 확인해주세요.');
+    }
+    
+    if (typeof window.callIDMVTONAPI !== 'function') {
+      throw new Error('callIDMVTONAPI 함수를 찾을 수 없습니다. app.js가 로드되었는지 확인해주세요.');
+    }
+    
     // 추가 의류 이미지 최적화
-    const processedFile = await optimizeImage(file, 1024, 1024, 0.8);
+    console.log('🖼️ 이미지 최적화 중...');
+    const processedFile = await window.optimizeImage(file, 1024, 1024, 0.8);
     
     const reader = new FileReader();
     reader.onload = async function(evt) {
-      const additionalClothingData = evt.target.result;
-      
-      console.log('추가 의류 합성 시작...');
-      
-      // 현재 결과 이미지를 전신사진으로, 새 의류를 옷 이미지로 사용
-      const resultImageUrl = await callIDMVTONAPI(
-        clothesResultImage.src, // 현재 결과를 전신사진으로 사용
-        additionalClothingData,  // 새 의류 이미지
-        `additional ${targetCategory} clothing, layered outfit` // 추가 의류 프롬프트
-      );
-      
-      console.log('추가 의류 합성 완료:', resultImageUrl);
-      
-      // 새로운 결과 표시
-      showClothesResultImage(resultImageUrl);
-      
-      // 성공 메시지
-      const categoryNames = {
-        'upper_body': '상의',
-        'lower_body': '하의', 
-        'accessories': '액세서리'
-      };
-      
-      alert(`${categoryNames[targetCategory]} 합성이 완료되었습니다! 🎉`);
-      
-      // 기존 추가 의류 섹션 제거 (새로운 섹션이 자동으로 생성됨)
-      const additionalSection = document.getElementById('additionalClothingSection');
-      if (additionalSection) {
-        additionalSection.remove();
+      try {
+        const additionalClothingData = evt.target.result;
+        
+        console.log('🚀 추가 의류 합성 API 호출 시작...');
+        
+        // 현재 결과 이미지를 전신사진으로, 새 의류를 옷 이미지로 사용
+        const resultImageUrl = await window.callIDMVTONAPI(
+          clothesResultImage.src, // 현재 결과를 전신사진으로 사용
+          additionalClothingData,  // 새 의류 이미지
+          `additional ${targetCategory} clothing, layered outfit` // 추가 의류 프롬프트
+        );
+        
+        console.log('✅ 추가 의류 합성 완료:', resultImageUrl);
+        
+        // 새로운 결과 표시
+        if (typeof window.showClothesResultImage === 'function') {
+          window.showClothesResultImage(resultImageUrl);
+        } else {
+          // 직접 이미지 표시
+          clothesResultImage.src = resultImageUrl;
+          clothesResultImage.style.display = 'block';
+        }
+        
+        // 성공 메시지
+        const categoryNames = {
+          'upper_body': '상의',
+          'lower_body': '하의', 
+          'accessories': '액세서리'
+        };
+        
+        alert(`${categoryNames[targetCategory]} 합성이 완료되었습니다! 🎉`);
+        
+        // 기존 추가 의류 섹션 제거 (새로운 섹션이 자동으로 생성됨)
+        const additionalSection = document.getElementById('additionalClothingSection');
+        if (additionalSection) {
+          additionalSection.remove();
+        }
+        
+      } catch (apiError) {
+        console.error('❌ API 호출 오류:', apiError);
+        throw apiError;
       }
     };
     
     reader.readAsDataURL(processedFile);
     
   } catch (error) {
-    console.error('추가 의류 처리 오류:', error);
+    console.error('❌ 추가 의류 처리 오류:', error);
     alert('추가 의류 합성 중 오류가 발생했습니다: ' + error.message);
     
     // 로딩 상태 해제
     const processBtn = document.getElementById('processAdditionalClothingBtn');
-    const buttonText = processBtn.querySelector('.button-text');
-    const loadingSpinner = processBtn.querySelector('.loading-spinner');
-    
-    processBtn.disabled = false;
-    processBtn.style.cursor = 'pointer';
-    buttonText.style.display = 'block';
-    loadingSpinner.style.display = 'none';
+    if (processBtn) {
+      const buttonText = processBtn.querySelector('.button-text');
+      const loadingSpinner = processBtn.querySelector('.loading-spinner');
+      
+      processBtn.disabled = false;
+      processBtn.style.cursor = 'pointer';
+      if (buttonText) buttonText.style.display = 'block';
+      if (loadingSpinner) loadingSpinner.style.display = 'none';
+    }
   }
 } 
