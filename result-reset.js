@@ -84,23 +84,31 @@ function enhancedResetClothesResultState() {
       clothingCategory.addEventListener('change', function() {
         console.log('🔄 의류 카테고리 변경:', this.value);
         
-        // 결과물이 있는지 더 정확하게 확인
-        const clothesResultImage = document.getElementById('clothesResultImage');
-        const clothesActionButtons = document.getElementById('clothesActionButtons');
-        const clothesGoogleLensSection = document.getElementById('clothesGoogleLensSection');
-        
-        // 결과 이미지가 있거나, 액션 버튼이 보이거나, 구글 렌즈 섹션이 보이면 결과물이 있다고 판단
-        const hasResult = (clothesResultImage && clothesResultImage.src && clothesResultImage.src !== '') ||
-                         (clothesActionButtons && clothesActionButtons.style.display !== 'none') ||
-                         (clothesGoogleLensSection && clothesGoogleLensSection.style.display !== 'none');
-        
-        if (hasResult) {
-          console.log('🔍 결과물 발견 - 초기화 진행');
-          enhancedResetClothesResultState();
-          console.log('✅ 카테고리 변경으로 인한 결과물 초기화 완료');
-        } else {
-          console.log('ℹ️ 결과물 없음 - 초기화 건너뜀');
+        // 1. 원피스 길이 옵션 토글 (기존 toggleDressLengthOption 기능)
+        const dressLengthSection = document.getElementById('dressLengthSection');
+        if (dressLengthSection) {
+          if (this.value === 'dresses') {
+            // 원피스 모드: 길이 선택 표시
+            dressLengthSection.style.display = 'block';
+            
+            // 부드러운 애니메이션 효과
+            dressLengthSection.style.opacity = '0';
+            dressLengthSection.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+              dressLengthSection.style.transition = 'all 0.3s ease';
+              dressLengthSection.style.opacity = '1';
+              dressLengthSection.style.transform = 'translateY(0)';
+            }, 10);
+          } else {
+            // 기타 모드: 길이 선택 숨김
+            dressLengthSection.style.display = 'none';
+          }
         }
+        
+        // 2. 의류 카테고리 변경 시 항상 결과물 초기화 (조건 없이)
+        console.log('🔍 카테고리 변경 감지 - 무조건 초기화 진행');
+        enhancedResetClothesResultState();
+        console.log('✅ 카테고리 변경으로 인한 결과물 초기화 완료');
       });
       console.log('✅ 의류 카테고리 변경 이벤트 리스너 추가 완료');
     }
