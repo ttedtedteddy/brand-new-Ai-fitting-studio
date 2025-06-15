@@ -128,7 +128,7 @@
           <label for="clothingCategory" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--gray-700);">
             의류 카테고리
           </label>
-          <select id="clothingCategory" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--gray-300); border-radius: 0.75rem; font-size: 1rem; transition: all 0.3s ease;">
+          <select id="clothingCategory" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--gray-300); border-radius: 0.75rem; font-size: 1rem; transition: all 0.3s ease;" onchange="toggleDressLengthOption()">
             <option value="upper_body">상의 (셔츠, 블라우스, 재킷)</option>
             <option value="lower_body">하의 (바지, 스커트, 반바지)</option>
             <option value="dresses">원피스 (드레스, 원피스)</option>
@@ -370,6 +370,5 @@
   <script src="app.js?v=2.0.1"></script>
   <script src="additional-clothing.js?v=1.0.0"></script>
   <script src="camera.js?v=1.0.0"></script>
-  <script src="result-reset.js?v=1.0.0"></script>
 </body>
 </html> 

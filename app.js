@@ -511,27 +511,27 @@ function showResultImage(imageUrl) {
     src: resultImage.src
   });
   
-  if (resultPlaceholder) {
+    if (resultPlaceholder) {
     console.log('🔄 placeholder 숨기기...');
-    resultPlaceholder.style.display = 'none';
+      resultPlaceholder.style.display = 'none';
     resultPlaceholder.style.visibility = 'hidden';
   } else {
     console.warn('⚠️ resultPlaceholder 요소가 없습니다');
-  }
+    }
   
   // 액션 버튼들 표시 (요소가 있을 때만)
-  if (actionButtons) {
+    if (actionButtons) {
     console.log('🔘 액션 버튼 표시...');
-    actionButtons.style.display = 'flex';
+      actionButtons.style.display = 'flex';
   } else {
     console.warn('⚠️ actionButtons 요소가 없습니다 - 무시하고 계속');
-  }
+    }
   
-  // 구글 렌즈 섹션 표시
-  const googleLensSection = document.getElementById('googleLensSection');
-  if (googleLensSection) {
+    // 구글 렌즈 섹션 표시
+    const googleLensSection = document.getElementById('googleLensSection');
+    if (googleLensSection) {
     console.log('🔍 구글 렌즈 섹션 표시...');
-    googleLensSection.style.display = 'block';
+      googleLensSection.style.display = 'block';
   } else {
     console.warn('⚠️ googleLensSection 요소가 없습니다 - 무시하고 계속');
   }
@@ -848,7 +848,7 @@ generateBtn.addEventListener('click', async () => {
   }
   
   try {
-    // 주황색 마스크를 흰색으로 변환
+  // 주황색 마스크를 흰색으로 변환
     maskData = convertOrangeMaskToWhite(maskCanvas);
     console.log('🎭 마스크 이미지 변환 완료');
   } catch (error) {
