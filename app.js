@@ -466,8 +466,20 @@ async function handleClothingImageFile(file) {
 function showResultImage(imageUrl) {
   console.log('🖼️ showResultImage 호출됨, URL:', imageUrl);
   
+  // DOM 요소를 직접 가져오기 (전역 변수 대신)
+  const resultImage = document.getElementById('resultImage');
+  const resultPlaceholder = document.getElementById('resultPlaceholder');
+  const actionButtons = document.getElementById('actionButtons');
+  
+  console.log('🔍 DOM 요소 확인:', {
+    resultImage: !!resultImage,
+    resultPlaceholder: !!resultPlaceholder,
+    actionButtons: !!actionButtons
+  });
+  
   if (!resultImage) {
     console.error('❌ resultImage 요소가 없습니다');
+    alert('결과 이미지 요소를 찾을 수 없습니다. 페이지를 새로고침해주세요.');
     return;
   }
   
@@ -532,6 +544,23 @@ function showResultImage(imageUrl) {
       displayWidth: this.offsetWidth,
       displayHeight: this.offsetHeight
     });
+    
+    // 이미지가 실제로 화면에 보이는지 확인
+    const rect = this.getBoundingClientRect();
+    console.log('📍 이미지 화면 위치:', {
+      top: rect.top,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height,
+      visible: rect.width > 0 && rect.height > 0
+    });
+    
+    if (rect.width === 0 || rect.height === 0) {
+      console.error('❌ 이미지가 화면에 보이지 않습니다!');
+      // 강제로 크기 설정
+      this.style.width = '400px';
+      this.style.height = 'auto';
+    }
   };
   
   resultImage.onerror = function() {
