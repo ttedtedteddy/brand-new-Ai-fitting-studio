@@ -84,11 +84,22 @@ function enhancedResetClothesResultState() {
       clothingCategory.addEventListener('change', function() {
         console.log('🔄 의류 카테고리 변경:', this.value);
         
-        // 결과물이 있는 경우에만 초기화
+        // 결과물이 있는지 더 정확하게 확인
         const clothesResultImage = document.getElementById('clothesResultImage');
-        if (clothesResultImage && clothesResultImage.style.display !== 'none') {
+        const clothesActionButtons = document.getElementById('clothesActionButtons');
+        const clothesGoogleLensSection = document.getElementById('clothesGoogleLensSection');
+        
+        // 결과 이미지가 있거나, 액션 버튼이 보이거나, 구글 렌즈 섹션이 보이면 결과물이 있다고 판단
+        const hasResult = (clothesResultImage && clothesResultImage.src && clothesResultImage.src !== '') ||
+                         (clothesActionButtons && clothesActionButtons.style.display !== 'none') ||
+                         (clothesGoogleLensSection && clothesGoogleLensSection.style.display !== 'none');
+        
+        if (hasResult) {
+          console.log('🔍 결과물 발견 - 초기화 진행');
           enhancedResetClothesResultState();
           console.log('✅ 카테고리 변경으로 인한 결과물 초기화 완료');
+        } else {
+          console.log('ℹ️ 결과물 없음 - 초기화 건너뜀');
         }
       });
       console.log('✅ 의류 카테고리 변경 이벤트 리스너 추가 완료');
