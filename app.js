@@ -1603,7 +1603,7 @@ function generateSmartPrompt(category, userPrompt) {
     case 'full_outfit':
       // 전체 의상 모드: 상의와 하의 모두 언급
       if (!enhancedPrompt.includes('outfit') && !enhancedPrompt.includes('전체')) {
-        enhancedPrompt = `complete outfit, full clothing set, ${enhancedPrompt}`;
+        enhancedPrompt = `complete outfit, full clothing set, preserve original colors and style, ${enhancedPrompt}`;
       }
       console.log('전체 의상 모드 활성화');
       break;
@@ -1618,35 +1618,35 @@ function generateSmartPrompt(category, userPrompt) {
       
       const lengthDesc = lengthMap[dressLength] || lengthMap['midi'];
       if (!enhancedPrompt.includes('dress') && !enhancedPrompt.includes('원피스')) {
-        enhancedPrompt = `${lengthDesc}, elegant dress, ${enhancedPrompt}`;
+        enhancedPrompt = `${lengthDesc}, elegant dress, keep original colors and design, ${enhancedPrompt}`;
       } else {
-        enhancedPrompt = `${lengthDesc}, ${enhancedPrompt}`;
+        enhancedPrompt = `${lengthDesc}, keep original colors and design, ${enhancedPrompt}`;
       }
       console.log(`원피스 모드 - 길이: ${dressLength}`);
       break;
       
     case 'upper_body':
-      // 상의 모드: 상의 관련 키워드 강화
+      // 상의 모드: 상의 관련 키워드 강화, 원본 색상 보존
       if (!enhancedPrompt.includes('shirt') && !enhancedPrompt.includes('상의') && 
           !enhancedPrompt.includes('top') && !enhancedPrompt.includes('blouse')) {
-        enhancedPrompt = `stylish top, fashionable upper wear, ${enhancedPrompt}`;
+        enhancedPrompt = `upper body clothing, maintain original colors and patterns, preserve fabric texture, ${enhancedPrompt}`;
       }
       console.log('상의 모드');
       break;
       
     case 'lower_body':
-      // 하의 모드: 하의 관련 키워드 강화
+      // 하의 모드: 원본 색상과 스타일 보존 강조
       if (!enhancedPrompt.includes('pants') && !enhancedPrompt.includes('하의') && 
           !enhancedPrompt.includes('bottom') && !enhancedPrompt.includes('skirt')) {
-        enhancedPrompt = `stylish bottoms, fashionable lower wear, ${enhancedPrompt}`;
+        enhancedPrompt = `lower body clothing, keep exact same colors as original, preserve original design and patterns, maintain fabric appearance, ${enhancedPrompt}`;
       }
-      console.log('하의 모드');
+      console.log('하의 모드 - 원본 색상 보존 강조');
       break;
   }
   
-  // 공통 품질 향상 키워드 추가
+  // 공통 품질 향상 키워드 추가 (색상 보존 강조)
   if (!enhancedPrompt.includes('high quality') && !enhancedPrompt.includes('detailed')) {
-    enhancedPrompt = `${enhancedPrompt}, high quality, detailed, realistic`;
+    enhancedPrompt = `${enhancedPrompt}, high quality, detailed, realistic, preserve original appearance`;
   }
   
   console.log('향상된 프롬프트:', enhancedPrompt);
