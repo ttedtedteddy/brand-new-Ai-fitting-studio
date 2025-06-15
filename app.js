@@ -209,30 +209,11 @@ function optimizeImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8, f
       if (forceAspectRatio === '3:4') {
         console.log('🎯 IDM-VTON 최적화: 3:4 비율로 조정');
         
-        // 3:4 비율 (768:1024)
-        const targetRatio = 3 / 4;
+        // IDM-VTON은 정확히 768x1024만 받도록 강제 설정
+        newWidth = 768;
+        newHeight = 1024;
         
-        if (originalRatio > targetRatio) {
-          // 가로가 더 긴 경우: 세로를 기준으로 조정
-          newHeight = Math.min(originalHeight, maxHeight);
-          newWidth = Math.floor(newHeight * targetRatio);
-        } else {
-          // 세로가 더 긴 경우: 가로를 기준으로 조정
-          newWidth = Math.min(originalWidth, maxWidth);
-          newHeight = Math.floor(newWidth / targetRatio);
-        }
-        
-        // 최대 크기 제한 적용
-        if (newWidth > maxWidth) {
-          newWidth = maxWidth;
-          newHeight = Math.floor(newWidth / targetRatio);
-        }
-        if (newHeight > maxHeight) {
-          newHeight = maxHeight;
-          newWidth = Math.floor(newHeight * targetRatio);
-        }
-        
-        console.log(`📐 3:4 비율 조정: ${originalWidth}x${originalHeight} → ${newWidth}x${newHeight}`);
+        console.log(`📐 3:4 비율 강제 조정: ${originalWidth}x${originalHeight} → ${newWidth}x${newHeight} (IDM-VTON 전용)`);
         
       } else {
         console.log(`🔧 디버그: 3:4 비율 조정 건너뜀 - forceAspectRatio가 "${forceAspectRatio}"임`);
@@ -1685,7 +1666,9 @@ function showClothesResultImage(src) {
   }
   
   clothesResultImage.onload = function() {
-    // 이미지 스타일 설정
+    console.log(`🖼️ 결과 이미지 로드 완료: ${this.naturalWidth}x${this.naturalHeight}`);
+    
+    // 이미지 스타일 설정 - 3:4 비율 강제 유지
     this.style.maxWidth = '100%';
     this.style.height = 'auto';
     this.style.objectFit = 'contain';
@@ -1693,6 +1676,13 @@ function showClothesResultImage(src) {
     this.style.borderRadius = '1rem';
     this.style.boxShadow = 'var(--shadow-lg)';
     this.style.border = '1px solid var(--gray-200)';
+    
+    // 3:4 비율 강제 적용 (세로 이미지 보장)
+    this.style.aspectRatio = '3/4';
+    this.style.width = 'auto';
+    this.style.maxHeight = '600px';
+    
+    console.log('✅ 결과 이미지 3:4 비율로 표시 완료');
     
     if (clothesResultPlaceholder) {
       clothesResultPlaceholder.style.display = 'none';
