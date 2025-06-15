@@ -140,6 +140,9 @@ let clothingImageData = null; // 옷 이미지 데이터 (옷 이미지 모드�
 let upperClothingImageData = null; // 상의 이미지 데이터 (상하의 각각 업로드용)
 let lowerClothingImageData = null; // 하의 이미지 데이터 (상하의 각각 업로드용)
 
+// 전역 변수 추가 - 원본 이미지 비율 저장
+let originalBodyImageRatio = null;
+
 // 드래그 앤 드롭 기능 구현
 function setupDragAndDrop() {
   // 드래그 앤 드롭 영역 클릭 시 파일 선택
@@ -185,9 +188,9 @@ function setupDragAndDrop() {
   });
 }
 
-// 이미지 최적화 함수 추가 (IDM-VTON 3:4 비율 최적화)
-function optimizeImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8, forceAspectRatio = null) {
-  console.log(`🔧 디버그: optimizeImage 함수 시작 - forceAspectRatio: "${forceAspectRatio}"`);
+// 이미지 최적화 함수 (원본 비율 유지)
+function optimizeImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8) {
+  console.log(`🔧 이미지 최적화 시작`);
   
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas');
@@ -200,29 +203,16 @@ function optimizeImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8, f
       const originalHeight = img.height;
       const originalRatio = originalWidth / originalHeight;
       
-      console.log(`🔧 디버그: 원본 이미지 크기 - ${originalWidth}x${originalHeight}, 비율: ${originalRatio.toFixed(3)}`);
+      console.log(`🔧 원본 이미지 크기 - ${originalWidth}x${originalHeight}, 비율: ${originalRatio.toFixed(3)}`);
       
       let newWidth = originalWidth;
       let newHeight = originalHeight;
       
-      // IDM-VTON용 3:4 비율 강제 적용
-      if (forceAspectRatio === '3:4') {
-        console.log('🎯 IDM-VTON 최적화: 3:4 비율로 조정');
-        
-        // IDM-VTON은 정확히 768x1024만 받도록 강제 설정
-        newWidth = 768;
-        newHeight = 1024;
-        
-        console.log(`📐 3:4 비율 강제 조정: ${originalWidth}x${originalHeight} → ${newWidth}x${newHeight} (IDM-VTON 전용)`);
-        
-      } else {
-        console.log(`🔧 디버그: 3:4 비율 조정 건너뜀 - forceAspectRatio가 "${forceAspectRatio}"임`);
-        // 기존 비율 유지 로직
-        if (newWidth > maxWidth || newHeight > maxHeight) {
-          const ratio = Math.min(maxWidth / newWidth, maxHeight / newHeight);
-          newWidth = Math.floor(newWidth * ratio);
-          newHeight = Math.floor(newHeight * ratio);
-        }
+      // 원본 비율 유지하면서 크기만 조정
+      if (newWidth > maxWidth || newHeight > maxHeight) {
+        const ratio = Math.min(maxWidth / newWidth, maxHeight / newHeight);
+        newWidth = Math.floor(newWidth * ratio);
+        newHeight = Math.floor(newHeight * ratio);
       }
       
       // 최종 비율 확인
@@ -232,18 +222,12 @@ function optimizeImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8, f
       canvas.width = newWidth;
       canvas.height = newHeight;
       
-      // 배경을 흰색으로 설정 (패딩 영역)
+      // 배경을 흰색으로 설정
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, newWidth, newHeight);
       
-      // 이미지를 중앙에 맞춰 그리기 (비율 유지하면서 패딩 추가)
-      const scale = Math.min(newWidth / originalWidth, newHeight / originalHeight);
-      const scaledWidth = originalWidth * scale;
-      const scaledHeight = originalHeight * scale;
-      const offsetX = (newWidth - scaledWidth) / 2;
-      const offsetY = (newHeight - scaledHeight) / 2;
-      
-      ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
+      // 이미지를 전체 캔버스에 맞춰 그리기 (원본 비율 유지)
+      ctx.drawImage(img, 0, 0, newWidth, newHeight);
       
       // 압축된 이미지를 Blob으로 변환
       canvas.toBlob((blob) => {
@@ -255,7 +239,7 @@ function optimizeImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8, f
         console.log(`   - 압축 후: ${compressedSizeKB}KB`);
         console.log(`   - 압축률: ${Math.round((1 - blob.size / file.size) * 100)}%`);
         console.log(`   - 해상도: ${originalWidth}x${originalHeight} → ${newWidth}x${newHeight}`);
-        console.log(`   - 비율: ${originalRatio.toFixed(3)} → ${finalRatio.toFixed(3)} ${forceAspectRatio ? '(강제 조정)' : '(유지)'}`);
+        console.log(`   - 비율: ${originalRatio.toFixed(3)} → ${finalRatio.toFixed(3)} (유지)`);
         
         // File 객체로 변환
         const optimizedFile = new File([blob], file.name, {
@@ -371,22 +355,24 @@ async function handleImageFile(file) {
   }
 }
 
-// 전신사진 파일 처리 함수 수정 (3:4 비율 최적화)
+// 전신사진 파일 처리 함수 수정 (원본 비율 기억)
 async function handleBodyImageFile(file) {
   try {
-    console.log('🏃 전신사진 최적화 시작 (IDM-VTON 3:4 비율)...');
-    console.log('🔧 디버그: optimizeImage 호출 전 - forceAspectRatio: "3:4"');
+    console.log('🏃 전신사진 최적화 시작...');
     
-    // IDM-VTON용 3:4 비율로 최적화
-    const processedFile = await optimizeImage(file, 768, 1024, 0.8, '3:4');
+    // 원본 이미지 비율 계산 및 저장
+    const originalDimensions = await getImageDimensions(file);
+    originalBodyImageRatio = originalDimensions.width / originalDimensions.height;
+    console.log(`📐 원본 전신사진 비율 저장: ${originalDimensions.width}x${originalDimensions.height} (비율: ${originalBodyImageRatio.toFixed(3)})`);
     
-    console.log('🔧 디버그: optimizeImage 호출 완료');
+    // 이미지 최적화 (원본 비율 유지)
+    const processedFile = await optimizeImage(file, 1024, 1024, 0.8);
     
     const reader = new FileReader();
     reader.onload = function(evt) {
       bodyImageData = evt.target.result;
       
-      // 업로드 영역 업데이트 - 3:4 비율로 표시
+      // 업로드 영역 업데이트 - 원본 비율로 표시
       const bodyDragDropArea = document.getElementById('bodyDragDropArea');
       if (bodyDragDropArea) {
         bodyDragDropArea.style.backgroundImage = `url(${evt.target.result})`;
@@ -395,15 +381,21 @@ async function handleBodyImageFile(file) {
         bodyDragDropArea.style.backgroundRepeat = 'no-repeat';
         bodyDragDropArea.classList.add('has-image');
         
-        // 3:4 비율 강제 적용 (미리보기)
-        bodyDragDropArea.style.aspectRatio = '3/4';
-        bodyDragDropArea.style.width = '300px';
-        bodyDragDropArea.style.height = '400px';
+        // 원본 비율에 맞춰 미리보기 크기 조정
+        if (originalBodyImageRatio > 1) {
+          // 가로가 더 긴 경우
+          bodyDragDropArea.style.width = '400px';
+          bodyDragDropArea.style.height = `${400 / originalBodyImageRatio}px`;
+        } else {
+          // 세로가 더 긴 경우
+          bodyDragDropArea.style.width = `${300 * originalBodyImageRatio}px`;
+          bodyDragDropArea.style.height = '400px';
+        }
         bodyDragDropArea.style.margin = '0 auto';
         
         const content = bodyDragDropArea.querySelector('.drag-drop-content');
         if (content) {
-          content.innerHTML = '<div>✅ 전신사진 업로드 완료 (3:4 비율 최적화)</div>';
+          content.innerHTML = '<div>✅ 전신사진 업로드 완료 (원본 비율 유지)</div>';
           content.style.background = 'rgba(0, 0, 0, 0.7)';
           content.style.color = 'white';
           content.style.padding = '0.5rem';
@@ -411,11 +403,11 @@ async function handleBodyImageFile(file) {
           content.style.backdropFilter = 'blur(4px)';
         }
         
-        console.log('📱 전신사진 미리보기 3:4 비율로 표시 완료');
+        console.log('📱 전신사진 미리보기 원본 비율로 표시 완료');
       }
       
       updateGenerateButton();
-      console.log('✅ 전신사진 3:4 비율 최적화 완료');
+      console.log('✅ 전신사진 처리 완료');
     };
     reader.readAsDataURL(processedFile);
     
@@ -1679,7 +1671,7 @@ async function pollForIDMVTONResult(predictionId, maxAttempts = 60, intervalMs =
   throw new Error('IDM-VTON 결과 대기 시간 초과 (2분)');
 }
 
-// 옷 이미지 모드 결과 이미지 표시 함수
+// 옷 이미지 모드 결과 이미지 표시 함수 (원본 비율 적용)
 function showClothesResultImage(src) {
   const clothesResultImage = document.getElementById('clothesResultImage');
   const clothesResultPlaceholder = document.getElementById('clothesResultPlaceholder');
@@ -1694,7 +1686,7 @@ function showClothesResultImage(src) {
   clothesResultImage.onload = function() {
     console.log(`🖼️ 결과 이미지 로드 완료: ${this.naturalWidth}x${this.naturalHeight}`);
     
-    // 이미지 스타일 설정 - 3:4 비율 강제 유지
+    // 기본 이미지 스타일 설정
     this.style.maxWidth = '100%';
     this.style.height = 'auto';
     this.style.objectFit = 'contain';
@@ -1703,12 +1695,27 @@ function showClothesResultImage(src) {
     this.style.boxShadow = 'var(--shadow-lg)';
     this.style.border = '1px solid var(--gray-200)';
     
-    // 3:4 비율 강제 적용 (세로 이미지 보장)
-    this.style.aspectRatio = '3/4';
-    this.style.width = 'auto';
-    this.style.maxHeight = '600px';
-    
-    console.log('✅ 결과 이미지 3:4 비율로 표시 완료');
+    // 원본 전신사진 비율에 맞춰 결과 이미지 표시
+    if (originalBodyImageRatio) {
+      console.log(`🎯 결과 이미지를 원본 비율로 조정: ${originalBodyImageRatio.toFixed(3)}`);
+      
+      if (originalBodyImageRatio > 1) {
+        // 원본이 가로가 더 긴 경우
+        this.style.width = '500px';
+        this.style.height = `${500 / originalBodyImageRatio}px`;
+      } else {
+        // 원본이 세로가 더 긴 경우 (일반적인 전신사진)
+        this.style.width = `${400 * originalBodyImageRatio}px`;
+        this.style.height = '400px';
+      }
+      
+      this.style.margin = '0 auto';
+      this.style.objectFit = 'cover'; // 비율에 맞춰 크롭
+      
+      console.log('✅ 결과 이미지 원본 비율로 표시 완료');
+    } else {
+      console.log('⚠️ 원본 비율 정보 없음 - 기본 표시');
+    }
     
     if (clothesResultPlaceholder) {
       clothesResultPlaceholder.style.display = 'none';
