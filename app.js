@@ -386,7 +386,7 @@ async function handleBodyImageFile(file) {
     reader.onload = function(evt) {
       bodyImageData = evt.target.result;
       
-      // 업로드 영역 업데이트
+      // 업로드 영역 업데이트 - 3:4 비율로 표시
       const bodyDragDropArea = document.getElementById('bodyDragDropArea');
       if (bodyDragDropArea) {
         bodyDragDropArea.style.backgroundImage = `url(${evt.target.result})`;
@@ -395,10 +395,23 @@ async function handleBodyImageFile(file) {
         bodyDragDropArea.style.backgroundRepeat = 'no-repeat';
         bodyDragDropArea.classList.add('has-image');
         
+        // 3:4 비율 강제 적용 (미리보기)
+        bodyDragDropArea.style.aspectRatio = '3/4';
+        bodyDragDropArea.style.width = '300px';
+        bodyDragDropArea.style.height = '400px';
+        bodyDragDropArea.style.margin = '0 auto';
+        
         const content = bodyDragDropArea.querySelector('.drag-drop-content');
         if (content) {
           content.innerHTML = '<div>✅ 전신사진 업로드 완료 (3:4 비율 최적화)</div>';
+          content.style.background = 'rgba(0, 0, 0, 0.7)';
+          content.style.color = 'white';
+          content.style.padding = '0.5rem';
+          content.style.borderRadius = '0.5rem';
+          content.style.backdropFilter = 'blur(4px)';
         }
+        
+        console.log('📱 전신사진 미리보기 3:4 비율로 표시 완료');
       }
       
       updateGenerateButton();
@@ -424,7 +437,7 @@ async function handleClothingImageFile(file) {
     reader.onload = function(evt) {
       clothingImageData = evt.target.result;
       
-      // 업로드 영역 업데이트
+      // 업로드 영역 업데이트 - 3:4 비율로 표시
       const clothesDragDropArea = document.getElementById('clothesDragDropArea');
       if (clothesDragDropArea) {
         clothesDragDropArea.style.backgroundImage = `url(${evt.target.result})`;
@@ -433,10 +446,23 @@ async function handleClothingImageFile(file) {
         clothesDragDropArea.style.backgroundRepeat = 'no-repeat';
         clothesDragDropArea.classList.add('has-image');
         
+        // 3:4 비율 강제 적용 (미리보기)
+        clothesDragDropArea.style.aspectRatio = '3/4';
+        clothesDragDropArea.style.width = '300px';
+        clothesDragDropArea.style.height = '400px';
+        clothesDragDropArea.style.margin = '0 auto';
+        
         const content = clothesDragDropArea.querySelector('.drag-drop-content');
         if (content) {
           content.innerHTML = '<div>✅ 옷 이미지 업로드 완료 (3:4 비율 최적화)</div>';
+          content.style.background = 'rgba(0, 0, 0, 0.7)';
+          content.style.color = 'white';
+          content.style.padding = '0.5rem';
+          content.style.borderRadius = '0.5rem';
+          content.style.backdropFilter = 'blur(4px)';
         }
+        
+        console.log('📱 옷 이미지 미리보기 3:4 비율로 표시 완료');
       }
       
       updateGenerateButton();
