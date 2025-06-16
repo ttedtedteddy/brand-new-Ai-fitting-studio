@@ -200,7 +200,7 @@ label {
 }
 
 input[type="text"] {
-  padding: 0.75rem 0.5rem;
+  padding: 0.875rem 1.25rem;
   border: 2px solid var(--gray-200);
   border-radius: 0.75rem;
   font-size: 1rem;
@@ -1668,7 +1668,7 @@ div {
   background: #FEE500;
   color: #000000;
   border: none;
-  padding: 0.75rem 1.25rem;
+  padding: 0.75rem 1.5rem;
   border-radius: 0;
   font-size: 0.9rem;
   font-weight: 300;
@@ -1676,7 +1676,7 @@ div {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  min-width: 100px;
+  min-width: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1725,7 +1725,7 @@ div {
 /* 모바일 반응형 - 이미지 공유 버튼 */
 @media (max-width: 768px) {
   .share-btn.kakao-btn {
-    padding: 0.75rem 0.5rem;
+    padding: 0.875rem 1.25rem;
     font-size: 0.95rem;
     min-width: 110px;
   }
