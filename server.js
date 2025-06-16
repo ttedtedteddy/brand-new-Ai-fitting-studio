@@ -47,7 +47,7 @@ app.post('/upload', async (req, res) => {
     } else {
       // Base64 이미지 업로드
       imageSizeKB = Math.round((image.length * 3) / 4 / 1024);
-      console.log(`📊 업로드 시작 - 이미지 크기: ${imageSizeKB}KB`);
+    console.log(`📊 업로드 시작 - 이미지 크기: ${imageSizeKB}KB`);
       uploadInput = `data:image/png;base64,${image}`;
     }
     
@@ -69,7 +69,7 @@ app.post('/upload', async (req, res) => {
     console.log(`   - 업로드 시간: ${uploadDuration}ms`);
     console.log(`   - 총 처리 시간: ${totalDuration}ms`);
     if (imageSizeKB > 0) {
-      console.log(`   - 업로드 속도: ${(imageSizeKB / (uploadDuration / 1000)).toFixed(2)} KB/s`);
+    console.log(`   - 업로드 속도: ${(imageSizeKB / (uploadDuration / 1000)).toFixed(2)} KB/s`);
     }
     console.log(`   - 파일 URL: ${uploadRes.secure_url}`);
 
@@ -146,7 +146,7 @@ app.post('/replicate', async (req, res) => {
     if (isIDMVTON) {
       console.log('IDM-VTON 예측 생성:', JSON.stringify(data, null, 2));
     } else {
-      console.log('Replicate 예측 생성:', JSON.stringify(data, null, 2));
+    console.log('Replicate 예측 생성:', JSON.stringify(data, null, 2));
     }
     
     res.json(data);
@@ -248,7 +248,7 @@ app.get('/replicate/:id', async (req, res) => {
     if (isIDMVTON) {
       console.log('IDM-VTON 결과 폴링:', JSON.stringify(data, null, 2));
     } else {
-      console.log('Replicate 결과 폴링:', JSON.stringify(data, null, 2));
+    console.log('Replicate 결과 폴링:', JSON.stringify(data, null, 2));
     }
     
     res.json(data);
