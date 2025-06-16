@@ -926,7 +926,7 @@ function setupGoogleLensSearch() {
       console.log('이미지 URL:', resultImage.src);
       
       // 구글 렌즈로 직접 이미지 검색 (옷 이미지 모드와 동일한 방식)
-      const searchUrl = `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(resultImage.src)}`;
+      const searchUrl = `https://lens.google.com/api/uploadbyurl?url=${encodeURIComponent(resultImage.src)}`;
       console.log('구글 렌즈 URL:', searchUrl);
       
       window.open(searchUrl, '_blank');
@@ -1089,7 +1089,7 @@ async function callReplicateAPI(imageData, maskData, prompt) {
   const baseUrl = window.location.protocol + '//' + window.location.host;
   
   // 1. 이미지 업로드 (base64 → URL)
-  const imageUploadRes = await fetch(`${baseUrl}/upload`, {
+  const imageUploadRes = await fetch(`${baseUrl}/api/upload`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ image: imageBase64 })
@@ -1097,7 +1097,7 @@ async function callReplicateAPI(imageData, maskData, prompt) {
   const imageUploadData = await imageUploadRes.json();
   if (!imageUploadData.url) throw new Error('원본 이미지 업로드 실패');
 
-  const maskUploadRes = await fetch(`${baseUrl}/upload`, {
+  const maskUploadRes = await fetch(`${baseUrl}/api/upload`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ image: maskBase64 })
@@ -1106,7 +1106,7 @@ async function callReplicateAPI(imageData, maskData, prompt) {
   if (!maskUploadData.url) throw new Error('마스크 이미지 업로드 실패');
 
   // 2. Replicate API 호출 (FLUX Fill Pro 최신 모델)
-  const response = await fetch(`${baseUrl}/replicate`, {
+  const response = await fetch(`${baseUrl}/api/replicate`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -1131,7 +1131,7 @@ async function callReplicateAPI(imageData, maskData, prompt) {
   if (!response.ok) {
     // 폴백: FLUX Fill Dev 모델 (더 안정적인 버전)
     console.log('FLUX Fill Pro 실패, FLUX Fill Dev로 폴백...');
-    const fallbackResponse = await fetch(`${baseUrl}/replicate`, {
+    const fallbackResponse = await fetch(`${baseUrl}/api/replicate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -1174,7 +1174,7 @@ async function pollForResult(baseUrl, predictionId) {
   
   while (!outputUrl && attempts < maxAttempts) {
     await new Promise(res => setTimeout(res, 2000));
-    const pollRes = await fetch(`${baseUrl}/replicate/${predictionId}`);
+    const pollRes = await fetch(`${baseUrl}/api/replicate/${predictionId}`);
     const pollData = await pollRes.json();
     console.log('pollData:', JSON.stringify(pollData, null, 2));
     
@@ -1596,7 +1596,7 @@ async function callIDMVTONAPI(bodyImageData, clothingImageData, prompt) {
   
   try {
     // 1. 이미지 업로드 (base64 → URL)
-    const bodyImageUploadRes = await fetch(`${baseUrl}/upload`, {
+    const bodyImageUploadRes = await fetch(`${baseUrl}/api/upload`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ image: bodyImageBase64 })
@@ -1604,7 +1604,7 @@ async function callIDMVTONAPI(bodyImageData, clothingImageData, prompt) {
     const bodyImageUploadData = await bodyImageUploadRes.json();
     if (!bodyImageUploadData.url) throw new Error('전신사진 업로드 실패');
 
-    const clothingImageUploadRes = await fetch(`${baseUrl}/upload`, {
+    const clothingImageUploadRes = await fetch(`${baseUrl}/api/upload`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ image: clothingImageBase64 })
@@ -1691,7 +1691,7 @@ async function callSingleIDMVTON(bodyImageUrl, clothingImageUrl, category, promp
   // 입력 이미지를 미리 3:4 비율로 조정하여 비율 왜곡 방지
   console.log('🎯 IDM-VTON 최적 비율 조정: 3:4 비율로 전처리');
   
-  const replicateResponse = await fetch(`${baseUrl}/replicate`, {
+  const replicateResponse = await fetch(`${baseUrl}/api/replicate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -1742,7 +1742,7 @@ async function pollForIDMVTONResult(predictionId, maxAttempts = 60, intervalMs =
     try {
       console.log(`IDM-VTON 결과 확인 중... (${attempt}/${maxAttempts})`);
       
-      const response = await fetch(`${baseUrl}/replicate/${predictionId}`);
+      const response = await fetch(`${baseUrl}/api/replicate/${predictionId}`);
       const data = await response.json();
       
       console.log('IDM-VTON 상태:', data);
@@ -1933,7 +1933,7 @@ function setupClothesGoogleLens() {
       
       try {
         // 구글 렌즈로 이미지 검색
-        const searchUrl = `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(clothesResultImage.src)}`;
+        const searchUrl = `https://lens.google.com/api/uploadbyurl?url=${encodeURIComponent(clothesResultImage.src)}`;
         window.open(searchUrl, '_blank');
       } catch (error) {
         console.error('구글 렌즈 연동 오류:', error);
