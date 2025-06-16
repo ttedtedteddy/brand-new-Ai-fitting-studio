@@ -2317,4 +2317,57 @@ div {
   margin-left: 1rem !important;
   margin-right: 1rem !important;
   max-width: calc(100% - 2rem) !important;
+}
+
+/* ===== 모바일 여백 문제 최종 해결 CSS ===== */
+@media screen and (max-width: 480px) {
+  /* 1. 마스킹 브러시 섹션 강제 여백 정렬 */
+  html body div#mainApp main div#uploadMaskSection div#maskSection {
+    margin-left: 1rem !important;
+    margin-right: 1rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    max-width: calc(100vw - 2rem) !important;
+    width: calc(100vw - 2rem) !important;
+    box-sizing: border-box !important;
+  }
+  
+  html body div#mainApp main div#uploadMaskSection div#maskSection div#brushToolbar {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: 100% !important;
+  }
+  
+  html body div#mainApp main div#uploadMaskSection div#maskSection div#canvasContainer {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+    max-width: 400px !important;
+  }
+  
+  /* 2. 가상 피팅 결과 섹션 강제 여백 정렬 */
+  html body div#mainApp main div#resultSection {
+    margin-left: 1rem !important;
+    margin-right: 1rem !important;
+    max-width: calc(100vw - 2rem) !important;
+    width: calc(100vw - 2rem) !important;
+    box-sizing: border-box !important;
+  }
+  
+  html body div#clothesModeApp main div.result-container {
+    margin-left: 1rem !important;
+    margin-right: 1rem !important;
+    max-width: calc(100vw - 2rem) !important;
+    width: calc(100vw - 2rem) !important;
+    box-sizing: border-box !important;
+  }
+  
+  html body div#clothesModeApp main div.result-container div#clothesResultPlaceholder {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+    max-width: 400px !important;
+  }
 } 
