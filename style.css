@@ -2434,3 +2434,50 @@ div {
   letter-spacing: 0.2em !important;
   text-transform: uppercase !important;
 }
+
+/* ===== 웹 환경 마스킹 브러시 섹션 레이아웃 수정 ===== */
+/* 웹 환경에서만 마스킹 브러시 섹션 원래대로 복구 */
+@media (min-width: 769px) {
+  /* 마스킹 브러시 섹션 웹 환경 복구 */
+  #maskSection {
+    margin: 2rem auto !important;
+    padding: 2.5rem 2rem !important;
+    max-width: 600px !important;
+    width: auto !important;
+    box-sizing: content-box !important;
+  }
+  
+  /* 브러시 툴바 웹 환경 복구 */
+  #brushToolbar {
+    margin: 0 0 1.5rem 0 !important;
+    padding: 1rem !important;
+    width: auto !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* 캔버스 컨테이너 웹 환경 복구 */
+  #canvasContainer {
+    margin: 0 auto 2rem auto !important;
+    width: 512px !important;
+    height: 768px !important;
+    max-width: none !important;
+    box-sizing: content-box !important;
+  }
+  
+  /* 결과 섹션 웹 환경 복구 */
+  #resultSection {
+    margin: 2rem auto !important;
+    padding: 2.5rem 2rem !important;
+    max-width: 600px !important;
+    width: auto !important;
+    box-sizing: content-box !important;
+  }
+  
+  .result-container {
+    margin: 2rem auto !important;
+    padding: 2.5rem 2rem !important;
+    max-width: 600px !important;
+    width: auto !important;
+    box-sizing: content-box !important;
+  }
+}
