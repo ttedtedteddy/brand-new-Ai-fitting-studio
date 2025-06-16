@@ -926,7 +926,7 @@ function setupGoogleLensSearch() {
       console.log('이미지 URL:', resultImage.src);
       
       // 구글 렌즈로 직접 이미지 검색 (옷 이미지 모드와 동일한 방식)
-      const searchUrl = `https://lens.google.com/api/uploadbyurl?url=${encodeURIComponent(resultImage.src)}`;
+      const searchUrl = `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(resultImage.src)}`;
       console.log('구글 렌즈 URL:', searchUrl);
       
       window.open(searchUrl, '_blank');
@@ -1933,7 +1933,7 @@ function setupClothesGoogleLens() {
       
       try {
         // 구글 렌즈로 이미지 검색
-        const searchUrl = `https://lens.google.com/api/uploadbyurl?url=${encodeURIComponent(clothesResultImage.src)}`;
+        const searchUrl = `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(clothesResultImage.src)}`;
         window.open(searchUrl, '_blank');
       } catch (error) {
         console.error('구글 렌즈 연동 오류:', error);
