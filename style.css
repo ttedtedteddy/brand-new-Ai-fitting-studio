@@ -2272,3 +2272,49 @@ div {
     text-transform: uppercase !important;
   }
 } 
+
+/* === 1. 마스킹 브러시 섹션 여백 정렬 === */
+/* 마스킹 섹션 전체 여백을 동일하게 설정 */
+#maskSection {
+  margin-left: 1rem !important;
+  margin-right: 1rem !important;
+  max-width: calc(100% - 2rem) !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+/* 브러시 툴바의 좌우 여백을 제거해서 maskSection과 맞춤 */
+#brushToolbar {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* 캔버스 컨테이너도 동일한 여백으로 설정 */
+#canvasContainer {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* === 2. 가상 피팅 결과 좌우 여백 동일 === */
+/* HTML에서 실제 사용되는 resultSection을 수정 */
+#resultSection {
+  margin-left: 1rem !important;
+  margin-right: 1rem !important;
+  max-width: calc(100% - 2rem) !important;
+}
+
+/* result-container 클래스도 동일하게 */
+.result-container {
+  margin-left: 1rem !important;
+  margin-right: 1rem !important;
+  max-width: calc(100% - 2rem) !important;
+}
+
+/* 옷 이미지 모드 결과 영역도 포함 */
+#clothesResultContainer {
+  margin-left: 1rem !important;
+  margin-right: 1rem !important;
+  max-width: calc(100% - 2rem) !important;
+} 
