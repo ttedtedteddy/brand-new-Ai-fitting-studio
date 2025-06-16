@@ -1,0 +1,13 @@
+DEPLOYMENT FORCE TRIGGER
+Timestamp: 2025-06-16 18:58:00 KST
+Reason: Vercel webhook issue fix
+Version: 2.0.2-final-emergency-deploy
+
+This file is created to force Vercel deployment when GitHub webhooks fail.
+Changes include:
+- Mobile UI fixes
+- Button style unification  
+- CSS margin alignment
+- Virtual fitting result container fixes
+
+DEPLOY NOW! 

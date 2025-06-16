@@ -1,16 +1,31 @@
 {
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/upload",
-      "destination": "/api/upload"
-    },
-    {
-      "source": "/replicate",
-      "destination": "/api/replicate"
-    },
-    {
-      "source": "/replicate/(.*)",
-      "destination": "/api/replicate?id=$1"
+      "src": "**/*",
+      "use": "@vercel/static"
     }
-  ]
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    }
+  ],
+  "functions": {
+    "app.js": {
+      "maxDuration": 30
+    }
+  }
 } 
