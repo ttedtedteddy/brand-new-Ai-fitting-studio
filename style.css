@@ -1668,7 +1668,7 @@ div {
   background: #FEE500;
   color: #000000;
   border: none;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.25rem;
   border-radius: 0;
   font-size: 0.9rem;
   font-weight: 300;
@@ -1683,6 +1683,7 @@ div {
   gap: 0.5rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
+  height: auto;
 }
 
 .share-btn.kakao-btn:hover {
@@ -1735,16 +1736,26 @@ div {
   .share-btn.kakao-btn {
     padding: 0.75rem 1rem;
     font-size: 0.9rem;
-    min-width: 100px;
-    flex: 1;
-    max-width: 200px;
+    min-width: 120px;
+    max-width: 120px;
+    height: 48px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .share-button, .save-button {
-    flex: 1;
-    max-width: 200px;
-    text-align: center;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    min-width: 120px;
+    max-width: 120px;
+    height: 48px;
+    flex: none;
+    display: flex;
+    align-items: center;
     justify-content: center;
+    text-align: center;
   }
   
   .action-buttons {
@@ -1753,11 +1764,15 @@ div {
     gap: 0.5rem;
     justify-content: center;
     flex-wrap: wrap;
+    align-items: center;
   }
   
-  .action-buttons .share-btn.kakao-btn {
-    flex: 1;
-    max-width: 200px;
+  .action-buttons .share-btn.kakao-btn,
+  .action-buttons .share-button,
+  .action-buttons .save-button {
+    min-width: 120px;
+    max-width: 120px;
+    height: 48px;
   }
 }
 
