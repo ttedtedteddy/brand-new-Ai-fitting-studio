@@ -2404,3 +2404,33 @@ div {
     justify-content: center !important;
   }
 }
+
+/* ===== 웹 환경에서 모든 검은색 버튼 스타일 통일 ===== */
+/* AI 스타일링 생성 버튼과 동일한 스타일 적용 */
+#generateBtn,
+#generateClothesBtn,
+.share-button,
+.save-button,
+.back-btn,
+#clearMaskBtn,
+#applyMaskBtn,
+#closeMaskBtn,
+#takeCameraPhotoBtn,
+#takeTextModeCameraBtn,
+.google-search-btn,
+#processAdditionalClothingBtn {
+  border-radius: 0 !important;
+  font-weight: 300 !important;
+  font-size: 0.9rem !important;
+  letter-spacing: 0.2em !important;
+  text-transform: uppercase !important;
+}
+
+/* 카카오톡 공유 버튼도 모양은 통일 (색상은 유지) */
+.share-btn.kakao-btn {
+  border-radius: 0 !important;
+  font-weight: 300 !important;
+  font-size: 0.9rem !important;
+  letter-spacing: 0.2em !important;
+  text-transform: uppercase !important;
+}
