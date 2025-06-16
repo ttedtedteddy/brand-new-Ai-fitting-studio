@@ -2371,3 +2371,36 @@ div {
     max-width: 400px !important;
   }
 } 
+
+/* ===== 인라인 스타일까지 덮어쓰는 강제 CSS ===== */
+@media screen and (max-width: 480px) {
+  /* 가상 피팅 결과 placeholder 강제 재정렬 */
+  div#clothesResultPlaceholder[style] {
+    margin: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* 결과 컨테이너들 강제 여백 설정 */
+  div.result-container[style],
+  div#resultSection[style] {
+    margin-left: 1rem !important;
+    margin-right: 1rem !important;
+    max-width: calc(100vw - 2rem) !important;
+    width: calc(100vw - 2rem) !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* 결과 이미지 래퍼도 강제 설정 */
+  div.result-image-wrapper {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+  }
+}
