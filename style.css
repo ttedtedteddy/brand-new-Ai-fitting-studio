@@ -2216,4 +2216,59 @@ div {
     margin-left: 1rem !important;
     margin-right: 1rem !important;
   }
+
+  /* === 1. 마스킹 브러시 섹션 여백 정렬 === */
+  #brushToolbar {
+    margin-left: 1rem !important;
+    margin-right: 1rem !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  
+  #canvasContainer {
+    margin-left: 1rem !important;
+    margin-right: 1rem !important;
+  }
+  
+  /* === 2. 가상 피팅 결과 좌우 여백 동일 === */
+  .result-container {
+    margin-left: 1rem !important;
+    margin-right: 1rem !important;
+    max-width: calc(100% - 2rem) !important;
+  }
+  
+  #clothesResultPlaceholder {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  
+  /* === 3. 모든 검은색 버튼 스타일 통일 === */
+  /* AI 스타일링 생성 버튼과 동일한 스타일 적용 */
+  #generateBtn,
+  #generateClothesBtn,
+  .share-button,
+  .save-button,
+  .back-btn,
+  #clearMaskBtn,
+  #applyMaskBtn,
+  #closeMaskBtn,
+  #takeCameraPhotoBtn,
+  #takeTextModeCameraBtn,
+  .google-search-btn,
+  #processAdditionalClothingBtn {
+    border-radius: 0 !important;
+    font-weight: 300 !important;
+    font-size: 0.9rem !important;
+    letter-spacing: 0.2em !important;
+    text-transform: uppercase !important;
+  }
+  
+  /* 카카오톡 공유 버튼은 제외 (노란색 버튼) */
+  .share-btn.kakao-btn {
+    border-radius: 0 !important;
+    font-weight: 300 !important;
+    font-size: 0.9rem !important;
+    letter-spacing: 0.2em !important;
+    text-transform: uppercase !important;
+  }
 } 
