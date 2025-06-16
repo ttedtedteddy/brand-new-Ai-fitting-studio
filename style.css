@@ -2129,4 +2129,76 @@ div {
   margin: 0;
   font-size: 0.9rem;
   font-weight: 600;
+}
+
+/* === 모바일 환경 전용 문제 해결 CSS === */
+
+/* 1. 모드 선택 페이지 - 파란색 텍스트를 검은색으로 변경 */
+@media (max-width: 768px) {
+  .mode-text h3 {
+    color: #000000 !important;
+  }
+  
+  .mode-text p {
+    color: #000000 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .mode-text h3 {
+    color: #000000 !important;
+  }
+  
+  .mode-text p {
+    color: #000000 !important;
+  }
+
+  /* 2. 마스킹 브러시 섹션 가운데 정렬 */
+  #canvasContainer {
+    margin: 0 auto !important;
+    display: block !important;
+  }
+  
+  /* 3. 가상 피팅 결과 가운데 정렬 */
+  .result-container {
+    margin: 2rem auto !important;
+    max-width: 90% !important;
+  }
+  
+  .result-image-wrapper {
+    text-align: center !important;
+    margin: 0 auto !important;
+  }
+  
+  /* 4. 공유 버튼들 텍스트 줄바꿈 방지 */
+  .share-button, .save-button {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  
+  .share-btn.kakao-btn .button-text {
+    white-space: nowrap !important;
+  }
+  
+  /* 5 & 6. 카메라 버튼 수정 (텍스트 모드 & 옷 이미지 모드) */
+  #takeCameraPhotoBtn,
+  #takeTextModeCameraBtn {
+    width: 70% !important;
+    max-width: 200px !important;
+    margin: 0.5rem auto !important;
+    padding: 1rem 1rem !important;
+    font-size: 1rem !important;
+    border-radius: 0 !important;
+    text-align: center !important;
+    display: block !important;
+  }
+  
+  /* 7. 카메라 전환 버튼 항상 표시 */
+  #switchCameraBtn {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+  }
 } 
