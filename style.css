@@ -2202,3 +2202,18 @@ div {
     position: relative !important;
   }
 } 
+
+/* === 추가 모바일 수정사항 === */
+@media (max-width: 480px) {
+  /* 마스킹 브러시와 이미지 영역 여백 정렬 추가 수정 */
+  #maskSection .result-image-wrapper {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  /* 가상 피팅 결과 영역 세밀 조정 */
+  #clothesResultPlaceholder {
+    margin-left: 1rem !important;
+    margin-right: 1rem !important;
+  }
+} 
